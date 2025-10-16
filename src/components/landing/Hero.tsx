@@ -1,4 +1,6 @@
 import heroImage from '@/assets/landing/hero.svg'
+import WaveDivider from '@/components/common/WaveDivider'
+
 type HeroProps = {
   onLogin: () => void
   onSignup: () => void
@@ -6,7 +8,7 @@ type HeroProps = {
 
 const Hero = ({ onLogin, onSignup }: HeroProps) => {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-white">
+    <section id="hero" className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="text-center lg:text-left">
@@ -17,7 +19,7 @@ const Hero = ({ onLogin, onSignup }: HeroProps) => {
               Book in seconds
             </span>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-gray-900 mb-6 leading-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-5xl font-bold tracking-tight text-gray-900 mb-6 leading-tight">
               Play more. 
               <span className="text-primary"> Plan less.</span>
               <br />
@@ -31,13 +33,13 @@ const Hero = ({ onLogin, onSignup }: HeroProps) => {
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <button 
                 onClick={onSignup} 
-                className="px-8 py-4 bg-primary text-white cursor-pointer font-semibold rounded-xl hover:bg-primary-80 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer active:scale-95"
+                className="px-8 py-4 bg-primary text-white font-semibold rounded-xl hover:bg-primary-80 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer active:scale-95"
               >
                 Get started free
               </button>
               <button 
                 onClick={onLogin} 
-                className="px-8 py-4 border-2 border-gray-300 cursor-pointer text-gray-700 font-semibold rounded-xl hover:border-primary hover:text-primary hover:bg-primary/5 transition-all duration-300 hover:shadow-lg cursor-pointer transform hover:-translate-y-0.5 active:scale-95"
+                className="px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:border-primary hover:text-primary hover:bg-primary/5 transition-all duration-300 hover:shadow-lg cursor-pointer transform hover:-translate-y-0.5 active:scale-95"
               >
                 I already have an account
               </button>
@@ -73,6 +75,13 @@ const Hero = ({ onLogin, onSignup }: HeroProps) => {
           </div>
         </div>
       </div>
+      
+      {/* Wave Divider */}
+      <WaveDivider 
+        className="absolute bottom-0 left-0"
+        fillColor="#2563eb"
+        opacity={0.25}
+      />
     </section>
   )
 }
