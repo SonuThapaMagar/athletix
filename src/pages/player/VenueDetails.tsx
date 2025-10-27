@@ -4,16 +4,10 @@ import {
   MdLocationOn, 
   MdStar, 
   MdAccessTime, 
-  MdPeople, 
   MdFavorite, 
   MdShare, 
   MdPhone, 
   MdEmail, 
-  MdWifi, 
-  MdLocalParking, 
-  MdRestaurant, 
-  MdShower, 
-  MdSportsSoccer,
   MdArrowBack,
   MdCheckCircle,
   MdClose,
@@ -28,7 +22,7 @@ interface VenueDetails {
   location: string
   fullAddress: string
   rating: number
-  reviews: number
+  reviewCount: number
   price: string
   originalPrice?: string
   sports: string[]
@@ -57,7 +51,7 @@ interface VenueDetails {
 }
 
 const VenueDetails = () => {
-  const { id } = useParams()
+  const { id: _id } = useParams()
   const navigate = useNavigate()
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [showAllReviews, setShowAllReviews] = useState(false)
@@ -77,7 +71,7 @@ const VenueDetails = () => {
     location: "Downtown District",
     fullAddress: "123 Sports Avenue, Downtown District, City 12345",
     rating: 4.9,
-    reviews: 234,
+    reviewCount: 234,
     price: "$28/hour",
     originalPrice: "$35/hour",
     sports: ["Football", "Basketball", "Tennis", "Badminton"],
@@ -253,7 +247,7 @@ const VenueDetails = () => {
                     <div className="flex items-center">
                       <MdStar className="w-4 h-4 text-yellow-400 mr-1" />
                       <span className="font-medium">{venue.rating}</span>
-                      <span className="ml-1">({venue.reviews} reviews)</span>
+                      <span className="ml-1">({venue.reviewCount} reviews)</span>
                     </div>
                     <div className="flex items-center">
                       <MdAccessTime className="w-4 h-4 mr-1" />
@@ -530,5 +524,8 @@ const VenueDetails = () => {
 }
 
 export default VenueDetails
+
+
+
 
 

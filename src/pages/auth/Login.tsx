@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import PromoContent from '@/components/auth/PromoContent'
 import AuthForm from '@/components/common/AuthForm'
+import SportsAnimations from '@/components/common/SportsAnimations'
 
 type LoginProps = {
   onSwitchToSignup?: () => void
@@ -17,8 +18,11 @@ const Login = ({ onSwitchToSignup }: LoginProps) => {
   }
 
   return (
-    <div className="min-h-dvh flex bg-gray-50">
-      <div className="flex flex-col lg:flex-row w-full gap-8 px-4 py-8">
+    <div className="min-h-dvh flex relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-emerald-50">
+      {/* Sports-themed animated background */}
+      <SportsAnimations variant="login" />
+
+      <div className="flex flex-col lg:flex-row w-full gap-8 px-4 py-8 relative z-10">
         {/* Left Marketing Section - Direct on background */}
         <div className="lg:w-3/5 flex items-center justify-center">
           <div className="max-w-lg">

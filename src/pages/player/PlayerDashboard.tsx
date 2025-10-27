@@ -8,10 +8,6 @@ const PlayerDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <PlayerNavLayout />
-      <SearchBar />
-      <HeroSection />
-      <BannerSlider />
-      <Recommendations />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Welcome back, John!</h1>
@@ -63,46 +59,52 @@ const PlayerDashboard = () => {
           </div>
         </div>
 
-        {/* Recent Bookings */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Bookings</h2>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <span className="text-blue-600 font-semibold">FB</span>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">Football Court - Central Park</h3>
-                    <p className="text-sm text-gray-600">Tomorrow, 6:00 PM - 8:00 PM</p>
-                  </div>
-                </div>
-                <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-                  Confirmed
-                </span>
-              </div>
 
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <span className="text-green-600 font-semibold">TN</span>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">Tennis Court - Sports Complex</h3>
-                    <p className="text-sm text-gray-600">Friday, 4:00 PM - 5:00 PM</p>
-                  </div>
+      </div>
+      <SearchBar />
+      <HeroSection />
+      <BannerSlider />
+      <Recommendations />
+
+      {/* Recent Bookings */}
+      {/* <div className="bg-white rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">Recent Bookings</h2>
+        </div>
+        <div className="p-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <span className="text-blue-600 font-semibold">FB</span>
                 </div>
-                <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
-                  Pending
-                </span>
+                <div>
+                  <h3 className="font-medium text-gray-900">Football Court - Central Park</h3>
+                  <p className="text-sm text-gray-600">Tomorrow, 6:00 PM - 8:00 PM</p>
+                </div>
               </div>
+              <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                Confirmed
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <span className="text-green-600 font-semibold">TN</span>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">Tennis Court - Sports Complex</h3>
+                  <p className="text-sm text-gray-600">Friday, 4:00 PM - 5:00 PM</p>
+                </div>
+              </div>
+              <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
+                Pending
+              </span>
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }
