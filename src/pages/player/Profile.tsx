@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
   MdArrowBack,
-  MdEdit,
+  MdEdit, 
   MdSave,
   MdCancel,
-  MdEmail,
-  MdPhone,
-  MdLocationOn,
+  MdEmail, 
+  MdPhone, 
+  MdLocationOn, 
   MdCalendarToday,
   MdSportsSoccer,
   MdStar,
@@ -170,16 +170,16 @@ const Profile = () => {
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6 mb-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             {/* Avatar Section */}
-            <div className="relative">
+              <div className="relative">
               <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#2c5aa0] to-[#1e3d6f] rounded-2xl flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-xl sm:text-2xl">
                   {currentProfile.name.charAt(0)}
-                </span>
-              </div>
+                    </span>
+                  </div>
               <button className="absolute -bottom-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors border-2 border-gray-100">
                 <MdEdit className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600" />
-              </button>
-            </div>
+                </button>
+              </div>
 
             {/* Profile Info */}
             <div className="flex-1 text-center sm:text-left">
@@ -187,20 +187,20 @@ const Profile = () => {
                 {currentProfile.name}
               </h2>
               <p className="text-gray-600 mb-3 flex items-center justify-center sm:justify-start gap-1">
-                <MdLocationOn className="w-4 h-4" />
+                        <MdLocationOn className="w-4 h-4" />
                 {currentProfile.location}
               </p>
               <div className="flex items-center justify-center sm:justify-start gap-4 text-sm text-gray-500">
                 <span className="flex items-center gap-1">
-                  <MdCalendarToday className="w-4 h-4" />
+                        <MdCalendarToday className="w-4 h-4" />
                   Joined {currentProfile.joinDate}
                 </span>
                 <span className="flex items-center gap-1">
                   <MdStar className="w-4 h-4 text-yellow-500" />
                   {currentProfile.stats.averageRating}/5
                 </span>
-              </div>
-            </div>
+                      </div>
+                    </div>
 
             {/* Edit Button */}
             <div className="w-full sm:w-auto">
@@ -220,15 +220,15 @@ const Profile = () => {
                     <MdCancel className="w-4 h-4" />
                     Cancel
                   </button>
-                </div>
+                  </div>
               ) : (
-                <button
+                  <button
                   onClick={handleEdit}
                   className="w-full sm:w-auto bg-gradient-to-r from-[#2c5aa0] to-[#1e3d6f] text-white py-2 px-6 rounded-xl hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium"
-                >
-                  <MdEdit className="w-4 h-4" />
+                  >
+                    <MdEdit className="w-4 h-4" />
                   Edit Profile
-                </button>
+                  </button>
               )}
             </div>
           </div>
@@ -253,7 +253,7 @@ const Profile = () => {
               ) : (
                 <p className="text-sm text-gray-600 leading-relaxed">{currentProfile.bio}</p>
               )}
-            </div>
+              </div>
 
             {/* Contact Info Card */}
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-5">
@@ -280,7 +280,7 @@ const Profile = () => {
                 <div className="flex items-center gap-3 text-sm">
                   <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                     <MdPhone className="w-4 h-4 text-green-600" />
-                  </div>
+                        </div>
                   {isEditing ? (
                     <input
                       type="tel"
@@ -291,11 +291,11 @@ const Profile = () => {
                   ) : (
                     <span className="text-gray-700">{currentProfile.phone}</span>
                   )}
-                </div>
+                        </div>
                 <div className="flex items-center gap-3 text-sm">
                   <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                     <MdLocationOn className="w-4 h-4 text-purple-600" />
-                  </div>
+                        </div>
                   {isEditing ? (
                     <input
                       type="text"
@@ -306,9 +306,9 @@ const Profile = () => {
                   ) : (
                     <span className="text-gray-700">{currentProfile.location}</span>
                   )}
-                </div>
-              </div>
-            </div>
+                        </div>
+                      </div>
+                    </div>
 
             {/* Favorite Sports Card */}
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-5">
@@ -316,15 +316,15 @@ const Profile = () => {
                 <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                 Favorite Sports
               </h3>
-              <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-2">
                 {currentProfile.favoriteSports.map((sport, index) => (
                   <span key={index} className="px-3 py-1 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 text-sm rounded-full font-medium border border-blue-200">
-                    {sport}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
+                                {sport}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
 
           {/* Right Column - Stats & Activity */}
           <div className="lg:col-span-2 space-y-6">
@@ -333,32 +333,32 @@ const Profile = () => {
               <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4 text-center hover:shadow-xl transition-all duration-300">
                 <div className="w-12 h-12 bg-gradient-to-br from-[#2c5aa0] to-[#1e3d6f] rounded-xl flex items-center justify-center mx-auto mb-3">
                   <MdSportsSoccer className="w-6 h-6 text-white" />
-                </div>
+                        </div>
                 <div className="text-xl font-bold text-gray-900">{currentProfile.stats.gamesPlayed}</div>
                 <div className="text-xs text-gray-600">Games Played</div>
-              </div>
+                          </div>
               <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4 text-center hover:shadow-xl transition-all duration-300">
                 <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl flex items-center justify-center mx-auto mb-3">
                   <MdEmojiEvents className="w-6 h-6 text-white" />
-                </div>
+                          </div>
                 <div className="text-xl font-bold text-gray-900">{currentProfile.stats.gamesWon}</div>
                 <div className="text-xs text-gray-600">Games Won</div>
-              </div>
+                          </div>
               <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4 text-center hover:shadow-xl transition-all duration-300">
                 <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-500 rounded-xl flex items-center justify-center mx-auto mb-3">
                   <MdStar className="w-6 h-6 text-white" />
-                </div>
+                        </div>
                 <div className="text-xl font-bold text-gray-900">{currentProfile.stats.winRate}%</div>
                 <div className="text-xs text-gray-600">Win Rate</div>
-              </div>
+                      </div>
               <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4 text-center hover:shadow-xl transition-all duration-300">
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3">
                   <MdHistory className="w-6 h-6 text-white" />
-                </div>
+                    </div>
                 <div className="text-xl font-bold text-gray-900">{currentProfile.stats.totalHours}</div>
                 <div className="text-xs text-gray-600">Total Hours</div>
-              </div>
-            </div>
+                      </div>
+                    </div>
 
             {/* Achievements */}
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
@@ -370,15 +370,15 @@ const Profile = () => {
                 {currentProfile.achievements.map((achievement) => (
                   <div key={achievement.id} className="flex items-center gap-3 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl hover:shadow-md transition-all duration-300">
                     <div className="text-3xl">{achievement.icon}</div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900">{achievement.title}</h4>
-                      <p className="text-sm text-gray-600">{achievement.description}</p>
+                            <div className="flex-1">
+                                <h4 className="font-semibold text-gray-900">{achievement.title}</h4>
+                              <p className="text-sm text-gray-600">{achievement.description}</p>
                       <p className="text-xs text-gray-500 mt-1">{achievement.earnedDate}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
 
             {/* Recent Activity */}
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
@@ -394,12 +394,12 @@ const Profile = () => {
                       index === 1 ? 'bg-blue-500' : 
                       'bg-purple-500'
                     }`}></div>
-                    <div className="flex-1">
+                          <div className="flex-1">
                       <p className="text-sm font-medium text-gray-900">{activity.description}</p>
                       <p className="text-xs text-gray-500">{activity.venue} • {activity.date}</p>
-                    </div>
-                  </div>
-                ))}
+                          </div>
+                        </div>
+                      ))}
               </div>
             </div>
           </div>

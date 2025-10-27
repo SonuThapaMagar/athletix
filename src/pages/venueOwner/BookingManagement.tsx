@@ -1,17 +1,13 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { 
-  MdArrowBack,
   MdCalendarToday,
   MdPeople,
   MdAttachMoney,
   MdCheckCircle,
-  MdCancel,
-  MdPending
+  MdCancel
 } from 'react-icons/md'
 
 const BookingManagement = () => {
-  const navigate = useNavigate()
   const [selectedFilter, setSelectedFilter] = useState('all')
 
   const filters = [
@@ -22,25 +18,7 @@ const BookingManagement = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <button 
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <MdArrowBack className="w-5 h-5" />
-              <span className="hidden sm:inline">Back</span>
-            </button>
-            <h1 className="text-xl font-semibold text-gray-900">Booking Management</h1>
-            <div className="w-20"></div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="p-6">
         {/* Filter Tabs */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
           <div className="flex gap-2">
@@ -48,7 +26,7 @@ const BookingManagement = () => {
               <button
                 key={filter.id}
                 onClick={() => setSelectedFilter(filter.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                   selectedFilter === filter.id
                     ? 'bg-[#2c5aa0] text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -142,16 +120,16 @@ const BookingManagement = () => {
                     <div className="flex gap-2">
                       {booking.status === 'pending' && (
                         <>
-                          <button className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors">
+                          <button className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors cursor-pointer">
                             <MdCheckCircle className="w-4 h-4" />
                           </button>
-                          <button className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors">
+                          <button className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
                             <MdCancel className="w-4 h-4" />
                           </button>
                         </>
                       )}
                       {booking.status === 'confirmed' && (
-                        <button className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors">
+                        <button className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
                           <MdCancel className="w-4 h-4" />
                         </button>
                       )}
@@ -162,7 +140,6 @@ const BookingManagement = () => {
             ))}
           </div>
         </div>
-      </div>
     </div>
   )
 }

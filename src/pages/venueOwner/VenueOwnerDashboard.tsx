@@ -1,133 +1,106 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { 
-  MdArrowBack,
-  MdAdd,
-  MdEdit,
-  MdDelete,
-  MdCalendarToday,
-  MdPeople,
+  MdTrendingUp,
   MdAttachMoney,
-  MdStar,
-  MdLocationOn,
-  MdSportsSoccer
+  MdSportsSoccer,
+  MdBusiness,
+  MdSchedule,
+  MdAnalytics,
+  MdPayment
 } from 'react-icons/md'
 
 const VenueOwnerDashboard = () => {
-  const navigate = useNavigate()
+  const stats = [
+    { label: 'Total Revenue', value: '$12,450', change: '+12%', icon: MdAttachMoney, color: 'text-green-600' },
+    { label: 'Active Bookings', value: '24', change: '+8%', icon: MdSportsSoccer, color: 'text-blue-600' },
+    { label: 'Total Venues', value: '3', change: '+1', icon: MdBusiness, color: 'text-purple-600' },
+    { label: 'Customer Rating', value: '4.8', change: '+0.2', icon: MdTrendingUp, color: 'text-yellow-600' }
+  ]
+
+  const recentBookings = [
+    { id: 1, venue: 'Central Sports Complex', sport: 'Football', time: '2:00 PM', date: 'Today', status: 'confirmed' },
+    { id: 2, venue: 'Elite Tennis Club', sport: 'Tennis', time: '4:30 PM', date: 'Today', status: 'pending' },
+    { id: 3, venue: 'Metro Basketball Court', sport: 'Basketball', time: '6:00 PM', date: 'Tomorrow', status: 'confirmed' },
+    { id: 4, venue: 'Riverside Badminton', sport: 'Badminton', time: '8:00 AM', date: 'Tomorrow', status: 'confirmed' }
+  ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <h1 className="text-xl font-semibold text-gray-900">Venue Owner Dashboard</h1>
-            <button className="bg-[#2c5aa0] text-white px-4 py-2 rounded-lg hover:bg-[#1e3d6f] transition-colors flex items-center gap-2">
-              <MdAdd className="w-4 h-4" />
-              Add Venue
-            </button>
+    <div className="p-6">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {stats.map((stat, index) => (
+          <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                stat.color === 'text-green-600' ? 'bg-green-100' :
+                stat.color === 'text-blue-600' ? 'bg-blue-100' :
+                stat.color === 'text-purple-600' ? 'bg-purple-100' :
+                'bg-yellow-100'
+              }`}>
+                <stat.icon className={`w-6 h-6 ${stat.color}`} />
+              </div>
+              <span className="text-sm font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                {stat.change}
+              </span>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</p>
+              <p className="text-sm text-gray-600">{stat.label}</p>
+            </div>
           </div>
-        </div>
+        ))}
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Stats Cards */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Venues</p>
-                <p className="text-2xl font-bold text-gray-900">3</p>
-              </div>
-              <MdLocationOn className="w-8 h-8 text-[#2c5aa0]" />
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Bookings */}
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">Recent Bookings</h2>
+            <button className="text-[#2c5aa0] hover:text-[#1e3d6f] font-medium cursor-pointer">View All</button>
           </div>
-          
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Active Bookings</p>
-                <p className="text-2xl font-bold text-gray-900">24</p>
+          <div className="space-y-4">
+            {recentBookings.map((booking) => (
+              <div key={booking.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#2c5aa0] to-[#1e3d6f] rounded-xl flex items-center justify-center">
+                    <MdSportsSoccer className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{booking.venue}</h3>
+                    <p className="text-sm text-gray-600">{booking.sport} • {booking.date} at {booking.time}</p>
+                  </div>
+                </div>
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  booking.status === 'confirmed' 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {booking.status}
+                </span>
               </div>
-              <MdCalendarToday className="w-8 h-8 text-green-500" />
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">$2,450</p>
-              </div>
-              <MdAttachMoney className="w-8 h-8 text-yellow-500" />
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Average Rating</p>
-                <p className="text-2xl font-bold text-gray-900">4.8</p>
-              </div>
-              <MdStar className="w-8 h-8 text-purple-500" />
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Venues List */}
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-gray-900">My Venues</h2>
-            <button className="bg-[#2c5aa0] text-white px-4 py-2 rounded-lg hover:bg-[#1e3d6f] transition-colors flex items-center gap-2">
-              <MdAdd className="w-4 h-4" />
-              Add New Venue
+        {/* Quick Actions */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h2>
+          <div className="space-y-3">
+            <button className="w-full flex items-center gap-3 p-3 bg-[#2c5aa0] text-white rounded-xl hover:bg-[#1e3d6f] transition-colors cursor-pointer">
+              <MdBusiness className="w-5 h-5" />
+              <span className="font-medium">Add New Venue</span>
             </button>
-          </div>
-          
-          <div className="space-y-4">
-            {/* Mock venue data */}
-            {[
-              { name: "Elite Sports Complex", location: "Downtown", bookings: 12, revenue: "$1,200", rating: 4.9 },
-              { name: "City Sports Center", location: "Midtown", bookings: 8, revenue: "$800", rating: 4.7 },
-              { name: "Community Gym", location: "Suburbs", bookings: 4, revenue: "$450", rating: 4.5 }
-            ].map((venue, index) => (
-              <div key={index} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-[#2c5aa0] to-[#1e3d6f] rounded-lg flex items-center justify-center">
-                      <MdSportsSoccer className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900">{venue.name}</h3>
-                      <p className="text-sm text-gray-600">{venue.location}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-6">
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600">Bookings</p>
-                      <p className="font-medium">{venue.bookings}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600">Revenue</p>
-                      <p className="font-medium">{venue.revenue}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600">Rating</p>
-                      <p className="font-medium">{venue.rating}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button className="p-2 text-gray-600 hover:text-[#2c5aa0] hover:bg-blue-50 rounded-lg transition-colors">
-                        <MdEdit className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                        <MdDelete className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+            <button className="w-full flex items-center gap-3 p-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
+              <MdSchedule className="w-5 h-5" />
+              <span className="font-medium">Set Schedule</span>
+            </button>
+            <button className="w-full flex items-center gap-3 p-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
+              <MdAnalytics className="w-5 h-5" />
+              <span className="font-medium">View Reports</span>
+            </button>
+            <button className="w-full flex items-center gap-3 p-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
+              <MdPayment className="w-5 h-5" />
+              <span className="font-medium">Payment History</span>
+            </button>
           </div>
         </div>
       </div>

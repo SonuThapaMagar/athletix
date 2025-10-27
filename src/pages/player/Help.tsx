@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { 
   MdArrowBack,
   MdSearch,
-  MdHelp,
-  MdEmail,
-  MdPhone,
-  MdChat,
-  MdQuestionAnswer,
+  MdHelp, 
+  MdEmail, 
+  MdPhone, 
+  MdChat, 
+  MdQuestionAnswer, 
   MdBookOnline,
   MdPeople,
   MdHistory,
@@ -116,9 +116,9 @@ const Help = () => {
             </button>
             <h1 className="text-xl font-semibold text-gray-900">Help & Support</h1>
             <div className="w-20"></div> {/* Spacer for centering */}
+            </div>
           </div>
         </div>
-      </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search Bar */}
@@ -182,10 +182,10 @@ const Help = () => {
                     <MdChat className="w-4 h-4" />
                     Live Chat
                   </button>
-                </div>
+                      </div>
+                    </div>
               </div>
             </div>
-          </div>
 
           {/* Main Content */}
           <div className="lg:col-span-3">
@@ -193,7 +193,7 @@ const Help = () => {
               <div className="flex items-center gap-3 mb-6">
                 <MdQuestionAnswer className="w-6 h-6 text-[#2c5aa0]" />
                 <h2 className="text-xl font-semibold text-gray-900">Frequently Asked Questions</h2>
-              </div>
+          </div>
 
               {filteredFAQs.length === 0 ? (
                 <div className="text-center py-12">
@@ -202,7 +202,7 @@ const Help = () => {
                   <p className="text-gray-600">Try adjusting your search terms or browse different categories.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+              <div className="space-y-4">
                   {filteredFAQs.map((faq) => (
                     <div key={faq.id} className="border border-gray-200 rounded-lg overflow-hidden">
                       <button
@@ -219,16 +219,16 @@ const Help = () => {
                           ) : (
                             <MdCheckCircle className="w-5 h-5 text-gray-500" />
                           )}
-                        </div>
-                      </button>
+                      </div>
+                        </button>
                       {expandedFAQ === faq.id && (
                         <div className="px-4 pb-4 border-t border-gray-200 bg-gray-50">
                           <p className="text-gray-600 leading-relaxed pt-4">{faq.answer}</p>
-                        </div>
+                      </div>
                       )}
-                    </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
+              </div>
               )}
             </div>
 
@@ -244,7 +244,7 @@ const Help = () => {
                 >
                   Start Booking
                 </button>
-              </div>
+                  </div>
 
               <div className="bg-white rounded-xl shadow-sm p-6 text-center">
                 <MdPeople className="w-8 h-8 text-green-500 mx-auto mb-3" />
@@ -256,7 +256,7 @@ const Help = () => {
                 >
                   Find Players
                 </button>
-              </div>
+            </div>
 
               <div className="bg-white rounded-xl shadow-sm p-6 text-center">
                 <MdHistory className="w-8 h-8 text-purple-500 mx-auto mb-3" />
