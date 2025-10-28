@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import PlayerNavLayout from '@/layout/PlayerNavLayout'
-import { MdLocationOn, MdStar, MdAccessTime, MdPeople, MdCheckCircle, MdClose } from 'react-icons/md'
+import { MdLocationOn, MdStar, MdAccessTime, MdClose } from 'react-icons/md'
 
 interface Venue {
   id: number

@@ -1,15 +1,10 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
-  MdArrowBack,
   MdPeople,
   MdLocationOn,
   MdAttachMoney,
   MdTrendingUp,
-  MdSecurity,
-  MdSettings,
-  MdBarChart,
-  MdNotifications
+  MdBarChart
 } from 'react-icons/md'
 
 const AdminDashboard = () => {
@@ -23,25 +18,7 @@ const AdminDashboard = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <h1 className="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
-            <div className="flex items-center gap-4">
-              <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-                <MdNotifications className="w-5 h-5" />
-              </button>
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">A</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="p-6">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => {
@@ -72,7 +49,7 @@ const AdminDashboard = () => {
             <p className="text-sm text-gray-600 mb-4">Manage users, roles, and permissions</p>
             <button 
               onClick={() => navigate('/admin/users')}
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+              className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors cursor-pointer"
             >
               Manage Users
             </button>
@@ -88,7 +65,7 @@ const AdminDashboard = () => {
             <p className="text-sm text-gray-600 mb-4">Approve and manage venues</p>
             <button 
               onClick={() => navigate('/admin/venues')}
-              className="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors"
+              className="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors cursor-pointer"
             >
               Manage Venues
             </button>
@@ -104,7 +81,7 @@ const AdminDashboard = () => {
             <p className="text-sm text-gray-600 mb-4">View detailed analytics and reports</p>
             <button 
               onClick={() => navigate('/admin/analytics')}
-              className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors"
+              className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors cursor-pointer"
             >
               View Analytics
             </button>
@@ -137,7 +114,6 @@ const AdminDashboard = () => {
             ))}
           </div>
         </div>
-      </div>
     </div>
   )
 }
