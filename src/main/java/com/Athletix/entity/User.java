@@ -1,16 +1,13 @@
 package com.athletix.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,20 +18,24 @@ import lombok.Setter;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 @Table(name="users")
 public class User {
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long userId;
-	
-	@Column(name = "clerk_id", unique = true, nullable = false)
-    private String clerkId;
 	
 	@Column(unique = true, nullable = false)
 	private String email;
+
+	@Column(nullable = false)
+	@JsonIgnore
+	private String password;
 	
 	private String name;
 	private String phone;
-	
+
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
 	@Builder.Default
-	private String role = "PLAYER";
+	private Role role = Role.PLAYER;
 	
 	@CreationTimestamp
     private LocalDateTime createdAt;

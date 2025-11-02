@@ -1,4 +1,4 @@
-package com.Athletix;
+package com.athletix;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

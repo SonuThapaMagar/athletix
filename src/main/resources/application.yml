@@ -1,13 +1,13 @@
-# application.yml (optional, can coexist)
-spring:
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-  datasource:
-    url: jdbc:postgresql://localhost:5432/athletix
-    username: postgres
-    password: root
-jwt:
-  secret: 051bd20db413def8f424a338
-  expiration: 86400000
+## application.yml (optional, can coexist)
+#spring:
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#    show-sql: true
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/athletix
+#    username: postgres
+#    password: admin
+#jwt:
+#  secret: 051bd20db413def8f424a338
+#  expiration: 86400000
