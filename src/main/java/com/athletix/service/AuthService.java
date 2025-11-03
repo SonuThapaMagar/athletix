@@ -9,6 +9,7 @@ import com.athletix.entity.User;
 import com.athletix.repository.RefreshTokenRepository;
 import com.athletix.repository.UserRepository;
 import com.athletix.security.JwtUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,6 +35,7 @@ public class AuthService {
     private final EmailService emailService;
 
     // ---------- REGISTER ----------
+    @Transactional
     public User register(RegisterRequest req) {
         if (userRepository.findByEmail(req.email()).isPresent()) {
             throw new RuntimeException("Email already exists");
@@ -53,6 +55,7 @@ public class AuthService {
     }
 
     // ---------- LOGIN ----------
+    @Transactional
     public AuthResponse login(LoginRequest req) {
         User user = userRepository.findByEmail(req.email())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
@@ -74,6 +77,7 @@ public class AuthService {
         return new AuthResponse(accessToken, refreshToken);
     }
 
+    @Transactional
     public AuthResponse refresh(String refreshToken) {
         RefreshToken rt = refreshTokenRepository.findByToken(refreshToken)
                 .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
@@ -88,11 +92,13 @@ public class AuthService {
         return new AuthResponse(newAccessToken, refreshToken);
     }
 
+    @Transactional
     public void logout(String refreshToken) {
         refreshTokenRepository.findByToken(refreshToken)
                 .ifPresent(refreshTokenRepository::delete);
     }
 
+    @Transactional
     public void sendPasswordResetEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -109,7 +115,7 @@ public class AuthService {
         );
     }
 
-
+    @Transactional
     public void resetPassword(String token, String newPassword) {
         User user = userRepository.findByResetToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid or expired reset token"));
@@ -119,6 +125,7 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void changePassword(String authHeader, String oldPassword, String newPassword) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new RuntimeException("Missing or invalid token");
