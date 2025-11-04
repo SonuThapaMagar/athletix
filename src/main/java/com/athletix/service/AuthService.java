@@ -143,4 +143,33 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
+
+    public User validateUser(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Invalid token");
+        }
+        String token = authHeader.substring(7);
+        if (jwtUtil.isTokenExpired(token)) {
+            throw new RuntimeException("Token expired");
+        }
+        String email = jwtUtil.extractEmail(token);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public User validateVenueOwner(String authHeader) {
+        User user = validateUser(authHeader);
+        if (user.getRole() != Role.VENUE_OWNER) {
+            throw new RuntimeException("Only venue owners allowed");
+        }
+        return user;
+    }
+
+    public User validatePlayer(String authHeader) {
+        User user = validateUser(authHeader);
+        if (user.getRole() != Role.PLAYER) {
+            throw new RuntimeException("Only players allowed");
+        }
+        return user;
+    }
 }

@@ -1,20 +1,16 @@
 package com.athletix.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "slots")
+@Table(name = "bookings")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class Slot {
+public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,8 +20,8 @@ public class Slot {
     private Venue venue;
 
     @ManyToOne
-    @JoinColumn(name = "booked_by")
-    private User bookedBy;  // null = available
+    @JoinColumn(name = "player_id", nullable = false)
+    private User player;
 
     @Column(nullable = false)
     private LocalDateTime startTime;
@@ -34,7 +30,14 @@ public class Slot {
     private LocalDateTime endTime;
 
     @Column(nullable = false)
-    private boolean isBooked = false;
+    private Double amount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BookingStatus status = BookingStatus.PENDING;
+
+    @Column(nullable = false)
+    private boolean paid = false;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
