@@ -20,6 +20,9 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/venues/**").hasAnyRole("VENUE_OWNER", "ADMIN")
+                        .requestMatchers("/api/bookings/**").hasAnyRole("PLAYER", "VENUE_OWNER", "ADMIN")
                         .anyRequest().permitAll()
                 );
         return http.build();

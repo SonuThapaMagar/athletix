@@ -23,18 +23,11 @@ public class Slot {
     @JoinColumn(name = "venue_id", nullable = false)
     private Venue venue;
 
-    @ManyToOne
-    @JoinColumn(name = "booked_by")
-    private User bookedBy;  // null = available
-
     @Column(nullable = false)
     private LocalDateTime startTime;
 
     @Column(nullable = false)
     private LocalDateTime endTime;
-
-    @Column(nullable = false)
-    private boolean isBooked = false;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

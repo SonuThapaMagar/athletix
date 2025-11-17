@@ -23,6 +23,10 @@ public class Booking {
     @JoinColumn(name = "player_id", nullable = false)
     private User player;
 
+    @ManyToOne
+    @JoinColumn(name = "slot_id")
+    private Slot slot;
+
     @Column(nullable = false)
     private LocalDateTime startTime;
 

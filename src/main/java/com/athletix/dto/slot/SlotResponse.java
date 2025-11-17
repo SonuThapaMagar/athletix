@@ -7,8 +7,5 @@ public record SlotResponse (
         Long venueId,
         String venueName,
         LocalDateTime startTime,
-        LocalDateTime endTime,
-        boolean isBooked,
-        Long bookedById,
-        String bookedByName
+        LocalDateTime endTime
 ){}

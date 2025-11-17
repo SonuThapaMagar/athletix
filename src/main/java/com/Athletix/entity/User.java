@@ -34,6 +34,9 @@ public class User {
 	private String resetToken;
 
 	@Column(nullable = false)
+	private boolean active = true;
+
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	@Builder.Default
 	private Role role = Role.PLAYER;

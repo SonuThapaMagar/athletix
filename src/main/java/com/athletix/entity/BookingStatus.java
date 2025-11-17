@@ -1,5 +1,5 @@
 package com.athletix.entity;
 
 public enum BookingStatus {
-    PENDING, CONFIRMED, CANCELLED, REJECTED
+    PENDING, CONFIRMED, CANCELLED, REJECTED, FAILED
 }
