@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   MdAdd,
   MdEdit,
@@ -7,185 +7,191 @@ import {
   MdLocationOn,
   MdSportsSoccer,
   MdAccessTime,
-  MdAttachMoney
-} from 'react-icons/md'
-import DeleteVenueDialog from '@/components/venueOwner/DeleteVenueDialog'
+  MdAttachMoney,
+} from "react-icons/md";
+
+import requests from "@/helper/requests";
+import DeleteVenueDialog from "@/components/venueOwner/DeleteVenueDialog";
+import { type Venue, type VenueDisplay } from "@/types/venue.types/venue.types";
 
 const VenueManagement = () => {
-  const navigate = useNavigate()
-  const [deleteDialog, setDeleteDialog] = useState<{
-    isOpen: boolean
-    venueId: number | null
-    venueName: string
-  }>({
+  const navigate = useNavigate();
+  const venueMgmt = requests.venueMgmt;
+
+  const [venues, setVenues] = useState<VenueDisplay[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const [deleteDialog, setDeleteDialog] = useState({
     isOpen: false,
-    venueId: null,
-    venueName: ''
-  })
-  const [isDeleting, setIsDeleting] = useState(false)
+    venueId: null as number | null,
+    venueName: "",
+  });
 
-  const handleAddVenue = () => {
-    navigate('/venue-owner/venues/add')
-  }
+  // Fetch venues
+  useEffect(() => {
+    const fetchVenues = async () => {
+      try {
+        const response = await venueMgmt.getMy();
+        const apiVenues: Venue[] = response.data;
 
-  const handleEditVenue = (venueId: number) => {
-    navigate(`/venue-owner/venues/edit/${venueId}`)
-  }
+        const displayVenues = apiVenues.map((v) => ({
+          id: v.id,
+          name: v.name,
+          location: `${v.city}, ${v.address.slice(0, 20)}...`,
+          price: `$${v.pricePerHour}/hour`,
+          bookings: 0,
+          sports: v.sportTypes || [], // <- fallback
+          status: v.isVerified ? "Active" : "Pending",
+        }));
 
-  const handleDeleteVenue = (venueId: number, venueName: string) => {
-    setDeleteDialog({
-      isOpen: true,
-      venueId,
-      venueName
-    })
-  }
+        setVenues(displayVenues);
+      } catch (error) {
+        console.error("Error fetching venues:", error);
+        setVenues([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVenues();
+  }, []);
+
+  const handleAddVenue = () => navigate("/venue-owner/venues/add");
+  const handleEditVenue = (id: number) =>
+    navigate(`/venue-owner/venues/edit/${id}`);
+
+  const handleDeleteVenue = (id: number, name: string) => {
+    setDeleteDialog({ isOpen: true, venueId: id, venueName: name });
+  };
 
   const confirmDelete = async () => {
-    if (!deleteDialog.venueId) return
+    if (!deleteDialog.venueId) return;
 
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // In real app, make API call here
-      console.log('Deleting venue:', deleteDialog.venueId)
-      
-      // Close dialog
-      setDeleteDialog({
-        isOpen: false,
-        venueId: null,
-        venueName: ''
-      })
+      await venueMgmt.delete(deleteDialog.venueId);
+
+      setVenues((prev) => prev.filter((v) => v.id !== deleteDialog.venueId));
+
+      setDeleteDialog({ isOpen: false, venueId: null, venueName: "" });
     } catch (error) {
-      console.error('Error deleting venue:', error)
+      console.error("Error deleting venue:", error);
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
   const cancelDelete = () => {
-    setDeleteDialog({
-      isOpen: false,
-      venueId: null,
-      venueName: ''
-    })
-  }
+    setDeleteDialog({ isOpen: false, venueId: null, venueName: "" });
+  };
 
-  // Mock venue data
-  const venues = [
-    {
-      id: 1,
-      name: "Elite Sports Complex",
-      location: "Downtown District",
-      price: "$28/hour",
-      bookings: 45,
-      sports: ["Football", "Basketball", "Tennis"],
-      status: "Active"
-    },
-    {
-      id: 2,
-      name: "City Sports Center",
-      location: "Sports District",
-      price: "$35/hour",
-      bookings: 32,
-      sports: ["Tennis", "Badminton"],
-      status: "Active"
-    },
-    {
-      id: 3,
-      name: "Community Gym",
-      location: "Riverside Area",
-      price: "$20/hour",
-      bookings: 28,
-      sports: ["Football", "Cricket"],
-      status: "Maintenance"
-    }
-  ]
+  if (loading) return <div className="p-6">Loading venues...</div>;
 
   return (
     <div className="p-6">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Venue Management</h2>
-        <button 
+
+        <button
           onClick={handleAddVenue}
-          className="bg-[#2c5aa0] text-white px-4 py-2 rounded-lg hover:bg-[#1e3d6f] transition-colors flex items-center gap-2 cursor-pointer"
+          className="bg-[#2c5aa0] text-white px-4 py-2 rounded-lg hover:bg-[#1e3d6f] transition-colors flex items-center gap-2"
         >
-          <MdAdd className="w-4 h-4" />
-          Add Venue
+          <MdAdd className="w-4 h-4" /> Add Venue
         </button>
       </div>
 
+      {/* Venues List */}
       <div className="bg-white rounded-2xl shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">Your Venues</h2>
-        
-        <div className="space-y-4">
-          {venues.map((venue) => (
-            <div key={venue.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#2c5aa0] to-[#1e3d6f] rounded-lg flex items-center justify-center">
-                    <MdSportsSoccer className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">{venue.name}</h3>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <MdLocationOn className="w-4 h-4" />
-                        {venue.location}
+        <h2 className="text-lg font-semibold mb-6">Your Venues</h2>
+
+        {venues.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">
+            No venues yet. Add one to get started!
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {venues.map((venue) => (
+              <div
+                key={venue.id}
+                className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-[#2c5aa0] to-[#1e3d6f] rounded-lg flex items-center justify-center">
+                      <MdSportsSoccer className="w-6 h-6 text-white" />
+                    </div>
+
+                    <div>
+                      <h3 className="font-medium text-gray-900">
+                        {venue.name}
+                      </h3>
+
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <MdLocationOn className="w-4 h-4" />
+                          {venue.location}
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          <MdAttachMoney className="w-4 h-4" />
+                          {venue.price}
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          <MdAccessTime className="w-4 h-4" />
+                          {venue.bookings} bookings
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <MdAttachMoney className="w-4 h-4" />
-                        {venue.price}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MdAccessTime className="w-4 h-4" />
-                        {venue.bookings} bookings
+
+                      <div className="flex gap-2 mt-2">
+                        {venue.sports.map((sport, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                          >
+                            {sport}
+                          </span>
+                        ))}
                       </div>
                     </div>
-                    <div className="flex gap-2 mt-2">
-                      {venue.sports.map((sport, sportIndex) => (
-                        <span key={sportIndex} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                          {sport}
-                        </span>
-                      ))}
-                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-center">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      venue.status === 'Active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
+
+                  <div className="flex items-center gap-4">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        venue.status === "Active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
                       {venue.status}
                     </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => handleEditVenue(venue.id)}
-                      className="p-2 text-gray-600 hover:text-[#2c5aa0] hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                      title="Edit venue"
-                    >
-                      <MdEdit className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteVenue(venue.id, venue.name)}
-                      className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                      title="Delete venue"
-                    >
-                      <MdDelete className="w-4 h-4" />
-                    </button>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEditVenue(venue.id)}
+                        className="p-2 text-gray-600 hover:text-[#2c5aa0] hover:bg-blue-50 rounded-lg transition-colors"
+                      >
+                        <MdEdit className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteVenue(venue.id, venue.name)}
+                        className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <MdDelete className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <DeleteVenueDialog
         isOpen={deleteDialog.isOpen}
         onClose={cancelDelete}
@@ -194,7 +200,7 @@ const VenueManagement = () => {
         isLoading={isDeleting}
       />
     </div>
-  )
-}
+  );
+};
 
-export default VenueManagement
+export default VenueManagement;

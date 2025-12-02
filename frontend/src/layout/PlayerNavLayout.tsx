@@ -1,36 +1,68 @@
 // src/layout/PlayerNavLayout.tsx
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  MdHome, MdBookOnline, MdPeople, MdHistory,
-  MdNotifications, MdPerson, MdMenu, MdClose, MdKeyboardArrowDown
-} from 'react-icons/md';
-import LogoutModal from '@/components/common/LogoutModalNew';
+  MdHome,
+  MdBookOnline,
+  MdPeople,
+  MdHistory,
+  MdNotifications,
+  MdPerson,
+  MdMenu,
+  MdClose,
+  MdKeyboardArrowDown,
+} from "react-icons/md";
+import LogoutModal from "@/components/common/LogoutModalNew";
+import { FETCH_PROFILE } from "@/redux/actions/user.actions";
+import type { RootState } from "@/redux/store";
+import { useSelector } from "react-redux";
+import { LOGOUT_ACTION } from "@/redux/actions/auth.actions";
 
 const PlayerNavLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
+  const user = useSelector((state: RootState) => state.auth.profile);
+
+  useEffect(() => {
+    if (!user && localStorage.getItem("accessToken")) {
+      FETCH_PROFILE().catch((err) =>
+        console.error("Failed to fetch profile", err)
+      );
+    }
+  }, [user]);
 
   const navigationItems = [
-    { name: 'Home', icon: MdHome, href: '/player' },
-    { name: 'Booking', icon: MdBookOnline, href: '/player/booking' },
-    { name: 'Matchmaking', icon: MdPeople, href: '/player/matchmaking' },
-    { name: 'History', icon: MdHistory, href: '/player/history' },
+    { name: "Home", icon: MdHome, href: "/player" },
+    { name: "Booking", icon: MdBookOnline, href: "/player/booking" },
+    { name: "Matchmaking", icon: MdPeople, href: "/player/matchmaking" },
+    { name: "History", icon: MdHistory, href: "/player/history" },
   ];
 
   const profileMenuItems = [
-    { name: 'Profile', href: '/player/profile', action: () => navigate('/player/profile') },
-    { name: 'Settings', href: '/player/settings', action: () => navigate('/player/settings') },
-    { name: 'Help & Support', href: '/player/help', action: () => navigate('/player/help') },
-    { name: 'Logout', href: '#', action: () => setShowLogoutModal(true) },
+    {
+      name: "Profile",
+      href: "/player/profile",
+      action: () => navigate("/player/profile"),
+    },
+    {
+      name: "Settings",
+      href: "/player/settings",
+      action: () => navigate("/player/settings"),
+    },
+    {
+      name: "Help & Support",
+      href: "/player/help",
+      action: () => navigate("/player/help"),
+    },
+    { name: "Logout", href: "#", action: () => setShowLogoutModal(true) },
   ];
 
   const handleLogout = async () => {
     setShowLogoutModal(false);
-    // await logout();
-    navigate('/');
+    await LOGOUT_ACTION();
+    navigate("/login");
   };
 
   const handleNavigation = (item: any) => {
@@ -58,7 +90,11 @@ const PlayerNavLayout = () => {
             {navigationItems.map((item) => {
               const Icon = item.icon;
               return (
-                <a key={item.name} href={item.href} className="flex items-center space-x-2 text-gray-700 hover:text-[#2c5aa0] px-4 py-2 text-sm font-medium">
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="flex items-center space-x-2 text-gray-700 hover:text-[#2c5aa0] px-4 py-2 text-sm font-medium"
+                >
                   <Icon className="w-5 h-5" />
                   <span>{item.name}</span>
                 </a>
@@ -70,7 +106,9 @@ const PlayerNavLayout = () => {
           <div className="hidden md:flex items-center space-x-4">
             <button className="relative p-2 text-gray-700 hover:text-[#2c5aa0]">
               <MdNotifications className="w-6 h-6" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                3
+              </span>
             </button>
 
             <div className="relative">
@@ -78,11 +116,21 @@ const PlayerNavLayout = () => {
                 onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
                 className="flex items-center space-x-2 text-gray-700 hover:text-[#2c5aa0]"
               >
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900">
+                    {user?.name || "Player"}
+                  </p>
+                  <p className="text-xs text-gray-500">{user?.email || ""}</p>
+                </div>
                 <div className="w-8 h-8 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center">
                   <MdPerson className="w-5 h-5" />
                 </div>
                 {/* <span className="text-sm font-medium">{user?.name || 'Player'}</span> */}
-                <MdKeyboardArrowDown className={`w-4 h-4 transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
+                <MdKeyboardArrowDown
+                  className={`w-4 h-4 transition-transform ${
+                    isProfileDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
               </button>
 
               {isProfileDropdownOpen && (
@@ -102,8 +150,15 @@ const PlayerNavLayout = () => {
           </div>
 
           {/* Mobile Menu */}
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="md:hidden p-2 text-gray-700">
-            {isMobileMenuOpen ? <MdClose className="w-6 h-6" /> : <MdMenu className="w-6 h-6" />}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 text-gray-700"
+          >
+            {isMobileMenuOpen ? (
+              <MdClose className="w-6 h-6" />
+            ) : (
+              <MdMenu className="w-6 h-6" />
+            )}
           </button>
         </div>
       </div>
@@ -114,7 +169,11 @@ const PlayerNavLayout = () => {
           {navigationItems.map((item) => {
             const Icon = item.icon;
             return (
-              <a key={item.name} href={item.href} className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-[#2c5aa0]">
+              <a
+                key={item.name}
+                href={item.href}
+                className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-[#2c5aa0]"
+              >
                 <Icon className="w-5 h-5" />
                 <span>{item.name}</span>
               </a>
@@ -123,7 +182,11 @@ const PlayerNavLayout = () => {
         </div>
       )}
 
-      <LogoutModal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} onConfirm={handleLogout} />
+      <LogoutModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+      />
     </nav>
   );
 };

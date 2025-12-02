@@ -23,7 +23,7 @@ const Login = () => {
   useEffect(() => {
   if (isLoggedIn && userRole) {
     if (userRole === "PLAYER") navigate("/player");
-    if (userRole === "VENUE_OWNER") navigate("/venue");
+    if (userRole === "VENUE_OWNER") navigate("/venue-owner");
     if (userRole === "ADMIN") navigate("/admin");
   }
 }, [isLoggedIn, userRole, navigate]);

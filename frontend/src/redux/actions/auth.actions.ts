@@ -36,3 +36,21 @@ export const LOGIN_ACTION = (data: IAuthReq): Promise<IAuthRes> => {
     }
   });
 };
+
+export const LOGOUT_ACTION = () => {
+  return new Promise(async (resolve) => {
+    try {
+      // Clear tokens
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("userRole");
+
+      // Update Redux state
+      store.dispatch(authActions.signOut());
+
+      resolve(true);
+    } catch (err) {
+      resolve(false);
+    }
+  });
+};
