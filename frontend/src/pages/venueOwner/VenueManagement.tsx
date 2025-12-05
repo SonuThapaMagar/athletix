@@ -13,6 +13,7 @@ import {
 import requests from "@/helper/requests";
 import DeleteVenueDialog from "@/components/venueOwner/DeleteVenueDialog";
 import { type Venue, type VenueDisplay } from "@/types/venue.types/venue.types";
+import { toast } from "sonner";
 
 const VenueManagement = () => {
   const navigate = useNavigate();
@@ -38,16 +39,17 @@ const VenueManagement = () => {
         const displayVenues = apiVenues.map((v) => ({
           id: v.id,
           name: v.name,
-          location: `${v.city}, ${v.address.slice(0, 20)}...`,
+          location: `${v.location || "Unknown"}`,
           price: `$${v.pricePerHour}/hour`,
-          bookings: 0,
-          sports: v.sportTypes || [], // <- fallback
+          bookings: v.bookings || 0,
+          sports: v.sports || [],
           status: v.isVerified ? "Active" : "Pending",
         }));
 
         setVenues(displayVenues);
       } catch (error) {
         console.error("Error fetching venues:", error);
+        toast.error("Failed to load venues");
         setVenues([]);
       } finally {
         setLoading(false);
@@ -55,7 +57,7 @@ const VenueManagement = () => {
     };
 
     fetchVenues();
-  }, []);
+  }, [venueMgmt]);
 
   const handleAddVenue = () => navigate("/venue-owner/venues/add");
   const handleEditVenue = (id: number) =>
@@ -70,13 +72,15 @@ const VenueManagement = () => {
 
     setIsDeleting(true);
     try {
-      await venueMgmt.delete(deleteDialog.venueId);
+      await venueMgmt.deleteVenue(deleteDialog.venueId);
 
       setVenues((prev) => prev.filter((v) => v.id !== deleteDialog.venueId));
 
+      toast.success("Venue deleted successfully");
       setDeleteDialog({ isOpen: false, venueId: null, venueName: "" });
     } catch (error) {
       console.error("Error deleting venue:", error);
+      toast.error("Failed to delete venue");
     } finally {
       setIsDeleting(false);
     }
@@ -146,7 +150,7 @@ const VenueManagement = () => {
                       </div>
 
                       <div className="flex gap-2 mt-2">
-                        {venue.sports.map((sport, i) => (
+                        {venue.sports.slice(0, 3).map((sport, i) => (
                           <span
                             key={i}
                             className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
@@ -154,6 +158,11 @@ const VenueManagement = () => {
                             {sport}
                           </span>
                         ))}
+                        {venue.sports.length > 3 && (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                            +{venue.sports.length - 3}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

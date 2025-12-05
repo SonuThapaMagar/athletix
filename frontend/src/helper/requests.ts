@@ -11,11 +11,12 @@ const user = {
 }
 
 const venueMgmt = {
-  getMy: () => api.get("/venues"),
-   create: (data: any, config?: any) => api.post("/venues", data, config),
-  getById: (id: number) => api.get(`/venues/${id}`),
-  update: (id: number, data: any) => api.put(`/venues/${id}`, data),
-  delete: (id: number) => api.delete(`/venues/${id}`),
+  getVenues: () => api.get("/venues"),
+  getMy: () => api.get("/venues/my"),
+  createVenue: (data: any, config?: any) => api.post("/venues", data, config),
+  getVenueById: (id: number) => api.get(`/venues/${id}`),
+  updateVenue: (id: number, data: any) => api.put(`/venues/${id}`, data),
+  deleteVenue: (id: number) => api.delete(`/venues/${id}`),
 }
 const requests = { user, venueMgmt, };
 export default requests;

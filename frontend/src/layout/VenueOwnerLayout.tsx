@@ -7,6 +7,7 @@ import {
   MdMenu, MdClose, MdNotifications, MdSettings
 } from 'react-icons/md';
 import LogoutModal from '@/components/common/LogoutModalNew';
+import { LOGOUT_ACTION } from '@/redux/actions/auth.actions';
 
 interface MenuItem {
   id: string;
@@ -43,8 +44,9 @@ const VenueOwnerLayout = () => {
     setSidebarOpen(false);
   };
 
-  const handleLogout = () => {
+  const handleLogout =async () => {
     setShowLogoutModal(false);
+    await LOGOUT_ACTION();
     navigate('/');
   };
 

@@ -7,7 +7,7 @@ import venueSlice from '@/redux/slices/venues/venueSlice'; // Adjust path if nee
 // Configure store with object reducers (fix: now reducers is defined)
 const reducers = {
   auth: authSlice,
-  venueSlice,
+  venues:venueSlice,
 };
 
 // Define full state shape (inferred for TS safety)

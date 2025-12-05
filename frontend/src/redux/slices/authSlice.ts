@@ -18,18 +18,18 @@ const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        signInSuccess: (state, action: PayloadAction<{ role: AuthState["userRole"] }>) => {
+        signInSuccess: (state, action) => {
             state.isLoggedIn = true;
             state.userRole = action.payload.role;
         },
         signOut: (state) => {
             state.isLoggedIn = false;
             state.userRole = null;
-            localStorage.clear();
+            state.profile = null;
         },
         setUserProfile: (state, action: PayloadAction<IUserProfile>) => {
-        state.profile = action.payload;
-    },
+            state.profile = action.payload;
+        },
     },
 });
 

@@ -1,41 +1,36 @@
-// src/redux/slices/venues/venueSlice.ts
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import type { IVenuesSlice, Pagination, Venue } from '@/types/venue.types/venue.types'
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { Venue } from '@/types/venue.types/venue.types';
+import type { Pagination } from '@/types/pagination.types';
+
+export interface IVenuesSlice {
+  venues: Venue[];
+  pagination?: Pagination;
+  loading?: boolean;
+  error?: string | null;
+}
 
 const initialState: IVenuesSlice = {
-  venues: []
-}
+  venues: [],
+  loading: false,
+  error:null,
+};
 
 const venueSlice = createSlice({
   name: 'venues',
   initialState,
   reducers: {
-    getVenues: (
-      state,
-      action: PayloadAction<{ venues: Venue[]; pagination?: Pagination }>
-    ) => {
-      state.venues = action.payload.venues
-    },
-
     addVenue: (state, action: PayloadAction<Venue>) => {
-      state.venues.unshift(action.payload)
+      state.venues.unshift(action.payload);
+      state.loading = false;
     },
-
-    updateVenue: (
-      state,
-      action: PayloadAction<{ id: number; data: Partial<Venue> }>
-    ) => {
-      const index = state.venues.findIndex(v => v.id === action.payload.id)
-      if (index !== -1) {
-        state.venues[index] = { ...state.venues[index], ...action.payload.data }
-      }
+    setVenues: (state, action: PayloadAction<Venue[]>) => {
+      state.venues = action.payload;
+      state.loading = false;
     },
+  },
+});
 
-    removeVenue: (state, action: PayloadAction<number>) => {
-      state.venues = state.venues.filter(v => v.id !== action.payload)
-    }
-  }
-})
-
-export const { actions: venueActions, reducer: venueReducer } = venueSlice
-export default venueReducer
+export const {
+  addVenue,setVenues
+} = venueSlice.actions;
+export default venueSlice.reducer;

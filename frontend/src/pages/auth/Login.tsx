@@ -45,7 +45,7 @@ const Login = () => {
 
       const role = res.userRole;
       if (role === "PLAYER") navigate("/player");
-      if (role === "VENUE_OWNER") navigate("/venue");
+      if (role === "VENUE_OWNER") navigate("/venue-owner");
       if (role === "ADMIN") navigate("/admin");
     } catch (err) {
       console.error("Login error:", err);

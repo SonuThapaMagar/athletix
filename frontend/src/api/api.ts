@@ -20,7 +20,8 @@ api.interceptors.response.use(
     async (err) => {
         const req = err.config;
 
-        if (err.response?.status === 401 && !req._retry) {
+         // Token expired → refresh
+         if (err.response?.status === 401 && !req._retry) {
             req._retry = true;
 
             try {
@@ -33,7 +34,10 @@ api.interceptors.response.use(
                 return api(req);  // Retry original request
             } catch {
                 // Refresh failed: Clear and redirect
-                localStorage.clear();
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
+                localStorage.removeItem("userRole");
+                
                 window.location.href = '/login';
             }
         }

@@ -14,6 +14,7 @@ import {
   MdLogout
 } from 'react-icons/md'
 import LogoutModal from '@/components/common/LogoutModalNew'
+import { LOGOUT_ACTION } from '@/redux/actions/auth.actions'
 
 const VenueOwnerNavLayout = () => {
   const navigate = useNavigate()
@@ -33,8 +34,9 @@ const VenueOwnerNavLayout = () => {
     { name: 'Logout', href: '#', action: () => setShowLogoutModal(true) },
   ]
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
     setShowLogoutModal(false)
+    await LOGOUT_ACTION();
     navigate('/')
   }
 
