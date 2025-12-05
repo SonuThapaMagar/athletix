@@ -6,6 +6,7 @@ import com.athletix.service.VenueService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,12 +20,12 @@ public class VenueController {
     // CREATE
     @PostMapping
     public ResponseEntity<VenueResponse> create(
-            @Valid @RequestBody VenueRequest req,
+            @RequestBody @Valid VenueRequest req,
             @RequestHeader("Authorization") String authHeader) {
         return ResponseEntity.ok(venueService.createVenue(req, authHeader));
     }
 
-    // LIST ALL (for players)
+    // LIST ALL (for players) - now only approved
     @GetMapping
     public ResponseEntity<List<VenueResponse>> listAll() {
         return ResponseEntity.ok(venueService.getAllVenues());
@@ -59,5 +60,20 @@ public class VenueController {
             @RequestHeader("Authorization") String authHeader) {
         venueService.deleteVenue(id, authHeader);
         return ResponseEntity.ok("Venue deleted");
+    }
+
+    // search
+//    @GetMapping("/search")
+//    public ResponseEntity<List<VenueResponse>> search(
+//            @RequestParam(required = false) String keyword,
+//            @RequestParam(required = false) String sport) {
+//        List<VenueResponse> results = venueService.searchVenues(keyword, sport);
+//        return ResponseEntity.ok(results);
+//    }
+
+    // approve venue
+    @PutMapping("/approve/{id}")
+    public ResponseEntity<VenueResponse> approve(@PathVariable Long id) {
+        return ResponseEntity.ok(venueService.approveVenue(id, null)); // null for no logger
     }
 }

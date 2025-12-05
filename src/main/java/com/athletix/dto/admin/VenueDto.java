@@ -5,5 +5,5 @@ public record VenueDto (
         String name,
         String owner,
         String status,
-        Double rating
+        Double pricePerHour
 ){}

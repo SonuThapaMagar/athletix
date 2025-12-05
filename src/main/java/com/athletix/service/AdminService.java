@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,10 +23,6 @@ public class AdminService {
     private final VenueRepository venueRepo;
     private final BookingRepository bookingRepo;
     private final PaymentRepository paymentRepo;
-    private final UserRepository userRepository;
-    private final VenueRepository venueRepository;
-    private final BookingRepository bookingRepository;
-    private final PaymentRepository paymentRepository;
 
     // 1. Users
     public List<UserDto> getAllUsers() {
@@ -49,21 +46,115 @@ public class AdminService {
     // 2. Venues
     public List<VenueDto> getAllVenues() {
         return venueRepo.findAll().stream()
-                .map(v -> new VenueDto(v.getId(), v.getName(), v.getOwner().getName(), v.getStatus(), v.getPricePerHour()))
+                .map(v -> new VenueDto(v.getId(), v.getName(), v.getOwner().getName(), v.getStatus().name(), v.getPricePerHour()))
                 .toList();
     }
+    // ---------------------------------------------
+    // 1. GET ALL PENDING VENUES
+    // ---------------------------------------------
+    public List<PendingVenueResponse> getPendingVenues() {
+        List<Venue> venues = venueRepo.findByStatus(VenueStatus.PENDING);
 
-    public void approveVenue(Long id) {
-        Venue v = venueRepo.findById(id).orElseThrow();
-        v.setStatus("APPROVED");
-        venueRepo.save(v);
+        return venues.stream()
+                .map(v -> new PendingVenueResponse(
+                        v.getId(),
+                        v.getName(),
+                        v.getLocation(),
+                        v.getOwner().getName()))
+                .collect(Collectors.toList());
+    }
+    public PendingVenueResponse approveVenue(Long venueId) {
+        Venue venue = venueRepo.findById(venueId)
+                .orElseThrow(() -> new RuntimeException("Venue not found"));
+
+        venue.setStatus(VenueStatus.APPROVED);
+        venue.setVerified(true);
+        venueRepo.save(venue);
+
+        return new PendingVenueResponse(
+                venue.getId(),
+                venue.getName(),
+                venue.getLocation(),
+                venue.getOwner().getName()
+        );
     }
 
-    public void rejectVenue(Long id) {
-        Venue v = venueRepo.findById(id).orElseThrow();
-        v.setStatus("REJECTED");
-        venueRepo.save(v);
-    }
+
+    // ---------------------------------------------
+    // 3. REJECT VENUE
+    // ---------------------------------------------
+//    public String rejectVenue(Long venueId) {
+//        Venue venue = venueRepo.findById(venueId)
+//                .orElseThrow(() -> new RuntimeException("Venue not found"));
+//
+//        venue.setStatus(VenueStatus.REJECTED);
+//        venue.setVerified(false);
+//        venueRepo.save(venue);
+//
+//        return "Venue rejected successfully";
+//    }
+
+    // ---------------------------------------------
+    // 4. DASHBOARD SUMMARY
+    // ---------------------------------------------
+//    public AdminDashboardResponse getDashboardSummary() {
+//
+//        long totalUsers = userRepo.count();
+//        long totalVenues = venueRepo.count();
+//        long pendingVenues = venueRepo.countByStatus(VenueStatus.PENDING);
+//        long approvedVenues = venueRepo.countByStatus(VenueStatus.APPROVED);
+//        long totalBookings = bookingRepo.count();
+//        long totalPayments = paymentRepo.count();
+//
+//        double totalRevenue = paymentRepo.findAll().stream()
+//                .filter(p -> p.getStatus() == PaymentStatus.SUCCESS)
+//                .mapToDouble(Payment::getAmount)
+//                .sum();
+//
+//        return new AdminDashboardResponse(
+//                totalUsers,
+//                totalVenues,
+//                pendingVenues,
+//                approvedVenues,
+//                totalBookings,
+//                totalPayments,
+//                totalRevenue
+//        );
+//    }
+//
+//    // ---------------------------------------------
+//    // 5. MONTHLY REVENUE CHART
+//    // ---------------------------------------------
+//    public double getMonthlyRevenue(int year, int month) {
+//        LocalDate start = YearMonth.of(year, month).atDay(1);
+//        LocalDate end = start.plusMonths(1);
+//
+//        return paymentRepo.findByCreatedAtBetween(start, end).stream()
+//                .filter(p -> p.getStatus() == PaymentStatus.SUCCESS)
+//                .mapToDouble(Payment::getAmount)
+//                .sum();
+//    }
+//
+//    // ---------------------------------------------
+//    // 6. GET ALL USERS (SUMMARY)
+//    // ---------------------------------------------
+//    public List<UserSummary> getUserSummaries() {
+//        return userRepo.findAll().stream()
+//                .map(user -> new UserSummary(
+//                        user.getId(),
+//                        user.getName(),
+//                        user.getEmail(),
+//                        user.getPhone(),
+//                        user.getRole().name()
+//                ))
+//                .collect(Collectors.toList());
+//    }
+
+//    public void rejectVenue(Long id) {
+//        Venue v = venueRepo.findById(id).orElseThrow();
+//        v.setStatus("REJECTED");
+//        venueRepo.save(v);
+//    }
 
     // 3. Bookings
     public List<BookingDto> getAllBookings() {
@@ -89,10 +180,10 @@ public class AdminService {
     // 4. Analytics
     public AnalyticsDto getAnalytics() {
         return new AnalyticsDto(
-                userRepository.count(),
-                venueRepository.count(),
-                bookingRepository.count(),
-                paymentRepository.sumSuccessfulPayments() != null ? paymentRepo.sumSuccessfulPayments() : 0.0
+                userRepo.count(),
+                venueRepo.count(),
+                bookingRepo.count(),
+                paymentRepo.sumSuccessfulPayments() != null ? paymentRepo.sumSuccessfulPayments() : 0.0
         );
     }
 

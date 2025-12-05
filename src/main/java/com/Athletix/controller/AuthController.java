@@ -27,6 +27,7 @@ public class AuthController {
                 user.getEmail(),
                 user.getName(),
                 user.getPhone(),
+                user.getLocation(),
                 user.getRole()
         );
         return ResponseEntity.ok(res);

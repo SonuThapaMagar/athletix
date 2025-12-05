@@ -93,6 +93,7 @@ public class UserController {
                 user.getEmail(),
                 user.getName(),
                 user.getPhone(),
+                user.getLocation(),
                 user.getRole()
         );
     }

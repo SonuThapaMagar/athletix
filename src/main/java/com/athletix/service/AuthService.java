@@ -3,6 +3,7 @@ package com.athletix.service;
 import com.athletix.dto.auth.AuthResponse;
 import com.athletix.dto.auth.LoginRequest;
 import com.athletix.dto.auth.RegisterRequest;
+import com.athletix.dto.user.UserResponse;
 import com.athletix.entity.RefreshToken;
 import com.athletix.entity.Role;
 import com.athletix.entity.User;
@@ -48,6 +49,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(req.password()))
                 .name(req.name())
                 .phone(req.phone())
+                .location(req.location())
                 .role(role)
                 .build();
 
@@ -74,7 +76,11 @@ public class AuthService {
                 .build();
         refreshTokenRepository.save(rt);
 
-        return new AuthResponse(accessToken, refreshToken);
+        return new AuthResponse(
+                accessToken,
+                refreshToken,
+                user.getRole()
+        );
     }
 
     @Transactional
@@ -89,7 +95,12 @@ public class AuthService {
 
         User user = rt.getUser();
         String newAccessToken = jwtUtil.generateToken(user);
-        return new AuthResponse(newAccessToken, refreshToken);
+
+        return new AuthResponse(
+                newAccessToken,
+                refreshToken,
+                user.getRole()
+        );
     }
 
     @Transactional

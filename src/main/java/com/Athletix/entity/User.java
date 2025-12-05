@@ -31,6 +31,7 @@ public class User {
 	
 	private String name;
 	private String phone;
+	private String location;
 	private String resetToken;
 
 	@Column(nullable = false)

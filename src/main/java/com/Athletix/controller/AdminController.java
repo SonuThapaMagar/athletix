@@ -12,7 +12,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final AdminService adminService;
@@ -51,11 +50,11 @@ public class AdminController {
         return ResponseEntity.ok("Venue approved");
     }
 
-    @PutMapping("/venues/{id}/reject")
-    public ResponseEntity<String> rejectVenue(@PathVariable Long id) {
-        adminService.rejectVenue(id);
-        return ResponseEntity.ok("Venue rejected");
-    }
+//    @PutMapping("/venues/{id}/reject")
+//    public ResponseEntity<String> rejectVenue(@PathVariable Long id) {
+//        adminService.rejectVenue(id);
+//        return ResponseEntity.ok("Venue rejected");
+//    }
 
     // 3. BOOKINGS & PAYMENTS
     @GetMapping("/bookings")

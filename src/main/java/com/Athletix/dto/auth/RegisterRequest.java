@@ -15,6 +15,10 @@ public record RegisterRequest(
         @NotBlank(message = "Password is required")
         String password,
 
+
+        String location,
+
+        @NotBlank(message = "Phone number is required")
         String phone,
         Role role
 ) {}
