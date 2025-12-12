@@ -1,5 +1,6 @@
 export interface Pagination {
-  page: number
-  total: number
-  limit: number
+  page: number;
+  per_page: number;
+  total_record: number;
+  total_page: number;
 }

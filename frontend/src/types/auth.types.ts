@@ -14,3 +14,10 @@ export interface IResetPassword {
   password: string;
   confirmPassword: string;
 }
+
+export type userRole= "PLAYER" | "VENUE_OWNER" | "ADMIN";
+
+
+export interface IVenueOwnerRegister{
+
+}

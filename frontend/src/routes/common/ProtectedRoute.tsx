@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { isLoggedIn, userRole } = useSelector((state: RootState) => state.auth);
+  const { isLoggedIn, userRole } = useSelector((state: RootState) => state.authSlice);
 
   if (!isLoggedIn || !allowedRoles.includes(userRole || '')) {
     return <Navigate to="/login" replace />;

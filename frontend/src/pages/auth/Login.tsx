@@ -9,7 +9,7 @@ import { LOGIN_ACTION } from "@/redux/actions/auth.actions";
 const Login = () => {
   const navigate = useNavigate();
   const { isLoggedIn, userRole } = useSelector(
-    (state: RootState) => state.auth
+    (state: RootState) => state.authSlice
   );
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

@@ -1,29 +1,44 @@
+// ---------------------------------------------
+// Base Venue Model (Backend Response)
+// ---------------------------------------------
 export interface Venue {
   id: number;
   name: string;
   location: string;
-  sports: string[];
   pricePerHour: number;
   description: string;
-  images: string[];
+
+  sports: string[];
   amenities: string[];
-  operatingHours: {
-    day: string;
-    openTime: string;
-    closeTime: string;
-  }[];
+  images: string[];
+
+  operatingHours: OperatingHour[];
 
   phone: string;
   email: string;
 
   ownerId: number;
   ownerName: string;
+
   isVerified: boolean;
   createdAt: string;
   updatedAt: string;
+
   bookings?: number;
 }
 
+// ---------------------------------------------
+// Operating Hour Type (Reused Across Forms)
+// ---------------------------------------------
+export interface OperatingHour {
+  day: string;
+  openTime: string;
+  closeTime: string;
+}
+
+// ---------------------------------------------
+// Compact Version for Listing/Display Cards
+// ---------------------------------------------
 export interface VenueDisplay {
   id: number;
   name: string;
@@ -34,45 +49,47 @@ export interface VenueDisplay {
   status: string;
 }
 
-// Form state (with Files for upload)
+// ---------------------------------------------
+// Form State (Used in React Form)
+// ---------------------------------------------
 export interface VenueFormData {
   name: string;
   location: string;
-  pricePerHour: string;
+  pricePerHour: string; // as input text
   description: string;
+
   sports: string[];
   amenities: string[];
-  operatingHours: {
-    day: string;
-    openTime: string;
-    closeTime: string;
-  }[];
-  images: File[];
+
+  operatingHours: OperatingHour[];
+
+  images: File[]; // for uploads
 
   phone: string;
   email: string;
-
 }
 
+// ---------------------------------------------
+// Submit Data (Sent to API)
+// ---------------------------------------------
 export interface VenueSubmitData {
   name: string;
   location: string;
-  pricePerHour: number;
+  pricePerHour: number; // converted to number
   description: string;
+
   sports: string[];
   amenities: string[];
-  operatingHours: {
-    day: string;
-    openTime: string;
-    closeTime: string;
-  }[];
-  images: string[];
+  operatingHours: OperatingHour[];
+
+  images: string[]; // URLs/paths from backend
   phone: string;
   email: string;
-
 }
 
-// Form errors
+// ---------------------------------------------
+// Form Errors
+// ---------------------------------------------
 export interface VenueFormErrors {
   name?: string;
   location?: string;
@@ -80,16 +97,7 @@ export interface VenueFormErrors {
   description?: string;
   sports?: string;
   amenities?: string;
-
+  images?: string;
   phone?: string;
   email?: string;
-
-  images?: string;
-}
-
-// Pagination
-export interface Pagination {
-  page: number;
-  total: number;
-  limit: number;
 }

@@ -41,39 +41,6 @@ const VenueManagement = () => {
       bookings: 456,
       rating: 4.8
     },
-    {
-      id: 2,
-      name: 'City Sports Center',
-      owner: 'Sarah Wilson',
-      location: 'Sports District',
-      sports: ['Tennis', 'Badminton'],
-      status: 'approved',
-      createdAt: '2024-11-20',
-      bookings: 389,
-      rating: 4.6
-    },
-    {
-      id: 3,
-      name: 'Community Gym',
-      owner: 'Mike Chen',
-      location: 'Riverside Area',
-      sports: ['Football', 'Cricket'],
-      status: 'pending',
-      createdAt: '2024-12-15',
-      bookings: 0,
-      rating: 0
-    },
-    {
-      id: 4,
-      name: 'Metro Sports Hub',
-      owner: 'Emma Brown',
-      location: 'Central Plaza',
-      sports: ['Basketball', 'Volleyball'],
-      status: 'approved',
-      createdAt: '2024-10-10',
-      bookings: 521,
-      rating: 4.9
-    }
   ]
 
   const getStatusColor = (status: string) => {

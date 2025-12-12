@@ -1,8 +1,8 @@
 import type { RouteObject } from 'react-router-dom';
+import { playerRoutes } from './playerRoutes';
 import LandingPage from '@/pages/LandingPage';
 import Login from '@/pages/auth/Login';
 import Signup from '@/pages/auth/Signup';
-import { playerRoutes } from './playerRoutes';
 
 export const appRoutes: RouteObject[] = [
   // Public routes

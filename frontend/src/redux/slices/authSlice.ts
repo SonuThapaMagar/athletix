@@ -1,15 +1,15 @@
 import type { IUserProfile } from '@/types/user.types/user.types';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 //initial state
-export interface AuthState {
+export interface IAuthSlice {
     isLoggedIn: boolean;
     userRole: "PLAYER" | "VENUE_OWNER" | "ADMIN" | null;
     profile?: IUserProfile | null;
 }
 
-const initialState: AuthState = {
+const initialState: IAuthSlice = {
     isLoggedIn: !!localStorage.getItem("accessToken"),
-    userRole: (localStorage.getItem("userRole") as AuthState["userRole"]) || null,
+    userRole: (localStorage.getItem("userRole") as IAuthSlice["userRole"]) || null,
     profile: null,
 };
 
@@ -35,6 +35,4 @@ const authSlice = createSlice({
 
 // Export actions (for components to dispatch)
 export const { actions: authActions, reducer } = authSlice;
-
-// Export reducer (for store)
 export default reducer;

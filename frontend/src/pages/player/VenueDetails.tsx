@@ -1,174 +1,77 @@
-import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { 
-  MdLocationOn, 
-  MdStar, 
-  MdAccessTime, 
-  MdFavorite, 
-  MdShare, 
-  MdPhone, 
-  MdEmail, 
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  MdLocationOn,
+  MdStar,
+  MdAccessTime,
+  MdFavorite,
+  MdShare,
+  MdPhone,
+  MdEmail,
   MdArrowBack,
   MdCheckCircle,
   MdClose,
   MdExpandMore,
-  MdExpandLess
-} from 'react-icons/md'
-
-interface VenueDetails {
-  id: number
-  name: string
-  images: string[]
-  location: string
-  fullAddress: string
-  rating: number
-  reviewCount: number
-  price: string
-  originalPrice?: string
-  sports: string[]
-  availability: string
-  distance: string
-  features: string[]
-  isRecommended?: boolean
-  discount?: string
-  isFavorite?: boolean
-  description: string
-  amenities: string[]
-  operatingHours: { day: string; hours: string }[]
-  contact: {
-    phone: string
-    email: string
-  }
-  policies: string[]
-  reviews: {
-    id: number
-    user: string
-    rating: number
-    comment: string
-    date: string
-    verified: boolean
-  }[]
-}
+  MdExpandLess,
+} from "react-icons/md";
+import type { RootState } from "@/redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { FETCH_VENUE_DETAIL_BY_ID } from "@/redux/actions/venue/venue.actions";
 
 const VenueDetails = () => {
-  const { id: _id } = useParams()
-  const navigate = useNavigate()
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-  const [showAllReviews, setShowAllReviews] = useState(false)
-  const [isFavorite, setIsFavorite] = useState(false)
-  const [showBookingModal, setShowBookingModal] = useState(false)
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-  // Mock data - in real app, this would come from API
-  const venue: VenueDetails = {
-    id: 1,
-    name: "Elite Sports Complex",
-    images: [
-      "/api/placeholder/800/600",
-      "/api/placeholder/800/600", 
-      "/api/placeholder/800/600",
-      "/api/placeholder/800/600"
-    ],
-    location: "Downtown District",
-    fullAddress: "123 Sports Avenue, Downtown District, City 12345",
-    rating: 4.9,
-    reviewCount: 234,
-    price: "$28/hour",
-    originalPrice: "$35/hour",
-    sports: ["Football", "Basketball", "Tennis", "Badminton"],
-    availability: "3 slots available",
-    distance: "0.5 km",
-    features: ["Premium Courts", "Locker Rooms", "Equipment Rental", "Café"],
-    isRecommended: true,
-    discount: "20% OFF",
-    isFavorite: false,
-    description: "Elite Sports Complex is a state-of-the-art facility offering world-class amenities for athletes of all levels. Our premium courts feature professional-grade surfaces and lighting, ensuring optimal playing conditions. With modern locker rooms, equipment rental services, and an on-site café, we provide everything you need for the perfect sports experience.",
-    amenities: [
-      "Air Conditioning",
-      "WiFi",
-      "Parking",
-      "Locker Rooms", 
-      "Equipment Rental",
-      "Café & Refreshments",
-      "Shower Facilities",
-      "First Aid",
-      "Security"
-    ],
-    operatingHours: [
-      { day: "Monday", hours: "6:00 AM - 10:00 PM" },
-      { day: "Tuesday", hours: "6:00 AM - 10:00 PM" },
-      { day: "Wednesday", hours: "6:00 AM - 10:00 PM" },
-      { day: "Thursday", hours: "6:00 AM - 10:00 PM" },
-      { day: "Friday", hours: "6:00 AM - 11:00 PM" },
-      { day: "Saturday", hours: "7:00 AM - 11:00 PM" },
-      { day: "Sunday", hours: "7:00 AM - 9:00 PM" }
-    ],
-    contact: {
-      phone: "+1 (555) 123-4567",
-      email: "info@elitesports.com"
-    },
-    policies: [
-      "Cancellation allowed up to 2 hours before booking",
-      "No smoking on premises",
-      "Proper sports attire required",
-      "Equipment must be returned in good condition"
-    ],
-    reviews: [
-      {
-        id: 1,
-        user: "Alex Johnson",
-        rating: 5,
-        comment: "Amazing facility! The courts are in perfect condition and the staff is very helpful. Will definitely book again.",
-        date: "2 days ago",
-        verified: true
-      },
-      {
-        id: 2,
-        user: "Sarah Wilson",
-        rating: 4,
-        comment: "Great venue with excellent amenities. The lighting is perfect for evening games. Highly recommended!",
-        date: "1 week ago",
-        verified: true
-      },
-      {
-        id: 3,
-        user: "Mike Chen",
-        rating: 5,
-        comment: "Top-notch facility with professional-grade equipment. The booking process was smooth and easy.",
-        date: "2 weeks ago",
-        verified: false
-      }
-    ]
-  }
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const { selectedVenue: venue } = useSelector(
+    (state: RootState) => state.venueSlice
+  );
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // const fetchVenueDetails=(
+    
+  // )
+  // useEffect(() => {
+  //   if (id) {
+  //     dispatch(FETCH_VENUE_DETAIL_BY_ID(Number(id)));
+  //   }
+  // }, [id, dispatch]);
 
   const handleBookNow = () => {
-    setShowBookingModal(true)
-  }
+    setShowBookingModal(true);
+  };
 
   const handleBookingConfirm = () => {
-    setShowBookingModal(false)
-    navigate('/player/booking')
-  }
+    setShowBookingModal(false);
+    navigate("/player/booking");
+  };
 
   const toggleFavorite = () => {
-    setIsFavorite(!isFavorite)
-  }
+    setIsFavorite(!isFavorite);
+  };
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
-      <MdStar 
-        key={i} 
-        className={`w-4 h-4 ${i < rating ? 'text-yellow-400' : 'text-gray-300'}`} 
+      <MdStar
+        key={i}
+        className={`w-4 h-4 ${
+          i < rating ? "text-yellow-400" : "text-gray-300"
+        }`}
       />
-    ))
-  }
-
+    ));
+  };
+  if (loading) return <p className="p-6 text-center">Loading venue...</p>;
+  if (!venue)
+    return <p className="p-6 text-center text-red-500">Venue not found</p>;
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <button 
+            <button
               onClick={() => navigate(-1)}
               className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
@@ -176,12 +79,12 @@ const VenueDetails = () => {
               <span className="hidden sm:inline">Back</span>
             </button>
             <div className="flex items-center gap-3">
-              <button 
+              <button
                 onClick={toggleFavorite}
                 className={`p-2 rounded-full transition-colors ${
-                  isFavorite 
-                    ? 'bg-red-100 text-red-500' 
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  isFavorite
+                    ? "bg-red-100 text-red-500"
+                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                 }`}
               >
                 <MdFavorite className="w-5 h-5" />
@@ -207,7 +110,7 @@ const VenueDetails = () => {
                     <div className="text-lg opacity-90">Sports Venue</div>
                   </div>
                 </div>
-                
+
                 {/* Discount Badge */}
                 {venue.discount && (
                   <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
@@ -217,17 +120,22 @@ const VenueDetails = () => {
 
                 {/* Image Navigation */}
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-                  {venue.images.map((_, index) => (
+                  {/* {venue.images.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImageIndex(index)}
                       className={`w-3 h-3 rounded-full transition-all ${
-                        index === selectedImageIndex 
-                          ? 'bg-white scale-110' 
-                          : 'bg-white/50 hover:bg-white/75'
+                        index === selectedImageIndex
+                          ? "bg-white scale-110"
+                          : "bg-white/50 hover:bg-white/75"
                       }`}
                     />
-                  ))}
+                  ))} */}
+                  <img
+                    src={venue.images?.[0] || "/api/placeholder/800/600"}
+                    alt={venue.name}
+                    className="w-full h-72 object-cover rounded-xl shadow"
+                  />
                 </div>
               </div>
             </div>
@@ -247,7 +155,9 @@ const VenueDetails = () => {
                     <div className="flex items-center">
                       <MdStar className="w-4 h-4 text-yellow-400 mr-1" />
                       <span className="font-medium">{venue.rating}</span>
-                      <span className="ml-1">({venue.reviewCount} reviews)</span>
+                      <span className="ml-1">
+                        ({venue.reviewCount} reviews)
+                      </span>
                     </div>
                     <div className="flex items-center">
                       <MdAccessTime className="w-4 h-4 mr-1" />
@@ -261,9 +171,13 @@ const VenueDetails = () => {
                 </div>
                 <div className="text-right">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-3xl font-bold text-[#2c5aa0]">{venue.price}</span>
+                    <span className="text-3xl font-bold text-[#2c5aa0]">
+                      {venue.price}
+                    </span>
                     {venue.originalPrice && (
-                      <span className="text-lg text-gray-500 line-through">{venue.originalPrice}</span>
+                      <span className="text-lg text-gray-500 line-through">
+                        {venue.originalPrice}
+                      </span>
                     )}
                   </div>
                   <div className="text-sm text-gray-500">per hour</div>
@@ -272,53 +186,90 @@ const VenueDetails = () => {
 
               {/* Sports Tags */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Available Sports</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Available Sports
+                </h3>
                 <div className="flex flex-wrap gap-2">
-                  {venue.sports.map((sport, index) => (
-                    <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-medium">
-                      {sport}
-                    </span>
-                  ))}
+                  {venue.sports?.length ? (
+                    venue.sports.map((sport: string, i: number) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
+                      >
+                        {sport}
+                      </span>
+                    ))
+                  ) : (
+                    <p>No sports listed</p>
+                  )}
                 </div>
               </div>
 
               {/* Description */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">About This Venue</h3>
-                <p className="text-gray-600 leading-relaxed">{venue.description}</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  About This Venue
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {venue.description}
+                </p>
               </div>
 
               {/* Amenities */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Amenities</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Amenities
+                </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {venue.amenities.map((amenity, index) => (
-                    <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
-                      <MdCheckCircle className="w-4 h-4 text-green-500" />
-                      <span>{amenity}</span>
-                    </div>
-                  ))}
+                  {venue.amenities?.length ? (
+                    venue.amenities.map((amenity, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 text-sm text-gray-600"
+                      >
+                        <MdCheckCircle className="w-4 h-4 text-green-500" />
+                        <span>{amenity}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500">No amenities listed</p>
+                  )}
                 </div>
               </div>
 
               {/* Operating Hours */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Operating Hours</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Operating Hours
+                </h3>
                 <div className="space-y-2">
-                  {venue.operatingHours.map((schedule, index) => (
-                    <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                      <span className="font-medium text-gray-900">{schedule.day}</span>
-                      <span className="text-gray-600">{schedule.hours}</span>
-                    </div>
-                  ))}
+                  {venue.operatingHours?.length ? (
+                    venue.operatingHours.map((schedule, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0"
+                      >
+                        <span className="font-medium text-gray-900">
+                          {schedule.day}
+                        </span>
+                        <span className="text-gray-600">{schedule.hours}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500">
+                      Operating hours not available
+                    </p>
+                  )}
                 </div>
               </div>
 
               {/* Reviews */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Reviews</h3>
-                  <button 
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Reviews
+                  </h3>
+                  <button
                     onClick={() => setShowAllReviews(!showAllReviews)}
                     className="text-[#2c5aa0] hover:text-[#1e3d6f] transition-colors flex items-center gap-1"
                   >
@@ -335,10 +286,16 @@ const VenueDetails = () => {
                     )}
                   </button>
                 </div>
-                
+
                 <div className="space-y-4">
-                  {(showAllReviews ? venue.reviews : venue.reviews.slice(0, 2)).map((review) => (
-                    <div key={review.id} className="border border-gray-200 rounded-lg p-4">
+                  {(showAllReviews
+                    ? venue.reviews
+                    : venue.reviews.slice(0, 2)
+                  ).map((review) => (
+                    <div
+                      key={review.id}
+                      className="border border-gray-200 rounded-lg p-4"
+                    >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -348,14 +305,18 @@ const VenueDetails = () => {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-medium text-gray-900">{review.user}</span>
+                              <span className="font-medium text-gray-900">
+                                {review.user}
+                              </span>
                               {review.verified && (
                                 <MdCheckCircle className="w-4 h-4 text-green-500" />
                               )}
                             </div>
                             <div className="flex items-center gap-1">
                               {renderStars(review.rating)}
-                              <span className="text-sm text-gray-500 ml-2">{review.date}</span>
+                              <span className="text-sm text-gray-500 ml-2">
+                                {review.date}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -372,19 +333,25 @@ const VenueDetails = () => {
           <div className="space-y-6">
             {/* Booking Card */}
             <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Book This Venue</h3>
-              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Book This Venue
+              </h3>
+
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Date</label>
-                  <input 
-                    type="date" 
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Date
+                  </label>
+                  <input
+                    type="date"
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Time</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Time
+                  </label>
                   <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20">
                     <option>6:00 AM</option>
                     <option>7:00 AM</option>
@@ -404,9 +371,11 @@ const VenueDetails = () => {
                     <option>9:00 PM</option>
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Duration
+                  </label>
                   <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20">
                     <option>1 hour</option>
                     <option>2 hours</option>
@@ -414,29 +383,35 @@ const VenueDetails = () => {
                     <option>4 hours</option>
                   </select>
                 </div>
-                
+
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-gray-600">Base Price</span>
                     <span className="text-sm font-medium">{venue.price}</span>
                   </div>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-600">Duration (2 hours)</span>
+                    <span className="text-sm text-gray-600">
+                      Duration (2 hours)
+                    </span>
                     <span className="text-sm font-medium">$56.00</span>
                   </div>
                   {venue.discount && (
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-green-600">Discount (20% OFF)</span>
-                      <span className="text-sm font-medium text-green-600">-$11.20</span>
+                      <span className="text-sm text-green-600">
+                        Discount (20% OFF)
+                      </span>
+                      <span className="text-sm font-medium text-green-600">
+                        -$11.20
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between items-center text-lg font-semibold text-gray-900 border-t pt-2">
                     <span>Total</span>
-                    <span>{venue.discount ? '$44.80' : '$56.00'}</span>
+                    <span>{venue.discount ? "$44.80" : "$56.00"}</span>
                   </div>
                 </div>
-                
-                <button 
+
+                <button
                   onClick={handleBookNow}
                   className="w-full bg-[#2c5aa0] text-white py-3 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium"
                 >
@@ -447,25 +422,32 @@ const VenueDetails = () => {
 
             {/* Contact Info */}
             <div className="bg-white rounded-2xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Contact Information
+              </h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <MdPhone className="w-5 h-5 text-gray-500" />
-                  <span className="text-sm text-gray-600">{venue.contact.phone}</span>
+                  <span className="text-sm text-gray-600">{venue.phone}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <MdEmail className="w-5 h-5 text-gray-500" />
-                  <span className="text-sm text-gray-600">{venue.contact.email}</span>
+                  <span className="text-sm text-gray-600">{venue.email}</span>
                 </div>
               </div>
             </div>
 
             {/* Policies */}
             <div className="bg-white rounded-2xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Policies</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Policies
+              </h3>
               <ul className="space-y-2">
                 {venue.policies.map((policy, index) => (
-                  <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                  <li
+                    key={index}
+                    className="flex items-start gap-2 text-sm text-gray-600"
+                  >
                     <MdCheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                     <span>{policy}</span>
                   </li>
@@ -481,15 +463,17 @@ const VenueDetails = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Confirm Booking</h3>
-              <button 
+              <h3 className="text-lg font-semibold text-gray-900">
+                Confirm Booking
+              </h3>
+              <button
                 onClick={() => setShowBookingModal(false)}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <MdClose className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900 mb-2">{venue.name}</h4>
@@ -497,18 +481,18 @@ const VenueDetails = () => {
                   <div>Date: Tomorrow, Dec 16, 2024</div>
                   <div>Time: 6:00 PM - 8:00 PM</div>
                   <div>Duration: 2 hours</div>
-                  <div>Total: {venue.discount ? '$44.80' : '$56.00'}</div>
+                  <div>Total: {venue.discount ? "$44.80" : "$56.00"}</div>
                 </div>
               </div>
-              
+
               <div className="flex gap-3">
-                <button 
+                <button
                   onClick={() => setShowBookingModal(false)}
                   className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={handleBookingConfirm}
                   className="flex-1 bg-[#2c5aa0] text-white py-2 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors"
                 >
@@ -520,12 +504,7 @@ const VenueDetails = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default VenueDetails
-
-
-
-
-
+export default VenueDetails;

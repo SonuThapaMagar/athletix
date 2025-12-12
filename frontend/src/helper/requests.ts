@@ -1,4 +1,5 @@
 import api from "@/api/api";
+import type { Venue, VenueSubmitData } from "@/types/venue.types/venue.types";
 
 const user = {
   auth: {
@@ -11,9 +12,11 @@ const user = {
 }
 
 const venueMgmt = {
-  getVenues: () => api.get("/venues"),
-  getMy: () => api.get("/venues/my"),
-  createVenue: (data: any, config?: any) => api.post("/venues", data, config),
+  getVenues: (params: { page?: number; perPage?: number }) =>
+    api.get("/venues", { params }),
+  getMyVenues: (params?: { page?: number; perPage?: number }) =>
+    api.get("/venues/myVenues", { params }),
+  createVenue: (data: VenueSubmitData) => api.post("/venues", data),
   getVenueById: (id: number) => api.get(`/venues/${id}`),
   updateVenue: (id: number, data: any) => api.put(`/venues/${id}`, data),
   deleteVenue: (id: number) => api.delete(`/venues/${id}`),

@@ -23,7 +23,7 @@ const PlayerNavLayout = () => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
-  const user = useSelector((state: RootState) => state.auth.profile);
+  const user = useSelector((state: RootState) => state.authSlice.profile);
 
   useEffect(() => {
     if (!user && localStorage.getItem("accessToken")) {

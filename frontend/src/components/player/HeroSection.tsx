@@ -1,25 +1,25 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { FETCH_VENUES_ACTION } from "@/redux/actions/venue/createVenue.actions";
-import type { RootState, AppDispatch } from "@/redux/store";
-import type { Venue } from "@/types/venue.types/venue.types";
+import { useSelector } from "react-redux";
+import { FETCH_VENUES_ACTION } from "@/redux/actions/venue/venue.actions";
+import type { RootState } from "@/redux/store";
 import { MdLocationOn, MdStar, MdAccessTime } from "react-icons/md";
 
 const HeroSection = () => {
-  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  const { venues, loading, error } = useSelector(
-    (state: RootState) => state.venues
+  // Safe slice access: default to empty array
+  const venues = useSelector(
+    (state: RootState) => state.venueSlice?.venues || []
   );
 
-  useEffect(() => {
-    if (!venues.length) {
-      dispatch(FETCH_VENUES_ACTION());
-    }
-  }, [dispatch, venues.length]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    FETCH_VENUES_ACTION().finally(() => setLoading(false));
+  }, []);
+
+  // Enhance venue data
   const enhancedVenues = venues.map((venue) => ({
     ...venue,
     rating: 4.7,
@@ -29,19 +29,9 @@ const HeroSection = () => {
     image: venue.images?.[0] || "/api/placeholder/300/200",
   }));
 
-  if (loading) return <p className="text-center py-8">Loading venues...</p>;
-  if (error)
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-500 mb-4">{error}</p>
-        <button
-          onClick={() => dispatch(FETCH_VENUES_ACTION())}
-          className="bg-[#2c5aa0] text-white px-4 py-2 rounded-lg hover:bg-[#1e3d6f]"
-        >
-          Retry
-        </button>
-      </div>
-    );
+  // Simple fallback if no venues yet
+  if (venues.length === 0)
+    return <p className="text-center py-8">Loading venues...</p>;
 
   return (
     <section className="bg-gray-50 py-8">
@@ -67,7 +57,6 @@ const HeroSection = () => {
                 alt={venue.name}
                 className="w-full h-48 object-cover"
               />
-
               <div className="p-6">
                 <div className="flex justify-between items-start mb-3">
                   <div>
@@ -129,7 +118,7 @@ const HeroSection = () => {
                     Book Now
                   </button>
                   <button
-                    onClick={() => navigate(`/venue/${venue.id}`)}
+                    onClick={() => navigate(`/player/venue/${venue.id}`)}
                     className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     View Details

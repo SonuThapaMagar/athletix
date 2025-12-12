@@ -21,8 +21,10 @@ import type {
 import { availableAmenities, availableSports } from "./venueConstants";
 import { useDispatch } from "react-redux";
 import { uploadImageToCloudinary } from "@/helper/cloudinary";
-import type { AppDispatch } from "@/redux/store";
-import { CREATE_VENUE_ACTION } from "@/redux/actions/venue/createVenue.actions";
+import {
+  CREATE_VENUE_ACTION,
+  UPDATE_VENUE_ACTION,
+} from "@/redux/actions/venue/venue.actions";
 import { venueSchema } from "@/validation/venueCreation.validation";
 
 const initialOperatingHours = [
@@ -39,7 +41,7 @@ export default function VenueForm(): JSX.Element {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditing = Boolean(id);
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
 
   // formData stores only new-file images (File[]). existingImages holds already uploaded URLs.
   const [formData, setFormData] = useState<VenueFormData>({
@@ -72,12 +74,15 @@ export default function VenueForm(): JSX.Element {
             ...prev,
             name: v.name ?? "",
             location: v.location ?? "",
-            pricePerHour: v.pricePerHour != null ? v.pricePerHour.toString() : "",
+            pricePerHour:
+              v.pricePerHour != null ? v.pricePerHour.toString() : "",
             description: v.description ?? "",
             sports: v.sports ?? [],
             amenities: v.amenities ?? [],
             // if backend provides operatingHours as array use it, otherwise keep defaults
-            operatingHours: v.operatingHours?.length ? v.operatingHours : prev.operatingHours,
+            operatingHours: v.operatingHours?.length
+              ? v.operatingHours
+              : prev.operatingHours,
             phone: v.phone ?? "",
             email: v.email ?? "",
             images: [], // keep empty; new files go here
@@ -99,7 +104,10 @@ export default function VenueForm(): JSX.Element {
   const handleInputChange = (field: keyof VenueFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field as keyof VenueFormErrors]) {
-      setErrors((prev) => ({ ...prev, [field as keyof VenueFormErrors]: undefined }));
+      setErrors((prev) => ({
+        ...prev,
+        [field as keyof VenueFormErrors]: undefined,
+      }));
     }
   };
 
@@ -113,11 +121,17 @@ export default function VenueForm(): JSX.Element {
       const arr = prev[type] as string[];
       return {
         ...prev,
-        [type]: arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value],
+        [type]: arr.includes(value)
+          ? arr.filter((v) => v !== value)
+          : [...arr, value],
       };
     });
-    const errorKey = type as keyof Pick<VenueFormErrors, "sports" | "amenities">;
-    if (errors[errorKey]) setErrors((prev) => ({ ...prev, [errorKey]: undefined }));
+    const errorKey = type as keyof Pick<
+      VenueFormErrors,
+      "sports" | "amenities"
+    >;
+    if (errors[errorKey])
+      setErrors((prev) => ({ ...prev, [errorKey]: undefined }));
   };
 
   const handleOperatingHoursChange = (
@@ -192,7 +206,9 @@ export default function VenueForm(): JSX.Element {
       // Upload only new files (if any) in parallel
       const uploadedUrls =
         formData.images && formData.images.length
-          ? await Promise.all(formData.images.map((f) => uploadImageToCloudinary(f)))
+          ? await Promise.all(
+              formData.images.map((f) => uploadImageToCloudinary(f))
+            )
           : [];
 
       // Final image list = remaining existing images (user might have removed some) + newly uploaded
@@ -217,8 +233,7 @@ export default function VenueForm(): JSX.Element {
         await dispatch(CREATE_VENUE_ACTION(payload));
         toast.success("Venue created successfully");
       } else {
-        // UPDATE (call your request helper directly)
-        await requests.venueMgmt.updateVenue(Number(id), payload);
+        await dispatch(UPDATE_VENUE_ACTION(Number(id), payload));
         toast.success("Venue updated successfully");
       }
 
@@ -238,10 +253,15 @@ export default function VenueForm(): JSX.Element {
   return (
     <div className="p-6">
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={handleCancel} className="p-2 rounded-lg hover:bg-gray-100">
+        <button
+          onClick={handleCancel}
+          className="p-2 rounded-lg hover:bg-gray-100"
+        >
           <MdArrowBack className="w-5 h-5" />
         </button>
-        <h1 className="text-2xl font-bold">{isEditing ? "Edit Venue" : "Add New Venue"}</h1>
+        <h1 className="text-2xl font-bold">
+          {isEditing ? "Edit Venue" : "Add New Venue"}
+        </h1>
       </div>
 
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-6">
@@ -252,60 +272,92 @@ export default function VenueForm(): JSX.Element {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block mb-2 text-sm font-medium">Venue Name *</label>
+              <label className="block mb-2 text-sm font-medium">
+                Venue Name *
+              </label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange("name", e.target.value)}
                 required
-                className={`w-full p-3 border rounded-lg focus:ring-2 ${errors.name ? "border-red-500" : "border-gray-300"}`}
+                className={`w-full p-3 border rounded-lg focus:ring-2 ${
+                  errors.name ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="Enter venue name"
               />
-              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              )}
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium">Location *</label>
+              <label className="block mb-2 text-sm font-medium">
+                Location *
+              </label>
               <input
                 type="text"
                 value={formData.location}
                 onChange={(e) => handleInputChange("location", e.target.value)}
                 required
-                className={`w-full p-3 border rounded-lg focus:ring-2 ${errors.location ? "border-red-500" : "border-gray-300"}`}
+                className={`w-full p-3 border rounded-lg focus:ring-2 ${
+                  errors.location ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="City"
               />
-              {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
+              {errors.location && (
+                <p className="text-red-500 text-sm mt-1">{errors.location}</p>
+              )}
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium">Price per Hour *</label>
+              <label className="block mb-2 text-sm font-medium">
+                Price per Hour *
+              </label>
               <div className="relative">
                 <MdAttachMoney className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="number"
                   value={formData.pricePerHour}
-                  onChange={(e) => handleInputChange("pricePerHour", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("pricePerHour", e.target.value)
+                  }
                   required
-                  className={`w-full p-3 pl-10 border rounded-lg focus:ring-2 ${errors.pricePerHour ? "border-red-500" : "border-gray-300"}`}
+                  className={`w-full p-3 pl-10 border rounded-lg focus:ring-2 ${
+                    errors.pricePerHour ? "border-red-500" : "border-gray-300"
+                  }`}
                   placeholder="0"
                   min="0"
                   step="any"
                 />
               </div>
-              {errors.pricePerHour && <p className="text-red-500 text-sm mt-1">{errors.pricePerHour}</p>}
+              {errors.pricePerHour && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.pricePerHour}
+                </p>
+              )}
             </div>
 
             <div className="md:col-span-2">
-              <label className="block mb-2 text-sm font-medium">Description *</label>
+              <label className="block mb-2 text-sm font-medium">
+                Description *
+              </label>
               <textarea
                 value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 rows={4}
                 required
-                className={`w-full p-3 border rounded-lg focus:ring-2 ${errors.description ? "border-red-500" : "border-gray-300"}`}
+                className={`w-full p-3 border rounded-lg focus:ring-2 ${
+                  errors.description ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="Describe your venue"
               />
-              {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+              {errors.description && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.description}
+                </p>
+              )}
             </div>
           </div>
 
@@ -319,8 +371,15 @@ export default function VenueForm(): JSX.Element {
             {existingImages.length > 0 && (
               <div className="flex gap-2 flex-wrap mb-2">
                 {existingImages.map((url) => (
-                  <div key={url} className="relative w-32 h-24 rounded overflow-hidden border">
-                    <img src={url} alt="existing" className="object-cover w-full h-full" />
+                  <div
+                    key={url}
+                    className="relative w-32 h-24 rounded overflow-hidden border"
+                  >
+                    <img
+                      src={url}
+                      alt="existing"
+                      className="object-cover w-full h-full"
+                    />
                     <button
                       type="button"
                       onClick={() => removeExistingImage(url)}
@@ -340,8 +399,15 @@ export default function VenueForm(): JSX.Element {
                 {formData.images.map((f, idx) => {
                   const url = URL.createObjectURL(f);
                   return (
-                    <div key={idx} className="relative w-32 h-24 rounded overflow-hidden border">
-                      <img src={url} alt={f.name} className="object-cover w-full h-full" />
+                    <div
+                      key={idx}
+                      className="relative w-32 h-24 rounded overflow-hidden border"
+                    >
+                      <img
+                        src={url}
+                        alt={f.name}
+                        className="object-cover w-full h-full"
+                      />
                       <button
                         type="button"
                         onClick={() => removeNewImage(idx)}
@@ -356,8 +422,16 @@ export default function VenueForm(): JSX.Element {
               </div>
             )}
 
-            <input type="file" multiple accept="image/*" onChange={handleImageChange} className="w-full border p-3 rounded-lg" />
-            {errors.images && <p className="text-red-500 text-sm mt-1">{errors.images}</p>}
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full border p-3 rounded-lg"
+            />
+            {errors.images && (
+              <p className="text-red-500 text-sm mt-1">{errors.images}</p>
+            )}
           </div>
         </div>
 
@@ -368,12 +442,18 @@ export default function VenueForm(): JSX.Element {
             <div className="grid grid-cols-2 gap-2">
               {availableSports.map((sport) => (
                 <label key={sport} className="flex items-center gap-2">
-                  <input type="checkbox" checked={formData.sports.includes(sport)} onChange={() => handleToggle("sports", sport)} />
+                  <input
+                    type="checkbox"
+                    checked={formData.sports.includes(sport)}
+                    onChange={() => handleToggle("sports", sport)}
+                  />
                   <span>{sport}</span>
                 </label>
               ))}
             </div>
-            {errors.sports && <p className="text-red-500 text-sm mt-1">{errors.sports}</p>}
+            {errors.sports && (
+              <p className="text-red-500 text-sm mt-1">{errors.sports}</p>
+            )}
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow border">
@@ -381,12 +461,18 @@ export default function VenueForm(): JSX.Element {
             <div className="grid grid-cols-2 gap-2">
               {availableAmenities.map((amenity) => (
                 <label key={amenity} className="flex items-center gap-2">
-                  <input type="checkbox" checked={formData.amenities.includes(amenity)} onChange={() => handleToggle("amenities", amenity)} />
+                  <input
+                    type="checkbox"
+                    checked={formData.amenities.includes(amenity)}
+                    onChange={() => handleToggle("amenities", amenity)}
+                  />
                   <span>{amenity}</span>
                 </label>
               ))}
             </div>
-            {errors.amenities && <p className="text-red-500 text-sm mt-1">{errors.amenities}</p>}
+            {errors.amenities && (
+              <p className="text-red-500 text-sm mt-1">{errors.amenities}</p>
+            )}
           </div>
         </div>
 
@@ -400,9 +486,33 @@ export default function VenueForm(): JSX.Element {
               <div key={hours.day} className="flex items-center gap-4">
                 <span className="w-20 font-medium">{hours.day}</span>
                 <div className="flex gap-2">
-                  <input type="time" value={hours.openTime} onChange={(e) => handleOperatingHoursChange(hours.day, "openTime", e.target.value)} required className="p-2 border rounded-lg focus:ring-2" />
+                  <input
+                    type="time"
+                    value={hours.openTime}
+                    onChange={(e) =>
+                      handleOperatingHoursChange(
+                        hours.day,
+                        "openTime",
+                        e.target.value
+                      )
+                    }
+                    required
+                    className="p-2 border rounded-lg focus:ring-2"
+                  />
                   <span>to</span>
-                  <input type="time" value={hours.closeTime} onChange={(e) => handleOperatingHoursChange(hours.day, "closeTime", e.target.value)} required className="p-2 border rounded-lg focus:ring-2" />
+                  <input
+                    type="time"
+                    value={hours.closeTime}
+                    onChange={(e) =>
+                      handleOperatingHoursChange(
+                        hours.day,
+                        "closeTime",
+                        e.target.value
+                      )
+                    }
+                    required
+                    className="p-2 border rounded-lg focus:ring-2"
+                  />
                 </div>
               </div>
             ))}
@@ -419,26 +529,56 @@ export default function VenueForm(): JSX.Element {
               <label className="flex items-center gap-2 mb-2 text-sm font-medium">
                 <MdPhone /> Phone *
               </label>
-              <input type="tel" value={formData.phone} onChange={(e) => handleContactChange("phone", e.target.value)} required className={`w-full p-3 border rounded-lg focus:ring-2 ${errors.phone ? "border-red-500" : "border-gray-300"}`} placeholder="Enter phone number" />
-              {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => handleContactChange("phone", e.target.value)}
+                required
+                className={`w-full p-3 border rounded-lg focus:ring-2 ${
+                  errors.phone ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="Enter phone number"
+              />
+              {errors.phone && (
+                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+              )}
             </div>
 
             <div>
               <label className="flex items-center gap-2 mb-2 text-sm font-medium">
                 <MdEmail /> Email *
               </label>
-              <input type="email" value={formData.email} onChange={(e) => handleContactChange("email", e.target.value)} required className={`w-full p-3 border rounded-lg focus:ring-2 ${errors.email ? "border-red-500" : "border-gray-300"}`} placeholder="Enter email address" />
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleContactChange("email", e.target.value)}
+                required
+                className={`w-full p-3 border rounded-lg focus:ring-2 ${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="Enter email address"
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              )}
             </div>
           </div>
         </div>
 
         {/* Submit Buttons */}
         <div className="flex justify-end gap-4 pt-4">
-          <button type="button" onClick={handleCancel} className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
             <MdCancel className="inline mr-2" /> Cancel
           </button>
-          <button type="submit" disabled={isSubmitting} className="bg-[#2c5aa0] text-white px-6 py-2 rounded-lg hover:bg-[#1e3d6f] disabled:opacity-50 flex items-center gap-2">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="bg-[#2c5aa0] text-white px-6 py-2 rounded-lg hover:bg-[#1e3d6f] disabled:opacity-50 flex items-center gap-2"
+          >
             <MdSave className="w-4 h-4" />
             {isSubmitting ? "Saving..." : "Save Venue"}
           </button>
@@ -446,5 +586,4 @@ export default function VenueForm(): JSX.Element {
       </form>
     </div>
   );
-};
-
+}
