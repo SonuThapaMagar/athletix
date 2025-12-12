@@ -1,7 +1,8 @@
 package com.athletix.repository;
 
-import com.athletix.dto.admin.VenueStatus;
 import com.athletix.entity.Venue;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
+
 public interface VenueRepository extends JpaRepository<Venue, Long> {
 
     @Query("""
@@ -24,12 +26,12 @@ public interface VenueRepository extends JpaRepository<Venue, Long> {
             (:sport IS NULL OR 
                 EXISTS (SELECT 1 FROM v.sportTypes st2 
                         WHERE LOWER(st2) LIKE LOWER(CONCAT('%', :sport, '%'))))
-        AND v.status = 'APPROVED'
+       
         """)
     List<Venue> searchVenues(@Param("keyword") String keyword,
                              @Param("sport") String sport);
 
     List<Venue> findByOwner_UserId(Long ownerId);
-
-    List<Venue> findByStatus(VenueStatus status);
+    Page<Venue> findByOwner_UserId(Long ownerId, Pageable pageable);
+    Page<Venue> findByIsVerifiedTrue(Pageable pageable);
 }

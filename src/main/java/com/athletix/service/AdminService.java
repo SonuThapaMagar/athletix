@@ -46,38 +46,38 @@ public class AdminService {
     // 2. Venues
     public List<VenueDto> getAllVenues() {
         return venueRepo.findAll().stream()
-                .map(v -> new VenueDto(v.getId(), v.getName(), v.getOwner().getName(), v.getStatus().name(), v.getPricePerHour()))
+                .map(v -> new VenueDto(v.getId(), v.getName(), v.getOwner().getName(),v.getPricePerHour()))
                 .toList();
     }
     // ---------------------------------------------
     // 1. GET ALL PENDING VENUES
     // ---------------------------------------------
-    public List<PendingVenueResponse> getPendingVenues() {
-        List<Venue> venues = venueRepo.findByStatus(VenueStatus.PENDING);
-
-        return venues.stream()
-                .map(v -> new PendingVenueResponse(
-                        v.getId(),
-                        v.getName(),
-                        v.getLocation(),
-                        v.getOwner().getName()))
-                .collect(Collectors.toList());
-    }
-    public PendingVenueResponse approveVenue(Long venueId) {
-        Venue venue = venueRepo.findById(venueId)
-                .orElseThrow(() -> new RuntimeException("Venue not found"));
-
-        venue.setStatus(VenueStatus.APPROVED);
-        venue.setVerified(true);
-        venueRepo.save(venue);
-
-        return new PendingVenueResponse(
-                venue.getId(),
-                venue.getName(),
-                venue.getLocation(),
-                venue.getOwner().getName()
-        );
-    }
+//    public List<PendingVenueResponse> getPendingVenues() {
+////        List<Venue> venues = venueRepo.findByStatus(VenueStatus.PENDING);
+//
+//        return venues.stream()
+//                .map(v -> new PendingVenueResponse(
+//                        v.getId(),
+//                        v.getName(),
+//                        v.getLocation(),
+//                        v.getOwner().getName()))
+//                .collect(Collectors.toList());
+//    }
+//    public PendingVenueResponse approveVenue(Long venueId) {
+//        Venue venue = venueRepo.findById(venueId)
+//                .orElseThrow(() -> new RuntimeException("Venue not found"));
+//
+//        venue.setStatus(VenueStatus.APPROVED);
+//        venue.setVerified(true);
+//        venueRepo.save(venue);
+//
+//        return new PendingVenueResponse(
+//                venue.getId(),
+//                venue.getName(),
+//                venue.getLocation(),
+//                venue.getOwner().getName()
+//        );
+//    }
 
 
     // ---------------------------------------------

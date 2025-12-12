@@ -1,5 +1,7 @@
 package com.athletix.controller;
 
+import com.athletix.dto.pagination.PaginationResponse;
+import com.athletix.dto.response.ApiResponse;
 import com.athletix.dto.venue.VenueRequest;
 import com.athletix.dto.venue.VenueResponse;
 import com.athletix.service.VenueService;
@@ -27,9 +29,19 @@ public class VenueController {
 
     // LIST ALL (for players) - now only approved
     @GetMapping
-    public ResponseEntity<List<VenueResponse>> listAll() {
-        return ResponseEntity.ok(venueService.getAllVenues());
+    public ResponseEntity<ApiResponse<PaginationResponse<VenueResponse>>> listAll(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int perPage
+    ) {
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        "success",
+                        "Venues fetched successfully",
+                        venueService.getAllVenues(page, perPage)
+                )
+        );
     }
+
 
     // VIEW ONE
     @GetMapping("/{id}")
@@ -38,11 +50,22 @@ public class VenueController {
     }
 
     // MY VENUES (owner only)
-    @GetMapping("/my")
-    public ResponseEntity<List<VenueResponse>> myVenues(
-            @RequestHeader("Authorization") String authHeader) {
-        return ResponseEntity.ok(venueService.getMyVenues(authHeader));
+    @GetMapping("/myVenues")
+    public ResponseEntity<ApiResponse<PaginationResponse<VenueResponse>>> myVenues(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int perPage
+    ) {
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        "success",
+                        "My venues fetched successfully",
+                        venueService.getMyVenues(authHeader, page, perPage)
+                )
+        );
     }
+
+
 
     // UPDATE
     @PutMapping("/{id}")

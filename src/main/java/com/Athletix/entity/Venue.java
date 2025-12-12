@@ -1,6 +1,5 @@
 package com.athletix.entity;
 
-import com.athletix.dto.admin.VenueStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -51,9 +50,9 @@ public class Venue {
 
 	private boolean isVerified = false;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private VenueStatus status = VenueStatus.PENDING;
+//	@Enumerated(EnumType.STRING)
+//	@Column(nullable = false)
+//	private VenueStatus status = VenueStatus.PENDING;
 
 	@CreationTimestamp
 	private LocalDateTime createdAt;

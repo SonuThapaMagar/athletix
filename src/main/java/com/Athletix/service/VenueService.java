@@ -1,18 +1,21 @@
 package com.athletix.service;
 
+import com.athletix.dto.pagination.Pagination;
+import com.athletix.dto.pagination.PaginationResponse;
 import com.athletix.dto.venue.OperatingHour;
 import com.athletix.dto.venue.VenueRequest;
 import com.athletix.dto.venue.VenueResponse;
-import com.athletix.entity.OperatingHourEmbed;  // Assume this exists; map from DTO
+import com.athletix.entity.OperatingHourEmbed;
 import com.athletix.entity.User;
 import com.athletix.entity.Venue;
 import com.athletix.repository.UserRepository;
 import com.athletix.repository.VenueRepository;
 import com.athletix.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,7 +59,7 @@ public class VenueService {
                 .contactPhone(req.phone())
                 .contactEmail(req.email())
                 .operatingHours(mapToEmbeddable(req.operatingHours()))  // Map nested
-                .status(com.athletix.dto.admin.VenueStatus.PENDING)  // Default
+//                .status(com.athletix.dto.admin.VenueStatus.PENDING)  // Default
                 .isVerified(false)
                 .build();
 
@@ -66,11 +69,23 @@ public class VenueService {
     }
 
     // ... Other methods (getAll, getById, etc.)
-    public List<VenueResponse> getAllVenues() {
-        return venueRepository.findAll().stream()
+//    public List<VenueResponse> getAllVenues() {
+//        return venueRepository.findAll().stream()
+//                .map(v -> toVenueResponse(v, v.getOwner().getName()))
+//                .filter(v -> v.isVerified())  // Only approved
+//                .collect(Collectors.toList());
+//    }
+
+    public PaginationResponse<VenueResponse> getAllVenues(int page, int perPage) {
+        int pageIndex = Math.max(page - 1, 0);
+        var pageable = PageRequest.of(pageIndex, perPage);
+        // Assumes VenueRepository has: Page<Venue> findByIsVerifiedTrue(Pageable pageable);
+        Page<Venue> venuePage = venueRepository.findByIsVerifiedTrue(pageable);
+        List<VenueResponse> venueResponses = venuePage.getContent().stream()
                 .map(v -> toVenueResponse(v, v.getOwner().getName()))
-                .filter(v -> v.isVerified())  // Only approved
                 .collect(Collectors.toList());
+        var pagination = new Pagination(page, perPage, venuePage.getTotalElements(), venuePage.getTotalPages());
+        return new PaginationResponse<>(venueResponses, pagination);
     }
 
     public VenueResponse getVenueById(Long id) {
@@ -79,11 +94,17 @@ public class VenueService {
         return toVenueResponse(venue, venue.getOwner().getName());
     }
 
-    public List<VenueResponse> getMyVenues(String authHeader) {
+    public PaginationResponse<VenueResponse> getMyVenues(String authHeader, int page, int perPage) {
         User owner = extractOwnerFromHeader(authHeader);
-        return venueRepository.findByOwner_UserId(owner.getUserId()).stream()
+        int pageIndex = Math.max(page - 1, 0);
+        var pageable = PageRequest.of(pageIndex, perPage);
+        // Assumes VenueRepository has: Page<Venue> findByOwnerUserId(Long userId, Pageable pageable);
+        Page<Venue> venuePage = venueRepository.findByOwner_UserId(owner.getUserId(), pageable);
+        List<VenueResponse> venueResponses = venuePage.getContent().stream()
                 .map(v -> toVenueResponse(v, owner.getName()))
                 .collect(Collectors.toList());
+        var pagination = new Pagination(page, perPage, venuePage.getTotalElements(), venuePage.getTotalPages());
+        return new PaginationResponse<>(venueResponses, pagination);
     }
 
     public VenueResponse updateVenue(Long id, VenueRequest req, String authHeader) {
@@ -93,27 +114,40 @@ public class VenueService {
         if (!venue.getOwner().equals(owner)) {
             throw new RuntimeException("Not authorized to update this venue");
         }
-        // Update fields...
+        // Update fields
         venue.setName(req.name());
-        // ... (similar mapping)
-        venueRepository.save(venue);
-        return toVenueResponse(venue, owner.getName());
+        venue.setLocation(req.location());
+        venue.setSportTypes(req.sports());
+        venue.setPricePerHour(req.pricePerHour());
+        venue.setDescription(req.description());
+        venue.setImages(req.images()); // overwrite images list
+        venue.setAmenities(req.amenities());
+        venue.setContactPhone(req.phone());
+        venue.setContactEmail(req.email());
+        venue.setOperatingHours(mapToEmbeddable(req.operatingHours()));
+
+        Venue updated = venueRepository.save(venue);
+
+        return toVenueResponse(updated, owner.getName());
     }
 
     public void deleteVenue(Long id, String authHeader) {
         User owner = extractOwnerFromHeader(authHeader);
+
         Venue venue = venueRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Venue not found"));
+
         if (!venue.getOwner().equals(owner)) {
-            throw new RuntimeException("Not authorized");
+            throw new RuntimeException("Not authorized to delete this venue");
         }
+
         venueRepository.delete(venue);
     }
 
     public VenueResponse approveVenue(Long id, String loggerEmail) {  // Admin use
         Venue venue = venueRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Venue not found"));
-        venue.setStatus(com.athletix.dto.admin.VenueStatus.APPROVED);
+//        venue.setStatus(com.athletix.dto.admin.VenueStatus.APPROVED);
         venue.setVerified(true);
         venueRepository.save(venue);
         return toVenueResponse(venue, venue.getOwner().getName());

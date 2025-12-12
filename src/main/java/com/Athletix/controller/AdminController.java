@@ -44,11 +44,11 @@ public class AdminController {
         return adminService.getAllVenues();
     }
 
-    @PutMapping("/venues/{id}/approve")
-    public ResponseEntity<String> approveVenue(@PathVariable Long id) {
-        adminService.approveVenue(id);
-        return ResponseEntity.ok("Venue approved");
-    }
+//    @PutMapping("/venues/{id}/approve")
+//    public ResponseEntity<String> approveVenue(@PathVariable Long id) {
+//        adminService.approveVenue(id);
+//        return ResponseEntity.ok("Venue approved");
+//    }
 
 //    @PutMapping("/venues/{id}/reject")
 //    public ResponseEntity<String> rejectVenue(@PathVariable Long id) {

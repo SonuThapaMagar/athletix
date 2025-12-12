@@ -4,6 +4,6 @@ public record VenueDto (
         Long id,
         String name,
         String owner,
-        String status,
+//        String status,
         Double pricePerHour
 ){}
