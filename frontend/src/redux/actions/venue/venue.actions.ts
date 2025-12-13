@@ -52,7 +52,7 @@ export const FETCH_VENUES_ACTION = (params: { page?: number; perPage?: number })
         reject(err);
       })
   );
-  
+
 export const FETCH_MY_VENUES_ACTION = (params?: { page?: number; perPage?: number }): Promise<{
   venues: Venue[];
   pagination: Pagination;
@@ -86,23 +86,17 @@ export const FETCH_MY_VENUES_ACTION = (params?: { page?: number; perPage?: numbe
   });
 
 
-export const FETCH_VENUE_DETAIL_BY_ID = (
-  id: number
-): Promise<Venue> =>
-  new Promise((resolve, reject) =>
-    requests.venueMgmt
-      .getVenueById(id)
-      .then((response: AxiosResponse<ApiResponse<Venue>>) => {
-        const venue = response.data.data;
-        AppDispatch(venueActions.setSelectedVenue(venue));
-        resolve(venue);
-      })
-      .catch((error: AxiosError) => {
-        const err = error.response?.data;
-        console.error("❌ Fetch venue detail failed:", err);
-        reject(err);
-      })
-  );
+export const FETCH_VENUE_DETAIL_BY_ID = (id: number): Promise<Venue> =>
+  requests.venueMgmt
+    .getVenueById(id)
+    .then((response: AxiosResponse<Venue>) => {
+      console.log("Venue data fetched:", response.data);
+      return response.data; // use response.data directly
+    })
+    .catch((error: AxiosError) => {
+      throw error.response?.data || error;
+    });
+
 
 export const UPDATE_VENUE_ACTION = (
   id: number,

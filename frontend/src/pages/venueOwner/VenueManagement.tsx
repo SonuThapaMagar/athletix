@@ -8,6 +8,7 @@ import {
   MdSportsSoccer,
   MdAccessTime,
   MdAttachMoney,
+  MdVisibility,
 } from "react-icons/md";
 
 import DeleteVenueDialog from "@/components/venueOwner/DeleteVenueDialog";
@@ -35,11 +36,10 @@ const VenueManagement = () => {
     venueName: "",
   });
 
-  // Fetch venues for current page
   const fetchVenues = async (page = 1) => {
     setLoading(true);
     try {
-      await FETCH_MY_VENUES_ACTION({ page, perPage: 5 }); // adjust perPage as needed
+      await FETCH_MY_VENUES_ACTION({ page, perPage: 5 }); 
       setCurrentPage(page);
     } catch (error: any) {
       console.error("Error fetching venues:", error);
@@ -56,6 +56,8 @@ const VenueManagement = () => {
   const handleAddVenue = () => navigate("/venue-owner/venues/add");
   const handleEditVenue = (id: number) =>
     navigate(`/venue-owner/venues/edit/${id}`);
+  const handleViewVenue = (id: number) =>
+    navigate(`/venue-owner/venues/view/${id}`);
 
   const handleDeleteVenue = (id: number, name: string) => {
     setDeleteDialog({ isOpen: true, venueId: id, venueName: name });
@@ -159,7 +161,7 @@ const VenueManagement = () => {
                       </div>
 
                       <div className="flex items-center gap-4">
-                        <span
+                        {/* <span
                           className={`px-3 py-1 rounded-full text-xs font-medium ${
                             venue.isVerified
                               ? "bg-green-100 text-green-800"
@@ -167,12 +169,21 @@ const VenueManagement = () => {
                           }`}
                         >
                           {venue.isVerified ? "Active" : "Pending"}
-                        </span>
+                        </span> */}
 
                         <div className="flex gap-2">
                           <button
+                            onClick={() => handleViewVenue(venue.id)}
+                            className="p-2 text-gray-600 hover:text-[#2c5aa0] hover:bg-blue-50 rounded-lg transition-colors"
+                            title="View Details"
+                          >
+                            <MdVisibility className="w-4 h-4" />
+                          </button>
+
+                          <button
                             onClick={() => handleEditVenue(venue.id)}
                             className="p-2 text-gray-600 hover:text-[#2c5aa0] hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Edit Venue"
                           >
                             <MdEdit className="w-4 h-4" />
                           </button>
@@ -182,6 +193,7 @@ const VenueManagement = () => {
                               handleDeleteVenue(venue.id, venue.name)
                             }
                             className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete Venue"
                           >
                             <MdDelete className="w-4 h-4" />
                           </button>

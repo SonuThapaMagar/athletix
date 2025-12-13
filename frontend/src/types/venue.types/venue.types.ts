@@ -20,7 +20,6 @@ export interface Venue {
   ownerId: number;
   ownerName: string;
 
-  isVerified: boolean;
   createdAt: string;
   updatedAt: string;
 
@@ -100,4 +99,29 @@ export interface VenueFormErrors {
   images?: string;
   phone?: string;
   email?: string;
+}
+
+export interface VenueDetail {
+  id: number;
+  name: string;
+  location: string;
+  pricePerHour: number;
+  description: string;
+
+  sports: string[];
+  amenities: string[];
+  images: string[];
+
+  operatingHours: OperatingHour[];
+
+  phone: string;
+  email: string;
+
+  ownerId: number;
+  ownerName: string;
+
+  createdAt: string;
+  updatedAt: string;
+
+  bookings?: number;
 }

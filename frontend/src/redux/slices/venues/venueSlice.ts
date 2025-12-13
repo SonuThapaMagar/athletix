@@ -31,7 +31,7 @@ const venueSlice = createSlice({
     addVenue: (state, action: PayloadAction<Venue>) => {
       state.venues.unshift(action.payload);
     },
-    setSelectedVenue: (state, action: PayloadAction<Venue | null>) => {
+    setSelectedVenue: (state, action: PayloadAction<Venue>) => {
       state.selectedVenue = action.payload;
     },
     updateVenue: (state, action: PayloadAction<Venue>) => {

@@ -1,25 +1,26 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { FETCH_VENUES_ACTION } from "@/redux/actions/venue/venue.actions";
-import type { RootState } from "@/redux/store";
 import { MdLocationOn, MdStar, MdAccessTime } from "react-icons/md";
+import type { StateType } from "@/redux/slices";
+import { FETCH_VENUES_ACTION } from "@/redux/actions/venue/venue.actions";
 
 const HeroSection = () => {
   const navigate = useNavigate();
-
-  // Safe slice access: default to empty array
-  const venues = useSelector(
-    (state: RootState) => state.venueSlice?.venues || []
+  const { venues = [], pagination } = useSelector(
+    (state: StateType) => state.venueSlice
   );
 
   const [loading, setLoading] = useState(true);
 
+  const fetchAllVenues = async () => {
+    await FETCH_VENUES_ACTION({ page: 1, perPage: 6 });
+  };
+
   useEffect(() => {
-    FETCH_VENUES_ACTION().finally(() => setLoading(false));
+    fetchAllVenues().finally(() => setLoading(false));
   }, []);
 
-  // Enhance venue data
   const enhancedVenues = venues.map((venue) => ({
     ...venue,
     rating: 4.7,
