@@ -17,27 +17,33 @@ import {
 import type { RootState } from "@/redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { FETCH_VENUE_DETAIL_BY_ID } from "@/redux/actions/venue/venue.actions";
+import type { VenueDetail } from "@/types/venue.types/venue.types";
 
 const VenueDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const { selectedVenue: venue } = useSelector(
-    (state: RootState) => state.venueSlice
-  );
+  // const { selectedVenue: venue } = useSelector(
+  //   (state: RootState) => state.venueSlice
+  // );
+  const [venue, setVenue] = useState<VenueDetail | null>(null);
+
   const [loading, setLoading] = useState<boolean>(true);
 
-  // const fetchVenueDetails=(
-    
-  // )
-  // useEffect(() => {
-  //   if (id) {
-  //     dispatch(FETCH_VENUE_DETAIL_BY_ID(Number(id)));
-  //   }
-  // }, [id, dispatch]);
+  const fetchVenueDetail = (id: number) => {
+    FETCH_VENUE_DETAIL_BY_ID(id)
+      .then((data) => {
+        console.log("Venue data fetched:", data);
+        setVenue(data);
+      })
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    if (id) fetchVenueDetail(Number(id));
+  }, [id]);
 
   const handleBookNow = () => {
     setShowBookingModal(true);
@@ -112,11 +118,11 @@ const VenueDetails = () => {
                 </div>
 
                 {/* Discount Badge */}
-                {venue.discount && (
+                {/* {venue.discount && (
                   <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                     {venue.discount}
                   </div>
-                )}
+                )} */}
 
                 {/* Image Navigation */}
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
@@ -149,10 +155,10 @@ const VenueDetails = () => {
                   </h1>
                   <div className="flex items-center text-gray-600 mb-2">
                     <MdLocationOn className="w-5 h-5 mr-2" />
-                    <span className="text-sm">{venue.fullAddress}</span>
+                    <span className="text-sm">{venue.location}</span>
                   </div>
                   <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center">
+                    {/* <div className="flex items-center">
                       <MdStar className="w-4 h-4 text-yellow-400 mr-1" />
                       <span className="font-medium">{venue.rating}</span>
                       <span className="ml-1">
@@ -166,17 +172,17 @@ const VenueDetails = () => {
                     <div className="flex items-center">
                       <MdLocationOn className="w-4 h-4 mr-1" />
                       {venue.distance}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-3xl font-bold text-[#2c5aa0]">
-                      {venue.price}
+                      {venue.pricePerHour}
                     </span>
-                    {venue.originalPrice && (
+                    {venue.pricePerHour && (
                       <span className="text-lg text-gray-500 line-through">
-                        {venue.originalPrice}
+                        {venue.pricePerHour}
                       </span>
                     )}
                   </div>
@@ -252,7 +258,7 @@ const VenueDetails = () => {
                         <span className="font-medium text-gray-900">
                           {schedule.day}
                         </span>
-                        <span className="text-gray-600">{schedule.hours}</span>
+                        <span className="text-gray-600">{schedule.openTime}</span>
                       </div>
                     ))
                   ) : (
@@ -286,7 +292,7 @@ const VenueDetails = () => {
                     )}
                   </button>
                 </div>
-
+{/* 
                 <div className="space-y-4">
                   {(showAllReviews
                     ? venue.reviews
@@ -324,7 +330,7 @@ const VenueDetails = () => {
                       <p className="text-gray-600">{review.comment}</p>
                     </div>
                   ))}
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -387,7 +393,7 @@ const VenueDetails = () => {
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-gray-600">Base Price</span>
-                    <span className="text-sm font-medium">{venue.price}</span>
+                    <span className="text-sm font-medium">{venue.pricePerHour}</span>
                   </div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-gray-600">
@@ -481,7 +487,7 @@ const VenueDetails = () => {
                   <div>Date: Tomorrow, Dec 16, 2024</div>
                   <div>Time: 6:00 PM - 8:00 PM</div>
                   <div>Duration: 2 hours</div>
-                  <div>Total: {venue.discount ? "$44.80" : "$56.00"}</div>
+                  <div>Total: {venue.pricePerHour ? "$44.80" : "$56.00"}</div>
                 </div>
               </div>
 
