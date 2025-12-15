@@ -60,7 +60,7 @@ export const FETCH_MY_VENUES_ACTION = (params?: { page?: number; perPage?: numbe
   new Promise((resolve, reject) => {
     requests.venueMgmt
       .getMyVenues(params)
-      .then((response: AxiosResponse<ApiResponse<{ venues: Venue[]; pagination: Pagination }>>) => {
+      .then((response: AxiosResponse<ApiResponse<{ items: Venue[]; pagination: Pagination }>>) => {
         const data = response.data.data;
 
         if (!data) {
@@ -69,7 +69,7 @@ export const FETCH_MY_VENUES_ACTION = (params?: { page?: number; perPage?: numbe
           return;
         }
 
-        const venues = data.venues || [];
+        const venues = data.items || [];
         const pagination = data.pagination || { page: 1, per_page: 5, total_record: 0, total_page: 1 };
 
         AppDispatch(
@@ -89,9 +89,9 @@ export const FETCH_MY_VENUES_ACTION = (params?: { page?: number; perPage?: numbe
 export const FETCH_VENUE_DETAIL_BY_ID = (id: number): Promise<Venue> =>
   requests.venueMgmt
     .getVenueById(id)
-    .then((response: AxiosResponse<Venue>) => {
-      console.log("Venue data fetched:", response.data);
-      return response.data; // use response.data directly
+    .then((response: AxiosResponse<ApiResponse<Venue>>) => {
+      console.log("Venue data fetched:", response.data.data);
+      return response.data.data; 
     })
     .catch((error: AxiosError) => {
       throw error.response?.data || error;
