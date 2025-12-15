@@ -26,13 +26,17 @@ const VenueDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { selectedVenue: venue ,loading} = useSelector(
+  const { selectedVenue: venue, loading } = useSelector(
     (state: StateType) => state.playerVenueSlice
   );
 
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [selectedDuration, setSelectedDuration] = useState<string>("1");
+
   // const { selectedVenue: venue } = useSelector(
   //   (state: RootState) => state.venueSlice
   // );
@@ -58,8 +62,18 @@ const VenueDetails = () => {
   };
 
   const handleBookingConfirm = () => {
+    if (!venue?.id) return; // safety
+
     setShowBookingModal(false);
-    navigate("/player/booking");
+
+    // Pass pre-filled selections via state + venue ID in URL
+    navigate(`/player/booking/${venue.id}`, {
+      state: {
+        selectedDate,
+        selectedTime,
+        selectedDuration: selectedDuration || "1",
+      },
+    });
   };
 
   const toggleFavorite = () => {
@@ -86,7 +100,7 @@ const VenueDetails = () => {
     );
   }
 
- if (!venue) {
+  if (!venue) {
     return (
       <div className="p-6 text-center">
         <p className="text-red-500 mb-4">Venue not found</p>
@@ -286,7 +300,9 @@ const VenueDetails = () => {
                         <span className="font-medium text-gray-900">
                           {schedule.day}
                         </span>
-                        <span className="text-gray-600">{schedule.openTime}</span>
+                        <span className="text-gray-600">
+                          {schedule.openTime}
+                        </span>
                       </div>
                     ))
                   ) : (
@@ -320,7 +336,7 @@ const VenueDetails = () => {
                     )}
                   </button>
                 </div>
-{/* 
+                {/* 
                 <div className="space-y-4">
                   {(showAllReviews
                     ? venue.reviews
@@ -378,6 +394,9 @@ const VenueDetails = () => {
                   </label>
                   <input
                     type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    min={new Date().toISOString().split("T")[0]}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
                   />
                 </div>
@@ -386,23 +405,34 @@ const VenueDetails = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Select Time
                   </label>
-                  <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20">
-                    <option>6:00 AM</option>
-                    <option>7:00 AM</option>
-                    <option>8:00 AM</option>
-                    <option>9:00 AM</option>
-                    <option>10:00 AM</option>
-                    <option>11:00 AM</option>
-                    <option>12:00 PM</option>
-                    <option>1:00 PM</option>
-                    <option>2:00 PM</option>
-                    <option>3:00 PM</option>
-                    <option>4:00 PM</option>
-                    <option>5:00 PM</option>
-                    <option>6:00 PM</option>
-                    <option>7:00 PM</option>
-                    <option>8:00 PM</option>
-                    <option>9:00 PM</option>
+                  <select
+                    value={selectedTime}
+                    onChange={(e) => setSelectedTime(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
+                  >
+                    <option value="">Choose time</option>
+                    {[
+                      "6:00 AM",
+                      "7:00 AM",
+                      "8:00 AM",
+                      "9:00 AM",
+                      "10:00 AM",
+                      "11:00 AM",
+                      "12:00 PM",
+                      "1:00 PM",
+                      "2:00 PM",
+                      "3:00 PM",
+                      "4:00 PM",
+                      "5:00 PM",
+                      "6:00 PM",
+                      "7:00 PM",
+                      "8:00 PM",
+                      "9:00 PM",
+                    ].map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -410,18 +440,24 @@ const VenueDetails = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Duration
                   </label>
-                  <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20">
-                    <option>1 hour</option>
-                    <option>2 hours</option>
-                    <option>3 hours</option>
-                    <option>4 hours</option>
+                  <select
+                    value={selectedDuration}
+                    onChange={(e) => setSelectedDuration(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
+                  >
+                    <option value="1">1 hour</option>
+                    <option value="2">2 hours</option>
+                    <option value="3">3 hours</option>
+                    <option value="4">4 hours</option>
                   </select>
                 </div>
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-gray-600">Base Price</span>
-                    <span className="text-sm font-medium">{venue.pricePerHour}</span>
+                    <span className="text-sm font-medium">
+                      {venue.pricePerHour}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-gray-600">

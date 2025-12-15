@@ -3,6 +3,7 @@ import PlayerDashboard from '@/pages/player/PlayerDashboard';
 import ProtectedRoute from '@/routes/common/ProtectedRoute';
 
 import VenueDetails from "@/pages/player/VenueDetails";
+import Booking from '@/pages/player/Booking';
 
 export const playerRoutes: RouteObject[] = [
   {
@@ -18,6 +19,14 @@ export const playerRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute allowedRoles={['PLAYER']}>
         <VenueDetails />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/player/booking/:id',  
+    element: (
+      <ProtectedRoute allowedRoles={['PLAYER']}>
+        <Booking />
       </ProtectedRoute>
     ),
   },

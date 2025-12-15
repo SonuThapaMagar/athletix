@@ -8,11 +8,13 @@ import { FETCH_ALL_VENUES_ACTION } from "@/redux/actions/user/playerVenue.action
 
 const HeroSection = () => {
   const navigate = useNavigate();
-  
+
   // Use playerVenueSlice instead of venueSlice
-  const { venues = [], pagination, loading } = useSelector(
-    (state: StateType) => state.playerVenueSlice
-  );
+  const {
+    venues = [],
+    pagination,
+    loading,
+  } = useSelector((state: StateType) => state.playerVenueSlice);
 
   useEffect(() => {
     console.log("🔄 Fetching venues...");
@@ -61,8 +63,12 @@ const HeroSection = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🏟️</div>
-            <p className="text-gray-500 text-lg">No venues available at the moment.</p>
-            <p className="text-gray-400 text-sm mt-2">Check back later for new venues!</p>
+            <p className="text-gray-500 text-lg">
+              No venues available at the moment.
+            </p>
+            <p className="text-gray-400 text-sm mt-2">
+              Check back later for new venues!
+            </p>
           </div>
         </div>
       </section>
@@ -137,9 +143,7 @@ const HeroSection = () => {
 
                 <div className="flex space-x-2">
                   <button
-                    onClick={() =>
-                      navigate(`/player/booking?venueId=${venue.id}`)
-                    }
+                    onClick={() => navigate(`/player/booking/${venue.id}`)}
                     className="flex-1 bg-[#2c5aa0] text-white py-2 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium"
                   >
                     Book Now
