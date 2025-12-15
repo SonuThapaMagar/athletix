@@ -18,31 +18,39 @@ import type { RootState } from "@/redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { FETCH_VENUE_DETAIL_BY_ID } from "@/redux/actions/venue/venue.actions";
 import type { VenueDetail } from "@/types/venue.types/venue.types";
+import type { StateType } from "@/redux/slices";
+import { FETCH_VENUE_BY_ID_ACTION } from "@/redux/actions/user/playerVenue.actions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const VenueDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const { selectedVenue: venue ,loading} = useSelector(
+    (state: StateType) => state.playerVenueSlice
+  );
+
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   // const { selectedVenue: venue } = useSelector(
   //   (state: RootState) => state.venueSlice
   // );
-  const [venue, setVenue] = useState<VenueDetail | null>(null);
+  // const [venue, setVenue] = useState<VenueDetail | null>(null);
 
-  const [loading, setLoading] = useState<boolean>(true);
-
-  const fetchVenueDetail = (id: number) => {
-    FETCH_VENUE_DETAIL_BY_ID(id)
-      .then((data) => {
-        console.log("Venue data fetched:", data);
-        setVenue(data);
-      })
-      .finally(() => setLoading(false));
-  };
+  // const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (id) fetchVenueDetail(Number(id));
+    if (id) {
+      console.log("🔄 Fetching venue details for ID:", id);
+      FETCH_VENUE_BY_ID_ACTION(Number(id))
+        .then((venue) => {
+          console.log("✅ Venue details loaded:", venue);
+        })
+        .catch((error) => {
+          console.error("❌ Error loading venue details:", error);
+        });
+    }
   }, [id]);
 
   const handleBookNow = () => {
@@ -68,9 +76,29 @@ const VenueDetails = () => {
       />
     ));
   };
-  if (loading) return <p className="p-6 text-center">Loading venue...</p>;
-  if (!venue)
-    return <p className="p-6 text-center text-red-500">Venue not found</p>;
+  if (loading) {
+    return (
+      <div className="p-6">
+        <Skeleton className="h-8 w-64 mb-6" />
+        <Skeleton className="h-64 w-full mb-6" />
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+ if (!venue) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-red-500 mb-4">Venue not found</p>
+        <button
+          onClick={() => navigate("/player")}
+          className="text-[#2c5aa0] hover:text-[#1e3d6f] transition-colors"
+        >
+          Back to Home
+        </button>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -217,7 +245,7 @@ const VenueDetails = () => {
                   About This Venue
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
-                  {venue.description}
+                  {venue.description || "No description available."}
                 </p>
               </div>
 
@@ -401,7 +429,7 @@ const VenueDetails = () => {
                     </span>
                     <span className="text-sm font-medium">$56.00</span>
                   </div>
-                  {venue.discount && (
+                  {venue.pricePerHour && (
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm text-green-600">
                         Discount (20% OFF)
@@ -413,7 +441,7 @@ const VenueDetails = () => {
                   )}
                   <div className="flex justify-between items-center text-lg font-semibold text-gray-900 border-t pt-2">
                     <span>Total</span>
-                    <span>{venue.discount ? "$44.80" : "$56.00"}</span>
+                    <span>{venue.pricePerHour ? "$44.80" : "$56.00"}</span>
                   </div>
                 </div>
 
@@ -448,7 +476,7 @@ const VenueDetails = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Policies
               </h3>
-              <ul className="space-y-2">
+              {/* <ul className="space-y-2">
                 {venue.policies.map((policy, index) => (
                   <li
                     key={index}
@@ -458,7 +486,7 @@ const VenueDetails = () => {
                     <span>{policy}</span>
                   </li>
                 ))}
-              </ul>
+              </ul> */}
             </div>
           </div>
         </div>
