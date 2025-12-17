@@ -1,44 +1,126 @@
-// src/lib/esewa.ts
+import CryptoJS from 'crypto-js';
+
 const ESEWA_CONFIG = {
-  uat: true, // Toggle for prod
-  merchantCode: process.env.REACT_APP_ESEWA_MERCHANT_CODE || 'EPAYTEST',
-  secretKey: process.env.REACT_APP_ESEWA_SECRET_KEY || '8cfc35d5f5594c7cb5c7', // Test key
-  baseUrl: 'https://uat.esewa.com.np', // Prod: https://esewa.com.np
+  uat: true,
+  merchantCode: import.meta.env.VITE_ESEWA_MERCHANT_CODE,
+  secretKey: import.meta.env.VITE_ESEWA_SECRET_KEY,
+
+  // get baseUrl() {
+  //   return this.uat
+  //     ? 'https://rc-epay.esewa.com.np'
+  //     : 'https://epay.esewa.com.np';
+  // }
+  get baseUrl() {
+    return this.uat
+      ? 'https://rc-epay.esewa.com.np'  // ← Correct UAT base URL
+      : 'https://epay.esewa.com.np';
+  }
 };
 
-// Generate eSewa URL + Signature (v2)
-export const generateEsewaUrl = (bookingId: number, amount: number, successUrl: string, failureUrl: string): string => {
-  const params = new URLSearchParams({
-    amt: amount.toFixed(2),
-    pdc: '0',
-   psc: '0',
-    txAmt: '0',
-    tAmt: amount.toFixed(2),
-    pid: `B${bookingId}`, // Prefix for booking
-    scd: ESEWA_CONFIG.merchantCode,
-    su: successUrl,
-    fu: failureUrl,
-  });
+interface EsewaPaymentParams {
+  bookingId: number;
+  amount: number;
+  successUrl: string;
+  failureUrl: string;
+}
 
-  // HMAC signature (v2: amt + pid + scd)
-  const message = `${amount.toFixed(2)}${params.get('pid')}${ESEWA_CONFIG.merchantCode}`;
+const generateHmacSignature = (message: string): string => {
+  const hash = CryptoJS.HmacSHA256(message, ESEWA_CONFIG.secretKey);
+  return CryptoJS.enc.Base64.stringify(hash);
+};
+
+export const submitEsewaPayment = ({
+  bookingId,
+  amount,
+  successUrl,
+  failureUrl,
+}: EsewaPaymentParams) => {
+  const transactionUuid = `B${bookingId}`;
+  const totalAmount = amount.toFixed(1); // Must be ONE decimal
+
+  // ⚠️ Exact field order, no spaces
+  const message = `total_amount=${totalAmount},transaction_uuid=${transactionUuid},product_code=${ESEWA_CONFIG.merchantCode}`;
   const signature = generateHmacSignature(message);
 
-  params.append('sHash', signature);
+  // Build POST form
+  const form = document.createElement("form");
+  form.method = "POST";
+  // form.action = `${ESEWA_CONFIG.baseUrl}/api/epay/main/v2/form`;
 
-  return `${ESEWA_CONFIG.baseUrl}/epay/main?${params.toString()}`;
+  form.action = `${ESEWA_CONFIG.baseUrl}/api/epay/main/v2/form`;
+
+  const fields: Record<string, string> = {
+    amount: totalAmount,
+    tax_amount: "0",
+    total_amount: totalAmount,
+    transaction_uuid: transactionUuid,
+    product_code: ESEWA_CONFIG.merchantCode,
+    product_service_charge: "0",
+    product_delivery_charge: "0",
+    success_url: successUrl,
+    failure_url: failureUrl,
+    signed_field_names: "total_amount,transaction_uuid,product_code",
+    signature,
+  };
+
+  Object.entries(fields).forEach(([key, value]) => {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = key;
+    input.value = value;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  console.log("Message for signature:", message);
+  console.log("Generated signature:", signature);
+  console.log("Total amount sent:", totalAmount);
+  form.submit();
 };
 
-// HMAC SHA256 (client-side)
-const generateHmacSignature = (message: string): string => {
-  // Use Web Crypto API (modern browsers)
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(ESEWA_CONFIG.secretKey);
-  const data = encoder.encode(message);
+export const verifyEsewaSignature = (
+  data: Record<string, string>,
+  receivedSignature: string
+): boolean => {
+  const signedFields = data.signed_field_names?.split(',') || [];
+  const messageParts = signedFields.map(field => `${field}=${data[field] || ''}`);
+  const message = messageParts.join(',');
+  const expectedSignature = generateHmacSignature(message);
+  return expectedSignature === receivedSignature;
+};
 
-  return crypto.subtle
-    .importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
-    .then((key) => crypto.subtle.sign('HMAC', key, data))
-    .then((sig) => btoa(String.fromCharCode(...new Uint8Array(sig))))
-    .catch(() => ''); // Fallback
+export interface EsewaSuccessParams {
+  transaction_uuid: string;
+  transaction_code: string;
+  total_amount: string;
+  status: string;
+  signature?: string;
+}
+
+export const parseEsewaSuccessParams = (
+  searchParams: URLSearchParams
+): EsewaSuccessParams | null => {
+  const transaction_uuid = searchParams.get('transaction_uuid');
+  const transaction_code = searchParams.get('transaction_code');
+  const total_amount = searchParams.get('total_amount');
+  const status = searchParams.get('status');
+  const signature = searchParams.get('signature') || undefined;
+
+  if (!transaction_uuid || !transaction_code || !total_amount || !status) {
+    return null;
+  }
+
+  return { transaction_uuid, transaction_code, total_amount, status, signature };
+};
+
+export const extractBookingId = (transactionUuid: string): number | null => {
+  const match = transactionUuid.match(/^B(\d+)$/);
+  return match ? parseInt(match[1], 10) : null;
+};
+
+export default {
+  submitEsewaPayment,
+  verifyEsewaSignature,
+  parseEsewaSuccessParams,
+  extractBookingId,
 };

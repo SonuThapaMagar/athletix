@@ -1,5 +1,5 @@
 import api from "@/api/api";
-import type { Venue, VenueSubmitData } from "@/types/venue.types/venue.types";
+import type { VenueSubmitData } from "@/types/venue.types/venue.types";
 
 const user = {
   auth: {
@@ -21,5 +21,25 @@ const venueMgmt = {
   updateVenue: (id: number, data: any) => api.put(`/venues/${id}`, data),
   deleteVenue: (id: number) => api.delete(`/venues/${id}`),
 }
-const requests = { user, venueMgmt, };
+
+const booking = {
+  createPending: (data: {
+    venueId: number;
+    startTime: string;
+    durationHours: number;
+  }) => api.post("/bookings/create-pending", data),
+  getMyBookings: () => api.get("/bookings/my-bookings"),
+  cancelBooking: (bookingId: number) => api.delete(`/bookings/cancel/${bookingId}`),
+};
+
+const payment = {
+  initiateEsewa: (bookingId: number) =>
+    api.get(`/payments/esewa/initiate/${bookingId}`, { responseType: "text" }),
+  verifyEsewa: (data: { bookingId: number; refId: string; amt: string; signature: string }) =>
+    api.post("/payments/esewa/verify", data),
+  handleFailure: (bookingId: number) => 
+    api.post(`/payments/esewa/failure?bookingId=${bookingId}`),
+  
+};
+const requests = { user, venueMgmt, booking, payment };
 export default requests;

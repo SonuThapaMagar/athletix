@@ -4,6 +4,8 @@ import ProtectedRoute from '@/routes/common/ProtectedRoute';
 
 import VenueDetails from "@/pages/player/VenueDetails";
 import Booking from '@/pages/player/Booking';
+import PaymentSuccess from '@/pages/payment/PaymentSuccess';
+import PaymentFailure from '@/pages/payment/PaymentFailure';
 
 export const playerRoutes: RouteObject[] = [
   {
@@ -30,5 +32,15 @@ export const playerRoutes: RouteObject[] = [
       </ProtectedRoute>
     ),
   },
+
+  {
+  path: '/payment/success',
+  element: <PaymentSuccess />
+},
+{
+  path: '/payment/failure',
+  element: <PaymentFailure />
+}
+
 ];
 

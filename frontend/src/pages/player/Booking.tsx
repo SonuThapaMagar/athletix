@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import PlayerNavLayout from "@/layout/PlayerNavLayout";
-import { MdLocationOn, MdStar, MdAccessTime, MdClose } from "react-icons/md";
+import { MdLocationOn, MdClose } from "react-icons/md";
 import { useSelector } from "react-redux";
 import type { StateType } from "@/redux/slices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FETCH_VENUE_BY_ID_ACTION } from "@/redux/actions/user/playerVenue.actions";
+import { CREATE_PENDING_BOOKING_ACTION } from "@/redux/actions/user/venueBooking.actions";
+import { toast } from "sonner";
+import requests from "@/helper/requests";
+import { submitEsewaPayment } from "@/lib/esewa";
 
 const Booking = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,7 +19,7 @@ const Booking = () => {
     (state: StateType) => state.playerVenueSlice
   );
 
-  // Prefill from state passed from VenueDetails
+  // Prefill from VenueDetails state
   const prefill = (location.state as any) || {};
   const [selectedDate, setSelectedDate] = useState(prefill.selectedDate || "");
   const [selectedTime, setSelectedTime] = useState(prefill.selectedTime || "");
@@ -23,8 +27,8 @@ const Booking = () => {
     prefill.selectedDuration || "1"
   );
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // If venue not in Redux but ID in URL, fetch it
   useEffect(() => {
     if (id && !venue) {
       FETCH_VENUE_BY_ID_ACTION(Number(id));
@@ -32,22 +36,22 @@ const Booking = () => {
   }, [id, venue]);
 
   const timeSlots = [
-    "6:00 AM",
-    "7:00 AM",
-    "8:00 AM",
-    "9:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "1:00 PM",
-    "2:00 PM",
-    "3:00 PM",
-    "4:00 PM",
-    "5:00 PM",
-    "6:00 PM",
-    "7:00 PM",
-    "8:00 PM",
-    "9:00 PM",
+    "06:00",
+    "07:00",
+    "08:00",
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+    "18:00",
+    "19:00",
+    "20:00",
+    "21:00",
   ];
 
   const calculateTotal = () => {
@@ -56,16 +60,48 @@ const Booking = () => {
   };
 
   const handleBookingConfirm = () => {
+    if (!selectedDate || !selectedTime) {
+      toast.error("Please select both date and time");
+      return;
+    }
     setShowConfirmation(true);
   };
 
-  const handleFinalConfirm = () => {
-    setShowConfirmation(false);
-    // TODO: Call your CREATE_BOOKING_ACTION here when ready
-    navigate("/player/history");
-  };
+const handleFinalConfirm = async () => {
+  if (!venue?.id) return;
 
-  // Loading state
+  setIsProcessing(true);
+
+  try {
+    const startTime = `${selectedDate}T${selectedTime}:00`;
+
+    // Create pending booking
+    const booking = await CREATE_PENDING_BOOKING_ACTION({
+      venueId: venue.id,
+      startTime,
+      durationHours: Number(selectedDuration),
+    });
+
+    console.log("✅ Booking created:", booking);
+
+    toast.success("Redirecting to eSewa...");
+
+    // 🛠️ Use client-side POST form submission (this sends proper POST)
+    submitEsewaPayment({
+      bookingId: booking.id,
+      amount: calculateTotal(), // Whole number, e.g., 1000
+      successUrl: "http://localhost:5173/payment/success",
+      failureUrl: `http://localhost:5173/payment/failure?bid=${booking.id}`,
+    });
+
+  } catch (err: any) {
+    console.error("Error:", err);
+    toast.error(err?.message || "Payment initiation failed");
+    setIsProcessing(false);
+    setShowConfirmation(false);
+  }
+};
+
   if (venueLoading) {
     return (
       <div className="p-6">
@@ -75,7 +111,6 @@ const Booking = () => {
     );
   }
 
-  // No venue found
   if (!venue) {
     return (
       <div className="p-6 text-center">
@@ -115,7 +150,7 @@ const Booking = () => {
             Complete Your Booking
           </h1>
           <p className="text-gray-600 mt-2">
-            Review your selection and confirm your booking
+            Review your selection and proceed to payment
           </p>
         </div>
 
@@ -130,7 +165,7 @@ const Booking = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Select Date
+                    Select Date *
                   </label>
                   <input
                     type="date"
@@ -138,17 +173,19 @@ const Booking = () => {
                     onChange={(e) => setSelectedDate(e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
                     min={new Date().toISOString().split("T")[0]}
+                    required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Select Time
+                    Select Time *
                   </label>
                   <select
                     value={selectedTime}
                     onChange={(e) => setSelectedTime(e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
+                    required
                   >
                     <option value="">Choose time</option>
                     {timeSlots.map((time) => (
@@ -161,7 +198,7 @@ const Booking = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Duration
+                    Duration *
                   </label>
                   <select
                     value={selectedDuration}
@@ -198,12 +235,11 @@ const Booking = () => {
 
               <div className="flex flex-col sm:flex-row gap-6">
                 <div className="flex-shrink-0">
-                  <div className="w-32 h-24 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-                    <div className="text-white text-center">
-                      <div className="text-2xl mb-1">🏟️</div>
-                      <div className="text-xs opacity-90">Venue</div>
-                    </div>
-                  </div>
+                  <img
+                    src={venue.images?.[0] || "/api/placeholder/128/96"}
+                    alt={venue.name}
+                    className="w-32 h-24 rounded-lg object-cover"
+                  />
                 </div>
 
                 <div className="flex-1">
@@ -214,24 +250,13 @@ const Booking = () => {
                     <MdLocationOn className="w-4 h-4 mr-1" />
                     {venue.location}
                   </div>
-                  {/* <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center">
-                      <MdStar className="w-4 h-4 text-yellow-400 mr-1" />
-                      <span className="font-medium">{venue.rating}</span>
-                      <span className="ml-1">({venue.reviews} reviews)</span>
-                    </div>
-                    <div className="flex items-center">
-                      <MdAccessTime className="w-4 h-4 mr-1" />
-                      {venue.availability}
-                    </div>
-                  </div> */}
 
                   <div className="mt-3">
                     <div className="text-sm text-gray-600 mb-2">
                       Available Sports:
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {venue.sports.map((sport, index) => (
+                      {venue.sports?.map((sport, index) => (
                         <span
                           key={index}
                           className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
@@ -258,57 +283,52 @@ const Booking = () => {
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-gray-600">Date</span>
                     <span className="text-sm font-medium">
-                      {selectedDate || "Select date"}
+                      {selectedDate || "Not selected"}
                     </span>
                   </div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-gray-600">Time</span>
                     <span className="text-sm font-medium">
-                      {selectedTime || "Select time"}
+                      {selectedTime || "Not selected"}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Duration</span>
                     <span className="text-sm font-medium">
-                      {selectedDuration} hours
+                      {selectedDuration}{" "}
+                      {Number(selectedDuration) === 1 ? "hour" : "hours"}
                     </span>
                   </div>
                 </div>
 
                 <div className="border-b pb-4">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-600">Base Price</span>
-                    <span className="text-sm font-medium">{venue.pricePerHour}</span>
+                    <span className="text-sm text-gray-600">
+                      Price per hour
+                    </span>
+                    <span className="text-sm font-medium">
+                      NPR {venue.pricePerHour}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-gray-600">Duration</span>
-                    {/* <span className="text-sm font-medium">
-                      ${pricing.subtotal.toFixed(2)}
-                    </span> */}
+                    <span className="text-sm font-medium">
+                      {selectedDuration}h
+                    </span>
                   </div>
-                  {venue.pricePerHour && (
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-green-600">
-                        Discount (20% OFF)
-                      </span>
-                      {/* <span className="text-sm font-medium text-green-600">
-                        -${pricing.discount.toFixed(2)}
-                      </span> */}
-                    </div>
-                  )}
                 </div>
 
                 <div className="flex justify-between items-center text-lg font-semibold text-gray-900">
                   <span>Total</span>
-                  {/* <span>${pricing.total.toFixed(2)}</span> */}
+                  <span>NPR {calculateTotal()}</span>
                 </div>
 
                 <button
                   onClick={handleBookingConfirm}
-                  disabled={!selectedDate || !selectedTime}
+                  disabled={!selectedDate || !selectedTime || isProcessing}
                   className="w-full bg-[#2c5aa0] text-white py-3 px-4 rounded-lg hover:bg-[#1e3d6f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
                 >
-                  Confirm Booking
+                  {isProcessing ? "Processing..." : "Proceed to Payment"}
                 </button>
               </div>
             </div>
@@ -325,7 +345,8 @@ const Booking = () => {
                 </h3>
                 <button
                   onClick={() => setShowConfirmation(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  disabled={isProcessing}
+                  className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
                 >
                   <MdClose className="w-5 h-5" />
                 </button>
@@ -340,22 +361,30 @@ const Booking = () => {
                     <div>Date: {selectedDate}</div>
                     <div>Time: {selectedTime}</div>
                     <div>Duration: {selectedDuration} hours</div>
-                    {/* <div>Total: ${pricing.total.toFixed(2)}</div> */}
+                    <div className="font-semibold text-gray-900 mt-2">
+                      Total: NPR {calculateTotal()}
+                    </div>
                   </div>
                 </div>
+
+                <p className="text-xs text-gray-500">
+                  You will be redirected to eSewa to complete the payment.
+                </p>
 
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowConfirmation(false)}
-                    className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors"
+                    disabled={isProcessing}
+                    className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleFinalConfirm}
-                    className="flex-1 bg-[#2c5aa0] text-white py-2 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors"
+                    disabled={isProcessing}
+                    className="flex-1 bg-[#2c5aa0] text-white py-2 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors disabled:opacity-50"
                   >
-                    Confirm Booking
+                    {isProcessing ? "Processing..." : "Confirm & Pay"}
                   </button>
                 </div>
               </div>
