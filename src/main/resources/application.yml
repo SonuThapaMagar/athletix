@@ -41,4 +41,8 @@ jwt:
 
 esewa:
   merchant-code: EPAYTEST
+  secret-key: 8gBm/:&EnhH.1/q
   uat: true
+
+app:
+  frontend-url: http://localhost:5173

@@ -60,7 +60,7 @@ public class VenueService {
                 .contactEmail(req.email())
                 .operatingHours(mapToEmbeddable(req.operatingHours()))  // Map nested
 //                .status(com.athletix.dto.admin.VenueStatus.PENDING)  // Default
-                .isVerified(false)
+//                .isVerified(false)
                 .build();
 
         // Step 3: Save & Map Response
@@ -79,14 +79,24 @@ public class VenueService {
     public PaginationResponse<VenueResponse> getAllVenues(int page, int perPage) {
         int pageIndex = Math.max(page - 1, 0);
         var pageable = PageRequest.of(pageIndex, perPage);
-        // Assumes VenueRepository has: Page<Venue> findByIsVerifiedTrue(Pageable pageable);
-        Page<Venue> venuePage = venueRepository.findByIsVerifiedTrue(pageable);
+
+        // ❌ REMOVE approval filter
+        Page<Venue> venuePage = venueRepository.findAll(pageable);
+
         List<VenueResponse> venueResponses = venuePage.getContent().stream()
                 .map(v -> toVenueResponse(v, v.getOwner().getName()))
                 .collect(Collectors.toList());
-        var pagination = new Pagination(page, perPage, venuePage.getTotalElements(), venuePage.getTotalPages());
+
+        var pagination = new Pagination(
+                page,
+                perPage,
+                venuePage.getTotalElements(),
+                Math.max(venuePage.getTotalPages(), 1)
+        );
+
         return new PaginationResponse<>(venueResponses, pagination);
     }
+
 
     public VenueResponse getVenueById(Long id) {
         Venue venue = venueRepository.findById(id)
@@ -144,14 +154,14 @@ public class VenueService {
         venueRepository.delete(venue);
     }
 
-    public VenueResponse approveVenue(Long id, String loggerEmail) {  // Admin use
-        Venue venue = venueRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Venue not found"));
-//        venue.setStatus(com.athletix.dto.admin.VenueStatus.APPROVED);
-        venue.setVerified(true);
-        venueRepository.save(venue);
-        return toVenueResponse(venue, venue.getOwner().getName());
-    }
+//    public VenueResponse approveVenue(Long id, String loggerEmail) {  // Admin use
+//        Venue venue = venueRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Venue not found"));
+////        venue.setStatus(com.athletix.dto.admin.VenueStatus.APPROVED);
+//        venue.setVerified(true);
+//        venueRepository.save(venue);
+//        return toVenueResponse(venue, venue.getOwner().getName());
+//    }
 
     // Helpers
     private User extractOwnerFromHeader(String authHeader) {
@@ -198,7 +208,7 @@ public class VenueService {
                 v.getContactEmail(),  // ← Add
                 v.getOwner().getUserId(),
                 ownerName,
-                v.isVerified(),
+//                v.isVerified(),
                 v.getCreatedAt(),
                 v.getUpdatedAt()
         );

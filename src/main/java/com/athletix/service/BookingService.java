@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class BookingService {
 
     private final SlotRepository slotRepository;
@@ -23,37 +23,53 @@ public class BookingService {
     private final AuthService authService;
     private final PaymentService paymentService;
 
-    /// BOOK A SLOT → Create PENDING Booking
-    public BookingResponse bookSlot(Long slotId, String authHeader) {
-        User player = authService.validatePlayer(authHeader);
-        Slot slot = slotRepository.findById(slotId)
-                .orElseThrow(() -> new RuntimeException("Slot not found"));
-
-        // Check if already booked
-        if (bookingRepository.existsBySlot_IdAndStatusIn(slotId, List.of(BookingStatus.PENDING, BookingStatus.CONFIRMED))) {
-            throw new RuntimeException("Slot already booked");
-        }
-
-        double amount = paymentService.calculateAmount(slot);
-        Booking booking = Booking.builder()
-                .venue(slot.getVenue())
-                .player(player)
-                .slot(slot)
-                .startTime(slot.getStartTime())
-                .endTime(slot.getEndTime())
-                .amount(amount)
-                .status(BookingStatus.PENDING)
-                .paid(false)
-                .build();
-
-        booking = bookingRepository.save(booking);
-        return toResponse(booking);
+    public BookingService(SlotRepository slotRepository,
+                          BookingRepository bookingRepository,
+                          VenueRepository venueRepository,
+                          JwtUtil jwtUtil,
+                          AuthService authService,
+                          PaymentService paymentService) {
+        this.slotRepository = slotRepository;
+        this.bookingRepository = bookingRepository;
+        this.venueRepository = venueRepository;
+        this.jwtUtil = jwtUtil;
+        this.authService = authService;
+        this.paymentService = paymentService;
     }
+
+    /// BOOK A SLOT → Create PENDING Booking
+//    public BookingResponse bookSlot(Long slotId, String authHeader) {
+//        User player = authService.validatePlayer(authHeader);
+//        Slot slot = slotRepository.findById(slotId)
+//                .orElseThrow(() -> new RuntimeException("Slot not found"));
+//
+//        // Check if already booked
+//        if (bookingRepository.existsBySlot_IdAndStatusIn(slotId, List.of(BookingStatus.PENDING, BookingStatus.CONFIRMED))) {
+//            throw new RuntimeException("Slot already booked");
+//        }
+//
+//        double amount = paymentService.calculateAmount(slot);
+//        Booking booking = Booking.builder()
+//                .venue(slot.getVenue())
+//                .player(player)
+//                .slot(slot)
+//                .startTime(slot.getStartTime())
+//                .endTime(slot.getEndTime())
+//                .amount(amount)
+//                .status(BookingStatus.PENDING)
+//                .paid(false)
+//                .build();
+//
+//        booking = bookingRepository.save(booking);
+//        return toResponse(booking);
+//    }
 
     public List<BookingResponse> getMyBookings(String authHeader) {
         User player = authService.validatePlayer(authHeader);
         return bookingRepository.findByPlayer_UserId(player.getUserId())
-                .stream().map(this::toResponse).toList();
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     public void cancelBooking(Long bookingId, String authHeader) {

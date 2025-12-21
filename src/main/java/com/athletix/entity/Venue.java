@@ -48,7 +48,7 @@ public class Venue {
 	@CollectionTable(name = "venue_operating_hours", joinColumns = @JoinColumn(name = "venue_id"))
 	private List<OperatingHourEmbed> operatingHours = new ArrayList<>();
 
-	private boolean isVerified = false;
+//	private boolean isVerified = false;
 
 //	@Enumerated(EnumType.STRING)
 //	@Column(nullable = false)

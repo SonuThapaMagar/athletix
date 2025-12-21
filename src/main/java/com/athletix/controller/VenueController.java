@@ -45,8 +45,16 @@ public class VenueController {
 
     // VIEW ONE
     @GetMapping("/{id}")
-    public ResponseEntity<VenueResponse> get(@PathVariable Long id) {
-        return ResponseEntity.ok(venueService.getVenueById(id));
+    public ResponseEntity<ApiResponse<VenueResponse>> get(@PathVariable Long id) {
+        VenueResponse venue = venueService.getVenueById(id);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        "success",
+                        "Venue fetched successfully",
+                        venue
+                )
+        );
     }
 
     // MY VENUES (owner only)
@@ -95,8 +103,8 @@ public class VenueController {
 //    }
 
     // approve venue
-    @PutMapping("/approve/{id}")
-    public ResponseEntity<VenueResponse> approve(@PathVariable Long id) {
-        return ResponseEntity.ok(venueService.approveVenue(id, null)); // null for no logger
-    }
+//    @PutMapping("/approve/{id}")
+//    public ResponseEntity<VenueResponse> approve(@PathVariable Long id) {
+//        return ResponseEntity.ok(venueService.approveVenue(id, null)); // null for no logger
+//    }
 }

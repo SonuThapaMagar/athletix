@@ -54,7 +54,7 @@ public class SlotService {
         List<Slot> allSlots = slotRepository.findByVenue(venue);
 
         List<Long> bookedSlotIds = bookingRepository
-                .findBySlot_Venue_IdAndStatusIn(venueId, List.of(BookingStatus.PENDING, BookingStatus.CONFIRMED))
+                .findByVenue_IdAndStatusIn(venueId, List.of(BookingStatus.PENDING, BookingStatus.CONFIRMED))
                 .stream()
                 .map(b -> b.getSlot().getId())
                 .toList();

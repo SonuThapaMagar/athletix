@@ -16,7 +16,6 @@ public record VenueResponse(
         String phone,
         String email,        Long ownerId,
         String ownerName,
-        boolean isVerified,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}

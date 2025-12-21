@@ -4,7 +4,6 @@ import com.athletix.dto.admin.*;
 import com.athletix.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -82,10 +81,10 @@ public class AdminController {
     }
 
     // 5. PLATFORM CONTROL
-    @PostMapping("/broadcast")
-    public ResponseEntity<String> broadcast(@RequestBody BroadcastDto dto) {
-        adminService.broadcast(dto.message());
-        return ResponseEntity.ok("Broadcast sent");
-    }
+//    @PostMapping("/broadcast")
+//    public ResponseEntity<String> broadcast(@RequestBody BroadcastDto dto) {
+//        adminService.broadcast(dto.message());
+//        return ResponseEntity.ok("Broadcast sent");
+//    }
 
 }

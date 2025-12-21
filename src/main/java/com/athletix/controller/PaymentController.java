@@ -1,9 +1,14 @@
 package com.athletix.controller;
 
+import com.athletix.entity.Booking;
+import com.athletix.entity.BookingStatus;
+import com.athletix.repository.BookingRepository;
 import com.athletix.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -11,34 +16,140 @@ import org.springframework.web.bind.annotation.*;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final BookingRepository bookingRepository;
+
+    /**
+     * Initiate eSewa payment - returns payment URL
+     */
+    @GetMapping("/esewa/initiate/{bookingId}")
+    public ResponseEntity<String> initiateEsewa(@PathVariable Long bookingId) {
+        try {
+            System.out.println("🔵 Initiating eSewa payment for bookingId = " + bookingId);
+
+            // Generate eSewa payment URL
+            String url = paymentService.generateEsewaUrl(bookingId);
+
+            System.out.println("🔵 Generated URL: " + url);
+
+            // Return plain text URL
+            return ResponseEntity.ok()
+                    .header("Content-Type", "text/plain")
+                    .body(url);
+
+        } catch (Exception e) {
+            System.err.println("❌ Error initiating payment: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest()
+                    .body("Error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Verify eSewa payment after redirect
+     */
+    @PostMapping("/esewa/verify")
+    public ResponseEntity<?> verifyEsewa(@RequestBody VerifyRequest req) {
+        try {
+            System.out.println("🔵 Verifying payment for bookingId = " + req.bookingId());
+            System.out.println("=".repeat(60));
+            System.out.println("🔵 PAYMENT VERIFICATION REQUEST RECEIVED");
+            System.out.println("=".repeat(60));
+            System.out.println("   Booking ID: " + req.bookingId());
+            System.out.println("   Transaction Code: " + req.refId());
+            System.out.println("   Amount: " + req.amt());
+            System.out.println("   Request from: Frontend (after eSewa callback)");
+            System.out.println("=".repeat(60));
+
+            // 1. Find booking
+            Booking booking = bookingRepository.findById(req.bookingId())
+                    .orElseThrow(() -> {
+                        System.err.println("❌ Booking not found: " + req.bookingId());
+                        return new RuntimeException("Booking not found");
+                    });
+
+            System.out.println("✅ Booking found");
+            System.out.println("   Venue: " + booking.getVenue().getName());
+            System.out.println("   Amount: " + booking.getAmount());
+            System.out.println("   Current status: " + booking.getStatus());
+            System.out.println("   Is paid: " + booking.isPaid());
+
+            // 2. Check if already paid (prevent double processing)
+            if (booking.isPaid()) {
+                System.out.println("⚠️  Booking already paid - skipping verification");
+                System.out.println("=".repeat(60));
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "message", "Booking already paid",
+                        "booking", booking
+                ));
+            }
+            // 3. Verify payment with eSewa API
+            System.out.println("🔵 Calling eSewa verification API...");
+            String result = paymentService.verifyAndConfirm(
+                    req.bookingId(),
+                    req.refId(),
+                    req.amt()
+            );
+
+            // 4. Fetch updated booking
+            booking = bookingRepository.findById(req.bookingId())
+                    .orElseThrow(() -> new RuntimeException("Booking not found after update"));
+
+            System.out.println("=".repeat(60));
+            System.out.println("✅ PAYMENT VERIFICATION SUCCESSFUL");
+            System.out.println("=".repeat(60));
+            System.out.println("   Booking ID: " + req.bookingId());
+            System.out.println("   New status: " + booking.getStatus());
+            System.out.println("   Is paid: " + booking.isPaid());
+            System.out.println("=".repeat(60));
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", result,
+                    "booking", booking
+            ));
+
+        } catch (Exception e) {
+            System.err.println("=".repeat(60));
+            System.err.println("❌ PAYMENT VERIFICATION FAILED");
+            System.err.println("=".repeat(60));
+            System.err.println("   Booking ID: " + req.bookingId());
+            System.err.println("   Error: " + e.getMessage());
+            e.printStackTrace();
+            System.err.println("=".repeat(60));
+
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "success", false,
+                            "message", "Payment verification failed: " + e.getMessage()
+                    ));
+        }
+    }
+
+    @PostMapping("/esewa/failure")
+    public ResponseEntity<?> handleFailure(@RequestParam Long bookingId) {
+        try {
+            System.out.println("🔴 Payment failed for bookingId = " + bookingId);
+
+            bookingRepository.findById(bookingId).ifPresent(booking -> {
+                booking.setStatus(BookingStatus.FAILED);
+                bookingRepository.save(booking);
+            });
+
+            return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "message", "Payment failed. Booking cancelled."
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
 
     @GetMapping("/test")
-    public String test() {
-        return "Payment controller working!";
-    }
-
-    @GetMapping("/esewa/initiate/{bookingId}")
-    public ResponseEntity<String> initiate(@PathVariable Long bookingId) {
-        System.out.println("Initiating eSewa payment for bookingId = " + bookingId);
-        String url = paymentService.generateEsewaUrl(bookingId);
-        System.out.println("Generated URL: " + url);
-        return ResponseEntity.ok(url);
-    }
-
-    @PostMapping("/esewa/verify")
-    public ResponseEntity<String> verify(@RequestBody VerifyRequest req) {
-        String msg = paymentService.verifyAndConfirm(
-                req.bookingId(),
-                req.refId(),        // This is transactionUuid (e.g., "B1")
-                req.amt(),
-                req.signature()
-        );
-        return ResponseEntity.ok(msg);
-    }
-
-    @GetMapping("/esewa/failure")
-    public ResponseEntity<String> failure(@RequestParam Long bookingId) {
-        return ResponseEntity.ok(paymentService.failure(bookingId));
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("Payment controller is working!");
     }
 }
 

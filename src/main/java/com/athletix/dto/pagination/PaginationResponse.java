@@ -10,6 +10,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaginationResponse<T> {
-    private List<T> venues;
+    private List<T> items;
     private Pagination pagination;
 }
