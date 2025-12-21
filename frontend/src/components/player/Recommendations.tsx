@@ -130,7 +130,7 @@ const Recommendations = () => {
   }
 
   const handleBookNow = (venueId: number) => {
-    navigate('/player/booking')
+    navigate('/player/bookings')
   }
 
   const handleViewDetails = (venueId: number) => {

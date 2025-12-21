@@ -27,7 +27,6 @@ export const VERIFY_PAYMENT_ACTION = (data: {
     bookingId: number;
     refId: string;
     amt: string;
-    signature?: string;
 }): Promise<Booking> => new Promise((resolve, reject) => {
     AppDispatch(venueBookingActions.setLoading(true));
 
@@ -36,17 +35,28 @@ export const VERIFY_PAYMENT_ACTION = (data: {
         bookingId: data.bookingId,
         refId: data.refId,
         amt: data.amt,
-        signature: data.signature || '', // Provide default value
     };
+    console.log("🔵 Sending verification request to backend:", data);
 
     requests.payment
-        .verifyEsewa(payload)
+        .verifyEsewa({
+            bookingId: data.bookingId,
+            refId: data.refId,
+            amt: data.amt,
+            signature: "",
+        })
         .then((res) => {
+            console.log("✅ Backend verification response:", res.data);
             const booking = res.data.booking || res.data.data;
+            if (!booking) {
+                throw new Error('No booking data in response');
+            }
             AppDispatch(venueBookingActions.updateBooking(booking));
             resolve(booking);
         })
         .catch((err) => {
+            console.error("❌ Verification failed:", err.response?.data);
+
             const message = err.response?.data?.message || "Payment verification failed";
             AppDispatch(venueBookingActions.setError(message));
             reject(err);

@@ -1,24 +1,30 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import PlayerNavLayout from "@/layout/PlayerNavLayout";
-import { MdLocationOn, MdClose } from "react-icons/md";
+import { MdLocationOn, MdClose, MdCheckCircle } from "react-icons/md";
 import { useSelector } from "react-redux";
 import type { StateType } from "@/redux/slices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FETCH_VENUE_BY_ID_ACTION } from "@/redux/actions/user/playerVenue.actions";
 import { CREATE_PENDING_BOOKING_ACTION } from "@/redux/actions/user/venueBooking.actions";
 import { toast } from "sonner";
-import requests from "@/helper/requests";
 import { submitEsewaPayment } from "@/lib/esewa";
 
 const Booking = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedVenue: venue, loading: venueLoading } = useSelector(
     (state: StateType) => state.playerVenueSlice
   );
+  const { currentBooking, bookings } = useSelector(
+    (state: StateType) => state.venueBookingSlice
+  );
 
+  // Check for booking ID from URL params (after payment success)
+  const bookingIdFromUrl = searchParams.get("bookingId");
+  
   // Prefill from VenueDetails state
   const prefill = (location.state as any) || {};
   const [selectedDate, setSelectedDate] = useState(prefill.selectedDate || "");
@@ -28,12 +34,32 @@ const Booking = () => {
   );
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [bookingFromPayment, setBookingFromPayment] = useState<any>(null);
 
+  // Fetch venue based on different scenarios
   useEffect(() => {
-    if (id && !venue) {
+    // Scenario 1: Booking ID from URL (after payment success)
+    if (bookingIdFromUrl) {
+      const booking = bookings.find(b => b.id === Number(bookingIdFromUrl)) || currentBooking;
+      if (booking && booking.venueId) {
+        setBookingFromPayment(booking);
+        if (!venue || venue.id !== booking.venueId) {
+          FETCH_VENUE_BY_ID_ACTION(booking.venueId);
+        }
+      }
+    }
+    // Scenario 2: Current booking in Redux (recently created/paid)
+    else if (currentBooking && currentBooking.venueId) {
+      setBookingFromPayment(currentBooking);
+      if (!venue || venue.id !== currentBooking.venueId) {
+        FETCH_VENUE_BY_ID_ACTION(currentBooking.venueId);
+      }
+    }
+    // Scenario 3: Venue ID from URL params (normal booking flow)
+    else if (id && !venue) {
       FETCH_VENUE_BY_ID_ACTION(Number(id));
     }
-  }, [id, venue]);
+  }, [id, venue, bookingIdFromUrl, currentBooking, bookings]);
 
   const timeSlots = [
     "06:00",
@@ -102,22 +128,31 @@ const handleFinalConfirm = async () => {
   }
 };
 
+  // Show success message if booking was just paid
+  const showPaymentSuccess = bookingFromPayment && bookingFromPayment.paid && bookingFromPayment.status === "CONFIRMED";
+
   if (venueLoading) {
     return (
-      <div className="p-6">
-        <Skeleton className="h-8 w-64 mb-6" />
-        <Skeleton className="h-96 w-full" />
+      <div className="min-h-screen bg-gray-50">
+        <PlayerNavLayout />
+        <div className="p-6">
+          <Skeleton className="h-8 w-64 mb-6" />
+          <Skeleton className="h-96 w-full" />
+        </div>
       </div>
     );
   }
 
   if (!venue) {
     return (
-      <div className="p-6 text-center">
-        <p className="text-red-500 mb-4">Venue not found</p>
-        <button onClick={() => navigate("/player")} className="text-[#2c5aa0]">
-          Back to venues
-        </button>
+      <div className="min-h-screen bg-gray-50">
+        <PlayerNavLayout />
+        <div className="p-6 text-center">
+          <p className="text-red-500 mb-4">Venue not found</p>
+          <button onClick={() => navigate("/player")} className="text-[#2c5aa0]">
+            Back to venues
+          </button>
+        </div>
       </div>
     );
   }
@@ -126,6 +161,29 @@ const handleFinalConfirm = async () => {
     <div className="min-h-screen bg-gray-50">
       <PlayerNavLayout />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Payment Success Banner */}
+        {showPaymentSuccess && bookingFromPayment && (
+          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <MdCheckCircle className="w-6 h-6 text-green-600" />
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-green-900">
+                  Booking Confirmed!
+                </h3>
+                <p className="text-sm text-green-700">
+                  Your booking #{bookingFromPayment.id} has been confirmed. Payment received successfully.
+                </p>
+              </div>
+              <button
+                onClick={() => navigate("/player/bookings")}
+                className="text-sm text-green-700 hover:text-green-900 font-medium underline"
+              >
+                View All Bookings
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="mb-8">
           <button
             onClick={() => navigate(-1)}
@@ -147,85 +205,157 @@ const handleFinalConfirm = async () => {
             <span>Back to Venue Details</span>
           </button>
           <h1 className="text-3xl font-bold text-gray-900">
-            Complete Your Booking
+            {showPaymentSuccess ? "Booking Details" : "Complete Your Booking"}
           </h1>
           <p className="text-gray-600 mt-2">
-            Review your selection and proceed to payment
+            {showPaymentSuccess 
+              ? "View your confirmed booking details" 
+              : "Review your selection and proceed to payment"}
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Booking Form */}
+          {/* Booking Form or Booking Details */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                Booking Details
-              </h2>
+            {showPaymentSuccess && bookingFromPayment ? (
+              // Show confirmed booking details
+              <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  Confirmed Booking Details
+                </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Select Date *
-                  </label>
-                  <input
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
-                    min={new Date().toISOString().split("T")[0]}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Select Time *
-                  </label>
-                  <select
-                    value={selectedTime}
-                    onChange={(e) => setSelectedTime(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
-                    required
-                  >
-                    <option value="">Choose time</option>
-                    {timeSlots.map((time) => (
-                      <option key={time} value={time}>
-                        {time}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Duration *
-                  </label>
-                  <select
-                    value={selectedDuration}
-                    onChange={(e) => setSelectedDuration(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
-                  >
-                    <option value="1">1 hour</option>
-                    <option value="2">2 hours</option>
-                    <option value="3">3 hours</option>
-                    <option value="4">4 hours</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Number of Players
-                  </label>
-                  <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20">
-                    <option value="1">1 player</option>
-                    <option value="2">2 players</option>
-                    <option value="4">4 players</option>
-                    <option value="6">6 players</option>
-                    <option value="8">8 players</option>
-                  </select>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Booking ID
+                      </label>
+                      <p className="text-sm font-semibold text-gray-900">
+                        #{bookingFromPayment.id}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Status
+                      </label>
+                      <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
+                        bookingFromPayment.status === "CONFIRMED" 
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}>
+                        {bookingFromPayment.status}
+                      </span>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Date
+                      </label>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {new Date(bookingFromPayment.startTime).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Time
+                      </label>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {new Date(bookingFromPayment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(bookingFromPayment.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Amount Paid
+                      </label>
+                      <p className="text-sm font-semibold text-gray-900">
+                        Rs. {bookingFromPayment.amount?.toFixed(2) || "0.00"}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Payment Status
+                      </label>
+                      <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                        {bookingFromPayment.paid ? "Paid" : "Pending"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              // Show booking form
+              <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  Booking Details
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
+                      min={new Date().toISOString().split("T")[0]}
+                      required
+                      disabled={showPaymentSuccess}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select Time *
+                    </label>
+                    <select
+                      value={selectedTime}
+                      onChange={(e) => setSelectedTime(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
+                      required
+                      disabled={showPaymentSuccess}
+                    >
+                      <option value="">Choose time</option>
+                      {timeSlots.map((time) => (
+                        <option key={time} value={time}>
+                          {time}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Duration *
+                    </label>
+                    <select
+                      value={selectedDuration}
+                      onChange={(e) => setSelectedDuration(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
+                      disabled={showPaymentSuccess}
+                    >
+                      <option value="1">1 hour</option>
+                      <option value="2">2 hours</option>
+                      <option value="3">3 hours</option>
+                      <option value="4">4 hours</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Number of Players
+                    </label>
+                    <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20" disabled={showPaymentSuccess}>
+                      <option value="1">1 player</option>
+                      <option value="2">2 players</option>
+                      <option value="4">4 players</option>
+                      <option value="6">6 players</option>
+                      <option value="8">8 players</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Venue Summary */}
             <div className="bg-white rounded-2xl shadow-sm p-6">
@@ -323,13 +453,22 @@ const handleFinalConfirm = async () => {
                   <span>NPR {calculateTotal()}</span>
                 </div>
 
-                <button
-                  onClick={handleBookingConfirm}
-                  disabled={!selectedDate || !selectedTime || isProcessing}
-                  className="w-full bg-[#2c5aa0] text-white py-3 px-4 rounded-lg hover:bg-[#1e3d6f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-                >
-                  {isProcessing ? "Processing..." : "Proceed to Payment"}
-                </button>
+                {showPaymentSuccess ? (
+                  <button
+                    onClick={() => navigate("/player/bookings")}
+                    className="w-full bg-[#2c5aa0] text-white py-3 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium"
+                  >
+                    View All Bookings
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleBookingConfirm}
+                    disabled={!selectedDate || !selectedTime || isProcessing}
+                    className="w-full bg-[#2c5aa0] text-white py-3 px-4 rounded-lg hover:bg-[#1e3d6f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                  >
+                    {isProcessing ? "Processing..." : "Proceed to Payment"}
+                  </button>
+                )}
               </div>
             </div>
           </div>

@@ -1,6 +1,6 @@
 // src/layout/PlayerNavLayout.tsx
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import {
   MdHome,
   MdBookOnline,
@@ -23,6 +23,7 @@ const PlayerNavLayout = () => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useSelector((state: RootState) => state.authSlice.profile);
 
   useEffect(() => {
@@ -35,7 +36,7 @@ const PlayerNavLayout = () => {
 
   const navigationItems = [
     { name: "Home", icon: MdHome, href: "/player" },
-    { name: "Booking", icon: MdBookOnline, href: "/player/booking" },
+    { name: "Booking", icon: MdBookOnline, href: "/player/bookings" },
     { name: "Matchmaking", icon: MdPeople, href: "/player/matchmaking" },
     { name: "History", icon: MdHistory, href: "/player/history" },
   ];
@@ -89,15 +90,20 @@ const PlayerNavLayout = () => {
           <div className="hidden md:flex items-center space-x-2">
             {navigationItems.map((item) => {
               const Icon = item.icon;
+              const isActive = location.pathname === item.href;
               return (
-                <a
+                <Link
                   key={item.name}
-                  href={item.href}
-                  className="flex items-center space-x-2 text-gray-700 hover:text-[#2c5aa0] px-4 py-2 text-sm font-medium"
+                  to={item.href}
+                  className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "text-[#2c5aa0] border-b-2 border-[#2c5aa0]"
+                      : "text-gray-700 hover:text-[#2c5aa0]"
+                  }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.name}</span>
-                </a>
+                </Link>
               );
             })}
           </div>
@@ -168,15 +174,21 @@ const PlayerNavLayout = () => {
         <div className="md:hidden bg-white border-t border-gray-200">
           {navigationItems.map((item) => {
             const Icon = item.icon;
+            const isActive = location.pathname === item.href;
             return (
-              <a
+              <Link
                 key={item.name}
-                href={item.href}
-                className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-[#2c5aa0]"
+                to={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`flex items-center space-x-3 px-4 py-3 transition-colors ${
+                  isActive
+                    ? "text-[#2c5aa0] bg-blue-50"
+                    : "text-gray-700 hover:text-[#2c5aa0]"
+                }`}
               >
                 <Icon className="w-5 h-5" />
                 <span>{item.name}</span>
-              </a>
+              </Link>
             );
           })}
         </div>

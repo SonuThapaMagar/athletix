@@ -1,9 +1,11 @@
 import type { RouteObject } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import PlayerDashboard from '@/pages/player/PlayerDashboard';
 import ProtectedRoute from '@/routes/common/ProtectedRoute';
 
 import VenueDetails from "@/pages/player/VenueDetails";
 import Booking from '@/pages/player/Booking';
+import MyBookings from '@/pages/player/MyBookings';
 import PaymentSuccess from '@/pages/payment/PaymentSuccess';
 import PaymentFailure from '@/pages/payment/PaymentFailure';
 
@@ -32,15 +34,25 @@ export const playerRoutes: RouteObject[] = [
       </ProtectedRoute>
     ),
   },
-
   {
-  path: '/payment/success',
-  element: <PaymentSuccess />
-},
-{
-  path: '/payment/failure',
-  element: <PaymentFailure />
-}
-
+    path: '/player/booking',
+    element: <Navigate to="/player/bookings" replace />,
+  },
+  {
+    path: '/player/bookings',
+    element: (
+      <ProtectedRoute allowedRoles={['PLAYER']}>
+        <MyBookings />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/payment/success',
+    element: <PaymentSuccess />
+  },
+  {
+    path: '/payment/failure',
+    element: <PaymentFailure />
+  }
 ];
 

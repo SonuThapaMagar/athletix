@@ -28,18 +28,25 @@ const booking = {
     startTime: string;
     durationHours: number;
   }) => api.post("/bookings/create-pending", data),
-  getMyBookings: () => api.get("/bookings/my-bookings"),
+  getMyBookings: () => api.get("/bookings/myBookings"),
   cancelBooking: (bookingId: number) => api.delete(`/bookings/cancel/${bookingId}`),
+  getMyVenueBookings: () => api.get("/bookings/my-venue"),
 };
 
 const payment = {
   initiateEsewa: (bookingId: number) =>
     api.get(`/payments/esewa/initiate/${bookingId}`, { responseType: "text" }),
-  verifyEsewa: (data: { bookingId: number; refId: string; amt: string; signature: string }) =>
+  verifyEsewa: (data: { bookingId: number; refId: string; amt: string; signature?: string }) =>
     api.post("/payments/esewa/verify", data),
   handleFailure: (bookingId: number) => 
-    api.post(`/payments/esewa/failure?bookingId=${bookingId}`),
-  
+    api.post(`/payments/esewa/failure`, null, { 
+      params: { bookingId } 
+    }),
+  handleSuccess: (bookingId: number) => 
+    api.post(`/payments/esewa/success`, null, { 
+      params: { bookingId } 
+    }), 
+
 };
 const requests = { user, venueMgmt, booking, payment };
 export default requests;
