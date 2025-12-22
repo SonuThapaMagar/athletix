@@ -10,8 +10,12 @@ import {
   MdLocationOn,
   MdDelete,
   MdSave,
-  MdClose
+  MdClose,
+  MdLock
 } from 'react-icons/md'
+import PlayerNavLayout from '@/layout/PlayerNavLayout'
+import { CHANGE_PASSWORD_ACTION } from '@/redux/actions/user.actions'
+import { toast } from 'sonner'
 
 interface UserSettings {
   notifications: {
@@ -77,6 +81,13 @@ const Settings = () => {
   })
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  })
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
 
   const handleSettingChange = (category: keyof UserSettings, setting: string, value: any) => {
     setSettings(prev => ({
@@ -99,6 +110,37 @@ const Settings = () => {
     setShowDeleteModal(false)
   }
 
+  const handlePasswordChange = async () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error('New passwords do not match')
+      return
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters long')
+      return
+    }
+
+    setIsChangingPassword(true)
+    try {
+      await CHANGE_PASSWORD_ACTION({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      })
+      toast.success('Password changed successfully')
+      setShowPasswordModal(false)
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      })
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to change password')
+    } finally {
+      setIsChangingPassword(false)
+    }
+  }
+
   const tabs = [
     { id: 'notifications', label: 'Notifications', icon: MdNotifications },
     { id: 'privacy', label: 'Privacy', icon: MdSecurity },
@@ -108,6 +150,7 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <PlayerNavLayout />
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -403,6 +446,25 @@ const Settings = () => {
                   <h2 className="text-xl font-semibold text-gray-900 mb-6">Account Settings</h2>
                   
                   <div className="space-y-4">
+                    {/* Change Password Section */}
+                    <div className="py-4 border-b border-gray-200">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <MdLock className="w-5 h-5 text-gray-500" />
+                          <div>
+                            <h3 className="font-medium text-gray-900">Password</h3>
+                            <p className="text-sm text-gray-600">Change your account password</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setShowPasswordModal(true)}
+                          className="px-4 py-2 text-sm font-medium text-[#2c5aa0] border border-[#2c5aa0] rounded-lg hover:bg-[#2c5aa0] hover:text-white transition-colors"
+                        >
+                          Change Password
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="flex items-center justify-between py-3 border-b border-gray-200">
                       <div className="flex items-center gap-3">
                         <MdSecurity className="w-5 h-5 text-gray-500" />
@@ -459,6 +521,93 @@ const Settings = () => {
           </div>
         </div>
       </div>
+
+      {/* Change Password Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Change Password</h3>
+              <button 
+                onClick={() => {
+                  setShowPasswordModal(false)
+                  setPasswordData({
+                    currentPassword: '',
+                    newPassword: '',
+                    confirmPassword: ''
+                  })
+                }}
+                className="text-gray-400 hover:text-gray-600"
+                disabled={isChangingPassword}
+              >
+                <MdClose className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                <input
+                  type="password"
+                  value={passwordData.currentPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
+                  placeholder="Enter current password"
+                  disabled={isChangingPassword}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <input
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
+                  placeholder="Enter new password"
+                  disabled={isChangingPassword}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                <input
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
+                  placeholder="Confirm new password"
+                  disabled={isChangingPassword}
+                />
+              </div>
+              
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={() => {
+                    setShowPasswordModal(false)
+                    setPasswordData({
+                      currentPassword: '',
+                      newPassword: '',
+                      confirmPassword: ''
+                    })
+                  }}
+                  disabled={isChangingPassword}
+                  className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handlePasswordChange}
+                  disabled={isChangingPassword || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+                  className="flex-1 bg-[#2c5aa0] text-white py-2 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isChangingPassword ? 'Changing...' : 'Change Password'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Account Modal */}
       {showDeleteModal && (

@@ -30,6 +30,7 @@ const authSlice = createSlice({
         setUserProfile: (state, action: PayloadAction<IUserProfile>) => {
             state.profile = action.payload;
         },
+        
     },
 });
 

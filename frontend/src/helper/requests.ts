@@ -9,6 +9,8 @@ const user = {
     refreshToken: () => api.post("/auth/refresh", { refreshToken: localStorage.getItem("refreshToken") }), // Matches your backend
   },
   getMyProfile: () => api.get("/users/myProfile"),
+  updateProfile: (data: { name?: string; phone?: string; location?: string }) => api.put("/users/updateProfile", data),
+  changePassword: (data: { currentPassword: string; newPassword: string }) => api.post("/users/changePassword", data),
 }
 
 const venueMgmt = {

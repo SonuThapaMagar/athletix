@@ -10,6 +10,8 @@ import MyBookings from '@/pages/player/MyBookings';
 import PaymentSuccess from '@/pages/payment/PaymentSuccess';
 import PaymentFailure from '@/pages/payment/PaymentFailure';
 import History from '@/pages/player/History';
+import Profile from '@/pages/player/Profile';
+import Settings from '@/pages/player/Settings';
 
 export const playerRoutes: RouteObject[] = [
   {
@@ -71,6 +73,22 @@ export const playerRoutes: RouteObject[] = [
   {
     path: '/payment/failure',
     element: <PaymentFailure />
+  },
+  {
+    path: '/player/profile',
+    element: (
+      <ProtectedRoute allowedRoles={['PLAYER']}>
+        <Profile />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/player/settings',
+    element: (
+      <ProtectedRoute allowedRoles={['PLAYER']}>
+        <Settings />
+      </ProtectedRoute>
+    ),
   }
 ];
 
