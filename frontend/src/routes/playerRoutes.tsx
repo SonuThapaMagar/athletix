@@ -5,9 +5,11 @@ import ProtectedRoute from '@/routes/common/ProtectedRoute';
 
 import VenueDetails from "@/pages/player/VenueDetails";
 import Booking from '@/pages/player/Booking';
+import BookingDetails from '@/pages/player/BookingDetails';
 import MyBookings from '@/pages/player/MyBookings';
 import PaymentSuccess from '@/pages/payment/PaymentSuccess';
 import PaymentFailure from '@/pages/payment/PaymentFailure';
+import History from '@/pages/player/History';
 
 export const playerRoutes: RouteObject[] = [
   {
@@ -15,6 +17,14 @@ export const playerRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute allowedRoles={['PLAYER']}>
         <PlayerDashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/player/history',
+    element: (
+      <ProtectedRoute allowedRoles={['PLAYER']}>
+        <History />
       </ProtectedRoute>
     ),
   },
@@ -43,6 +53,14 @@ export const playerRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute allowedRoles={['PLAYER']}>
         <MyBookings />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/player/booking-details/:id',
+    element: (
+      <ProtectedRoute allowedRoles={['PLAYER']}>
+        <BookingDetails />
       </ProtectedRoute>
     ),
   },

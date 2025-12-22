@@ -15,7 +15,11 @@ const MyBookings = () => {
   const [selectedFilter, setSelectedFilter] = useState<"all" | "PENDING" | "CONFIRMED" | "CANCELLED">("all");
 
   const handleBookingClick = (booking: any) => {
-    if (booking.venueId) {
+    if (booking.status === "CONFIRMED") {
+      // Navigate to booking details page for confirmed bookings
+      navigate(`/player/booking-details/${booking.id}`);
+    } else if (booking.venueId) {
+      // Navigate to booking page for pending/cancelled bookings
       navigate(`/player/booking/${booking.venueId}?bookingId=${booking.id}`);
     }
   };

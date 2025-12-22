@@ -4,6 +4,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 export interface IVenueBookingSlice {
   bookings: Booking[];        // List of player's bookings (for history page)
   currentBooking: Booking | null; // Optional: track the latest pending booking
+  selectedBooking: Booking | null; // Selected booking details for viewing
   loading: boolean;
   error: string | null;
 }
@@ -11,6 +12,7 @@ export interface IVenueBookingSlice {
 const initialState: IVenueBookingSlice = {
   bookings: [],
   currentBooking: null,
+  selectedBooking: null,
   loading: false,
   error: null,
 };
@@ -61,6 +63,12 @@ const venueBookingSlice = createSlice({
     // Clear current booking (optional)
     clearCurrentBooking(state) {
       state.currentBooking = null;
+    },
+    // Set selected booking for details view
+    setSelectedBooking(state, action: PayloadAction<Booking | null>) {
+      state.selectedBooking = action.payload;
+      state.loading = false;
+      state.error = null;
     },
   },
 });

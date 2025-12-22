@@ -36,6 +36,7 @@ const booking = {
 
   }) => api.post("/bookings/create-pending", data),
   getMyBookings: () => api.get("/bookings/myBookings"),
+  getBookingById: (bookingId: number) => api.get(`/bookings/${bookingId}`),
   cancelBooking: (bookingId: number) => api.delete(`/bookings/cancel/${bookingId}`),
   getMyVenueBookings: () => api.get("/bookings/my-venue"),
   confirmBooking: (bookingId: number) => api.put(`/bookings/confirm/${bookingId}`),
