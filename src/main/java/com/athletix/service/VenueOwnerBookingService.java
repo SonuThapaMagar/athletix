@@ -1,6 +1,7 @@
 package com.athletix.service;
 
 import com.athletix.dto.booking.BookingResponse;
+import com.athletix.entity.Booking;
 import com.athletix.entity.User;
 import com.athletix.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +20,9 @@ public class VenueOwnerBookingService {
     public List<BookingResponse> getMyVenueBookings(String authHeader) {
         User owner = authService.validateVenueOwner(authHeader);
 
-        return bookingRepository.findByVenue_Owner_UserId(owner.getUserId())
-                .stream()
+        List<Booking> bookings = bookingRepository.findByVenue_Owner_UserId(owner.getUserId());
+
+        return bookings.stream()
                 .map(this::toResponse)
                 .toList();
     }

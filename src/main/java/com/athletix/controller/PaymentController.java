@@ -92,20 +92,23 @@ public class PaymentController {
             );
 
             // 4. Fetch updated booking
-            booking = bookingRepository.findById(req.bookingId())
-                    .orElseThrow(() -> new RuntimeException("Booking not found after update"));
+            booking.setPaid(true);
+            booking.setStatus(BookingStatus.CONFIRMED); // 🎯 INSTANT CONFIRMATION
+            booking.setPaymentRefId(req.refId());
+            booking = bookingRepository.save(booking);
 
             System.out.println("=".repeat(60));
-            System.out.println("✅ PAYMENT VERIFICATION SUCCESSFUL");
+            System.out.println("✅ PAYMENT VERIFIED & BOOKING AUTO-CONFIRMED");
             System.out.println("=".repeat(60));
-            System.out.println("   Booking ID: " + req.bookingId());
-            System.out.println("   New status: " + booking.getStatus());
-            System.out.println("   Is paid: " + booking.isPaid());
+            System.out.println("   Booking ID: " + booking.getId());
+            System.out.println("   Status: " + booking.getStatus());
+            System.out.println("   Paid: " + booking.isPaid());
+            System.out.println("   Sport: " + booking.getSportType());
             System.out.println("=".repeat(60));
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", result,
+                    "message", "Payment successful! Your booking is confirmed.",
                     "booking", booking
             ));
 

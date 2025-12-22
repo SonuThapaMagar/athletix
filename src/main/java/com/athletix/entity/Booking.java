@@ -36,12 +36,18 @@ public class Booking {
     @Column(nullable = false)
     private Double amount;
 
+    @Column(name = "sport_type")
+    private String sportType;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BookingStatus status = BookingStatus.PENDING;
 
     @Column(nullable = false)
     private boolean paid = false;
+
+    @Column(name = "payment_ref_id")
+    private String paymentRefId;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
