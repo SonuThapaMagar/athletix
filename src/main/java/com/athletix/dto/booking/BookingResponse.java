@@ -13,6 +13,7 @@ public record BookingResponse(
         LocalDateTime startTime,
         LocalDateTime endTime,
         Double amount,
+        String sportType,
         BookingStatus status,
         boolean paid,
         LocalDateTime createdAt

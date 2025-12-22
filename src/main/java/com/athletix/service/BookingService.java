@@ -97,6 +97,7 @@ public class BookingService {
                 b.getStartTime(),
                 b.getEndTime(),
                 b.getAmount(),
+                b.getSportType(),
                 b.getStatus(),
                 b.isPaid(),
                 b.getCreatedAt()

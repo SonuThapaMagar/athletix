@@ -3,6 +3,7 @@ package com.athletix.controller;
 import com.athletix.dto.booking.BookingResponse;
 import com.athletix.entity.*;
 import com.athletix.repository.BookingRepository;
+import com.athletix.repository.UserRepository;
 import com.athletix.repository.VenueRepository;
 import com.athletix.security.JwtUtil;
 import com.athletix.service.AuthService;
@@ -27,6 +28,8 @@ public class BookingController {
     private final VenueRepository venueRepository;
     private final BookingRepository bookingRepository;
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+
 
     /**
      * Check availability before booking
@@ -158,7 +161,7 @@ public class BookingController {
         try {
             String token = auth.substring(7);
             String email = jwtUtil.extractEmail(token);
-            User user = authService.userRepository.findByEmail(email)
+            User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             Booking booking = bookingRepository.findById(bookingId)
@@ -206,30 +209,57 @@ public class BookingController {
     }
 
     /**
-     * Cancel a booking (only if unpaid)
+     * ✅ NEW: Get single booking by ID
      */
-//    @DeleteMapping("/cancel/{bookingId}")
-//    public ResponseEntity<?> cancel(
-//            @PathVariable Long bookingId,
-//            @RequestHeader("Authorization") String auth) {
-//        bookingService.cancelBooking(bookingId, auth);
-//        return ResponseEntity.ok("Booking cancelled successfully");
-//    }
+    @GetMapping("/{bookingId}")
+    public ResponseEntity<?> getBookingById(
+            @PathVariable Long bookingId,
+            @RequestHeader("Authorization") String auth) {
+        try {
+            String token = auth.substring(7);
+            String email = jwtUtil.extractEmail(token);
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            Booking booking = bookingRepository.findById(bookingId)
+                    .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+            // Verify user has access to this booking
+            boolean isPlayer = user.getRole().name().equals("PLAYER") &&
+                    booking.getPlayer().getUserId().equals(user.getUserId());
+            boolean isOwner = user.getRole().name().equals("VENUE_OWNER") &&
+                    booking.getVenue().getOwner().getUserId().equals(user.getUserId());
+
+            if (!isPlayer && !isOwner) {
+                throw new RuntimeException("Not authorized to view this booking");
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "data", toResponse(booking)
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
 
     private BookingResponse toResponse(Booking b) {
         return new BookingResponse(
-                b.getId(),
-                b.getVenue().getId(),
-                b.getVenue().getName(),
-                b.getPlayer().getUserId(),
-                b.getPlayer().getName(),
-                b.getStartTime(),
+                        b.getId(),
+                        b.getVenue().getId(),
+                        b.getVenue().getName(),
+                        b.getPlayer().getUserId(),
+                        b.getPlayer().getName(),
+                        b.getStartTime(),
                 b.getEndTime(),
                 b.getAmount(),
+                b.getSportType(),
                 b.getStatus(),
                 b.isPaid(),
                 b.getCreatedAt()
-        );
+                );
     }
 
     // === DTOs ===
