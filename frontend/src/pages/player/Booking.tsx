@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import PlayerNavLayout from "@/layout/PlayerNavLayout";
-import { MdLocationOn, MdClose, MdCheckCircle } from "react-icons/md";
+import { MdLocationOn, MdClose, MdCheckCircle, MdWarning, MdRefresh } from "react-icons/md";
 import { useSelector } from "react-redux";
 import type { StateType } from "@/redux/slices";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,12 +9,14 @@ import { FETCH_VENUE_BY_ID_ACTION } from "@/redux/actions/user/playerVenue.actio
 import { CREATE_PENDING_BOOKING_ACTION } from "@/redux/actions/user/venueBooking.actions";
 import { toast } from "sonner";
 import { submitEsewaPayment } from "@/lib/esewa";
+import api from "@/api/api";
 
 const Booking = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
+  
   const { selectedVenue: venue, loading: venueLoading } = useSelector(
     (state: StateType) => state.playerVenueSlice
   );
@@ -22,23 +24,27 @@ const Booking = () => {
     (state: StateType) => state.venueBookingSlice
   );
 
-  // Check for booking ID from URL params (after payment success)
   const bookingIdFromUrl = searchParams.get("bookingId");
-  
-  // Prefill from VenueDetails state
   const prefill = (location.state as any) || {};
+  
+  // Form state
   const [selectedDate, setSelectedDate] = useState(prefill.selectedDate || "");
   const [selectedTime, setSelectedTime] = useState(prefill.selectedTime || "");
-  const [selectedDuration, setSelectedDuration] = useState(
-    prefill.selectedDuration || "1"
-  );
+  const [selectedDuration, setSelectedDuration] = useState(prefill.selectedDuration || "1");
+  const [selectedSport, setSelectedSport] = useState("");
+  
+  // Availability state
+  const [isChecking, setIsChecking] = useState(false);
+  const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
+  const [availabilityMessage, setAvailabilityMessage] = useState("");
+  
+  // UI state
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [bookingFromPayment, setBookingFromPayment] = useState<any>(null);
 
-  // Fetch venue based on different scenarios
+  // Fetch venue
   useEffect(() => {
-    // Scenario 1: Booking ID from URL (after payment success)
     if (bookingIdFromUrl) {
       const booking = bookings.find(b => b.id === Number(bookingIdFromUrl)) || currentBooking;
       if (booking && booking.venueId) {
@@ -47,37 +53,63 @@ const Booking = () => {
           FETCH_VENUE_BY_ID_ACTION(booking.venueId);
         }
       }
-    }
-    // Scenario 2: Current booking in Redux (recently created/paid)
-    else if (currentBooking && currentBooking.venueId) {
+    } else if (currentBooking && currentBooking.venueId) {
       setBookingFromPayment(currentBooking);
       if (!venue || venue.id !== currentBooking.venueId) {
         FETCH_VENUE_BY_ID_ACTION(currentBooking.venueId);
       }
-    }
-    // Scenario 3: Venue ID from URL params (normal booking flow)
-    else if (id && !venue) {
+    } else if (id && !venue) {
       FETCH_VENUE_BY_ID_ACTION(Number(id));
     }
   }, [id, venue, bookingIdFromUrl, currentBooking, bookings]);
 
+  // Set default sport when venue loads
+  useEffect(() => {
+    if (venue && venue.sports && venue.sports.length > 0 && !selectedSport) {
+      setSelectedSport(venue.sports[0]);
+    }
+  }, [venue]);
+
+  // ✅ Check availability when selections change
+  const checkAvailability = async () => {
+    if (!selectedDate || !selectedTime || !venue?.id) return;
+    
+    setIsChecking(true);
+    setIsAvailable(null);
+    
+    try {
+      const startTime = `${selectedDate}T${selectedTime}:00`;
+      const res = await api.post("/bookings/check-availability", {
+        venueId: venue.id,
+        startTime,
+        durationHours: Number(selectedDuration)
+      });
+      
+      setIsAvailable(res.data.available);
+      setAvailabilityMessage(res.data.message);
+    } catch (err: any) {
+      setIsAvailable(false);
+      setAvailabilityMessage(err.response?.data?.message || "Error checking availability");
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  // Auto-check when date/time/duration changes (debounced)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (selectedDate && selectedTime) {
+        checkAvailability();
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [selectedDate, selectedTime, selectedDuration]);
+
   const timeSlots = [
-    "06:00",
-    "07:00",
-    "08:00",
-    "09:00",
-    "10:00",
-    "11:00",
-    "12:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-    "18:00",
-    "19:00",
-    "20:00",
-    "21:00",
+    "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
+    "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
+    "18:00", "19:00", "20:00", "21:00",
   ];
 
   const calculateTotal = () => {
@@ -90,45 +122,57 @@ const Booking = () => {
       toast.error("Please select both date and time");
       return;
     }
+    if (!selectedSport) {
+      toast.error("Please select a sport");
+      return;
+    }
+    if (isAvailable !== true) {
+      toast.error("Please wait for availability check or select a different time");
+      return;
+    }
     setShowConfirmation(true);
   };
 
-const handleFinalConfirm = async () => {
-  if (!venue?.id) return;
+  const handleFinalConfirm = async () => {
+    if (!venue?.id) return;
+    setIsProcessing(true);
 
-  setIsProcessing(true);
+    try {
+      const startTime = `${selectedDate}T${selectedTime}:00`;
 
-  try {
-    const startTime = `${selectedDate}T${selectedTime}:00`;
+      // Create pending booking with sport type
+      const booking = await CREATE_PENDING_BOOKING_ACTION({
+        venueId: venue.id,
+        startTime,
+        durationHours: Number(selectedDuration),
+        sportType: selectedSport,
+      });
 
-    // Create pending booking
-    const booking = await CREATE_PENDING_BOOKING_ACTION({
-      venueId: venue.id,
-      startTime,
-      durationHours: Number(selectedDuration),
-    });
+      console.log("✅ Booking created:", booking);
+      toast.success("Redirecting to eSewa...");
 
-    console.log("✅ Booking created:", booking);
+      // Redirect to payment
+      submitEsewaPayment({
+        bookingId: booking.id,
+        amount: calculateTotal(),
+        successUrl: "http://localhost:5173/payment/success",
+        failureUrl: `http://localhost:5173/payment/failure?bid=${booking.id}`,
+      });
 
-    toast.success("Redirecting to eSewa...");
+    } catch (err: any) {
+      console.error("Error:", err);
+      const errorMsg = err.response?.data?.message || err?.message || "Booking failed";
+      toast.error(errorMsg);
+      setIsProcessing(false);
+      setShowConfirmation(false);
+      
+      // Re-check availability if slot was just taken
+      if (errorMsg.includes("already booked") || errorMsg.includes("just been taken")) {
+        checkAvailability();
+      }
+    }
+  };
 
-    // 🛠️ Use client-side POST form submission (this sends proper POST)
-    submitEsewaPayment({
-      bookingId: booking.id,
-      amount: calculateTotal(), // Whole number, e.g., 1000
-      successUrl: "http://localhost:5173/payment/success",
-      failureUrl: `http://localhost:5173/payment/failure?bid=${booking.id}`,
-    });
-
-  } catch (err: any) {
-    console.error("Error:", err);
-    toast.error(err?.message || "Payment initiation failed");
-    setIsProcessing(false);
-    setShowConfirmation(false);
-  }
-};
-
-  // Show success message if booking was just paid
   const showPaymentSuccess = bookingFromPayment && bookingFromPayment.paid && bookingFromPayment.status === "CONFIRMED";
 
   if (venueLoading) {
@@ -171,7 +215,7 @@ const handleFinalConfirm = async () => {
                   Booking Confirmed!
                 </h3>
                 <p className="text-sm text-green-700">
-                  Your booking #{bookingFromPayment.id} has been confirmed. Payment received successfully.
+                  Your booking #{bookingFromPayment.id} for {bookingFromPayment.sportType || "sports"} has been confirmed. Payment received successfully.
                 </p>
               </div>
               <button
@@ -189,18 +233,8 @@ const handleFinalConfirm = async () => {
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             <span>Back to Venue Details</span>
           </button>
@@ -210,187 +244,202 @@ const handleFinalConfirm = async () => {
           <p className="text-gray-600 mt-2">
             {showPaymentSuccess 
               ? "View your confirmed booking details" 
-              : "Review your selection and proceed to payment"}
+              : "Select your sport, date, and time to continue"}
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Booking Form or Booking Details */}
+          {/* Main Content */}
           <div className="lg:col-span-2">
-            {showPaymentSuccess && bookingFromPayment ? (
-              // Show confirmed booking details
+            {!showPaymentSuccess && (
+              <>
+                {/* Sport Selection */}
+                <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                    Select Sport *
+                  </h2>
+                  <div className="flex flex-wrap gap-3">
+                    {venue.sports?.map((sport) => (
+                      <button
+                        key={sport}
+                        onClick={() => setSelectedSport(sport)}
+                        disabled={showPaymentSuccess}
+                        className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                          selectedSport === sport
+                            ? 'bg-[#2c5aa0] text-white shadow-md scale-105'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {sport}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Booking Details Form */}
+                <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                    Booking Details
+                  </h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Select Date *
+                      </label>
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
+                        min={new Date().toISOString().split("T")[0]}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Select Time *
+                      </label>
+                      <select
+                        value={selectedTime}
+                        onChange={(e) => setSelectedTime(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
+                        required
+                      >
+                        <option value="">Choose time</option>
+                        {timeSlots.map((time) => (
+                          <option key={time} value={time}>{time}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Duration *
+                      </label>
+                      <select
+                        value={selectedDuration}
+                        onChange={(e) => setSelectedDuration(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
+                      >
+                        <option value="1">1 hour</option>
+                        <option value="2">2 hours</option>
+                        <option value="3">3 hours</option>
+                        <option value="4">4 hours</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* ✅ Availability Status */}
+                  {selectedDate && selectedTime && (
+                    <div className="mt-6">
+                      {isChecking ? (
+                        <div className="flex items-center gap-2 text-gray-600 bg-gray-50 p-4 rounded-lg">
+                          <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+                          <span>Checking availability...</span>
+                        </div>
+                      ) : isAvailable === true ? (
+                        <div className="flex items-center justify-between gap-2 text-green-600 bg-green-50 p-4 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <MdCheckCircle className="w-5 h-5" />
+                            <span className="font-medium">{availabilityMessage}</span>
+                          </div>
+                          <button
+                            onClick={checkAvailability}
+                            className="text-sm flex items-center gap-1 text-green-700 hover:text-green-900"
+                          >
+                            <MdRefresh className="w-4 h-4" />
+                            Refresh
+                          </button>
+                        </div>
+                      ) : isAvailable === false ? (
+                        <div className="flex items-center justify-between gap-2 text-red-600 bg-red-50 p-4 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <MdWarning className="w-5 h-5" />
+                            <span className="font-medium">{availabilityMessage}</span>
+                          </div>
+                          <button
+                            onClick={checkAvailability}
+                            className="text-sm flex items-center gap-1 text-red-700 hover:text-red-900"
+                          >
+                            <MdRefresh className="w-4 h-4" />
+                            Retry
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Confirmed Booking Details */}
+            {showPaymentSuccess && bookingFromPayment && (
               <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">
                   Confirmed Booking Details
                 </h2>
-
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Booking ID
-                      </label>
-                      <p className="text-sm font-semibold text-gray-900">
-                        #{bookingFromPayment.id}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Status
-                      </label>
-                      <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
-                        bookingFromPayment.status === "CONFIRMED" 
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}>
-                        {bookingFromPayment.status}
-                      </span>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Date
-                      </label>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {new Date(bookingFromPayment.startTime).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Time
-                      </label>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {new Date(bookingFromPayment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(bookingFromPayment.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Amount Paid
-                      </label>
-                      <p className="text-sm font-semibold text-gray-900">
-                        Rs. {bookingFromPayment.amount?.toFixed(2) || "0.00"}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Payment Status
-                      </label>
-                      <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                        {bookingFromPayment.paid ? "Paid" : "Pending"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              // Show booking form
-              <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                  Booking Details
-                </h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Date *
-                    </label>
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
-                      min={new Date().toISOString().split("T")[0]}
-                      required
-                      disabled={showPaymentSuccess}
-                    />
+                    <label className="block text-sm font-medium text-gray-500 mb-1">Booking ID</label>
+                    <p className="text-sm font-semibold text-gray-900">#{bookingFromPayment.id}</p>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Time *
-                    </label>
-                    <select
-                      value={selectedTime}
-                      onChange={(e) => setSelectedTime(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
-                      required
-                      disabled={showPaymentSuccess}
-                    >
-                      <option value="">Choose time</option>
-                      {timeSlots.map((time) => (
-                        <option key={time} value={time}>
-                          {time}
-                        </option>
-                      ))}
-                    </select>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">Sport</label>
+                    <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
+                      {bookingFromPayment.sportType || "N/A"}
+                    </span>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Duration *
-                    </label>
-                    <select
-                      value={selectedDuration}
-                      onChange={(e) => setSelectedDuration(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
-                      disabled={showPaymentSuccess}
-                    >
-                      <option value="1">1 hour</option>
-                      <option value="2">2 hours</option>
-                      <option value="3">3 hours</option>
-                      <option value="4">4 hours</option>
-                    </select>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">Date</label>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {new Date(bookingFromPayment.startTime).toLocaleDateString()}
+                    </p>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Number of Players
-                    </label>
-                    <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20" disabled={showPaymentSuccess}>
-                      <option value="1">1 player</option>
-                      <option value="2">2 players</option>
-                      <option value="4">4 players</option>
-                      <option value="6">6 players</option>
-                      <option value="8">8 players</option>
-                    </select>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">Time</label>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {new Date(bookingFromPayment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - 
+                      {new Date(bookingFromPayment.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">Amount Paid</label>
+                    <p className="text-sm font-semibold text-gray-900">
+                      Rs. {bookingFromPayment.amount?.toFixed(2) || "0.00"}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">Status</label>
+                    <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                      {bookingFromPayment.status}
+                    </span>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Venue Summary */}
+            {/* Venue Information */}
             <div className="bg-white rounded-2xl shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                Venue Information
-              </h2>
-
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Venue Information</h2>
               <div className="flex flex-col sm:flex-row gap-6">
-                <div className="flex-shrink-0">
-                  <img
-                    src={venue.images?.[0] || "/api/placeholder/128/96"}
-                    alt={venue.name}
-                    className="w-32 h-24 rounded-lg object-cover"
-                  />
-                </div>
-
+                <img
+                  src={venue.images?.[0] || "/api/placeholder/128/96"}
+                  alt={venue.name}
+                  className="w-32 h-24 rounded-lg object-cover flex-shrink-0"
+                />
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {venue.name}
-                  </h3>
-                  <div className="flex items-center text-gray-600 text-sm mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{venue.name}</h3>
+                  <div className="flex items-center text-gray-600 text-sm mb-3">
                     <MdLocationOn className="w-4 h-4 mr-1" />
                     {venue.location}
                   </div>
-
-                  <div className="mt-3">
-                    <div className="text-sm text-gray-600 mb-2">
-                      Available Sports:
-                    </div>
+                  <div>
+                    <div className="text-sm text-gray-600 mb-2">Available Sports:</div>
                     <div className="flex flex-wrap gap-2">
                       {venue.sports?.map((sport, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                        >
+                        <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                           {sport}
                         </span>
                       ))}
@@ -401,50 +450,41 @@ const handleFinalConfirm = async () => {
             </div>
           </div>
 
-          {/* Booking Summary */}
+          {/* Booking Summary Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Booking Summary
-              </h3>
-
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h3>
+              
               <div className="space-y-4">
-                <div className="border-b pb-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-600">Date</span>
-                    <span className="text-sm font-medium">
-                      {selectedDate || "Not selected"}
-                    </span>
+                <div className="border-b pb-4 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Sport</span>
+                    <span className="text-sm font-medium">{selectedSport || "Not selected"}</span>
                   </div>
-                  <div className="flex justify-between items-center mb-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Date</span>
+                    <span className="text-sm font-medium">{selectedDate || "Not selected"}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Time</span>
-                    <span className="text-sm font-medium">
-                      {selectedTime || "Not selected"}
-                    </span>
+                    <span className="text-sm font-medium">{selectedTime || "Not selected"}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Duration</span>
                     <span className="text-sm font-medium">
-                      {selectedDuration}{" "}
-                      {Number(selectedDuration) === 1 ? "hour" : "hours"}
+                      {selectedDuration} {Number(selectedDuration) === 1 ? "hour" : "hours"}
                     </span>
                   </div>
                 </div>
 
-                <div className="border-b pb-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-600">
-                      Price per hour
-                    </span>
-                    <span className="text-sm font-medium">
-                      NPR {venue.pricePerHour}
-                    </span>
+                <div className="border-b pb-4 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Price per hour</span>
+                    <span className="text-sm font-medium">NPR {venue.pricePerHour}</span>
                   </div>
-                  <div className="flex justify-between items-center mb-2">
+                  <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Duration</span>
-                    <span className="text-sm font-medium">
-                      {selectedDuration}h
-                    </span>
+                    <span className="text-sm font-medium">{selectedDuration}h</span>
                   </div>
                 </div>
 
@@ -463,7 +503,7 @@ const handleFinalConfirm = async () => {
                 ) : (
                   <button
                     onClick={handleBookingConfirm}
-                    disabled={!selectedDate || !selectedTime || isProcessing}
+                    disabled={!selectedDate || !selectedTime || !selectedSport || isAvailable !== true || isProcessing}
                     className="w-full bg-[#2c5aa0] text-white py-3 px-4 rounded-lg hover:bg-[#1e3d6f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
                   >
                     {isProcessing ? "Processing..." : "Proceed to Payment"}
@@ -479,9 +519,7 @@ const handleFinalConfirm = async () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="bg-white rounded-2xl max-w-md w-full p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Confirm Booking
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900">Confirm Booking</h3>
                 <button
                   onClick={() => setShowConfirmation(false)}
                   disabled={isProcessing}
@@ -493,13 +531,12 @@ const handleFinalConfirm = async () => {
 
               <div className="space-y-4">
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="font-medium text-gray-900 mb-2">
-                    {venue.name}
-                  </h4>
+                  <h4 className="font-medium text-gray-900 mb-2">{venue.name}</h4>
                   <div className="text-sm text-gray-600 space-y-1">
-                    <div>Date: {selectedDate}</div>
-                    <div>Time: {selectedTime}</div>
-                    <div>Duration: {selectedDuration} hours</div>
+                    <div><strong>Sport:</strong> {selectedSport}</div>
+                    <div><strong>Date:</strong> {selectedDate}</div>
+                    <div><strong>Time:</strong> {selectedTime}</div>
+                    <div><strong>Duration:</strong> {selectedDuration} hours</div>
                     <div className="font-semibold text-gray-900 mt-2">
                       Total: NPR {calculateTotal()}
                     </div>
@@ -507,7 +544,7 @@ const handleFinalConfirm = async () => {
                 </div>
 
                 <p className="text-xs text-gray-500">
-                  You will be redirected to eSewa to complete the payment.
+                  You will be redirected to eSewa for payment. Your booking will be confirmed instantly after successful payment.
                 </p>
 
                 <div className="flex gap-3">

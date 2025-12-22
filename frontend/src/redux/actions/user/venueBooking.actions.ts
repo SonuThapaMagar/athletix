@@ -7,6 +7,7 @@ export const CREATE_PENDING_BOOKING_ACTION = (data: {
     venueId: number;
     startTime: string;
     durationHours: number;
+    sportType?: string;
 }): Promise<any> => new Promise((resolve, reject) => {
     AppDispatch(venueBookingActions.setLoading(true));
     requests.booking

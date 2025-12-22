@@ -23,14 +23,22 @@ const venueMgmt = {
 }
 
 const booking = {
+  checkAvailability: (data: {
+    venueId: number;
+    startTime: string;
+    durationHours: number;
+  }) => api.post("/bookings/check-availability", data),
   createPending: (data: {
     venueId: number;
     startTime: string;
     durationHours: number;
+    sportType?: string;
+
   }) => api.post("/bookings/create-pending", data),
   getMyBookings: () => api.get("/bookings/myBookings"),
   cancelBooking: (bookingId: number) => api.delete(`/bookings/cancel/${bookingId}`),
   getMyVenueBookings: () => api.get("/bookings/my-venue"),
+  confirmBooking: (bookingId: number) => api.put(`/bookings/confirm/${bookingId}`),
 };
 
 const payment = {
