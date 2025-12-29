@@ -3,6 +3,7 @@ package com.athletix.controller;
 import com.athletix.dto.booking.BookingResponse;
 import com.athletix.entity.*;
 import com.athletix.repository.BookingRepository;
+import com.athletix.repository.PaymentRepository;
 import com.athletix.repository.UserRepository;
 import com.athletix.repository.VenueRepository;
 import com.athletix.security.JwtUtil;
@@ -29,6 +30,7 @@ public class BookingController {
     private final BookingRepository bookingRepository;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final PaymentRepository paymentRepository;
 
 
     /**
@@ -71,67 +73,67 @@ public class BookingController {
     /**
      * Create a pending booking (no slot required)
      */
-    @PostMapping("/create-pending")
-    public ResponseEntity<?> createPendingBooking(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody CreateBookingRequest req
-    ) {
-        try {
-            User player = authService.validatePlayer(authHeader);
-            Venue venue = venueRepository.findById(req.venueId())
-                    .orElseThrow(() -> new RuntimeException("Venue not found"));
-
-            LocalDateTime startTime = LocalDateTime.parse(req.startTime());
-            LocalDateTime endTime = startTime.plusHours(req.durationHours());
-            List<Booking> overlapping = bookingRepository.findOverlappingBookings(
-                    req.venueId(),
-                    startTime,
-                    endTime,
-                    List.of(BookingStatus.PENDING, BookingStatus.CONFIRMED)
-            );
-
-            if (!overlapping.isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("success", false, "message", "Time slot is already booked"));
-            }
-
-            if (req.sportType() != null && !venue.getSportTypes().contains(req.sportType())) {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "message", "Selected sport is not available at this venue"
-                ));
-            }
-
-            startTime = LocalDateTime.parse(req.startTime());
-            endTime = startTime.plusHours(req.durationHours());
-
-            // Calculate amount
-            double amount = venue.getPricePerHour() * req.durationHours();
-
-            // Create booking
-            Booking booking = Booking.builder()
-                    .venue(venue)
-                    .player(player)
-                    .startTime(startTime)
-                    .endTime(endTime)
-                    .amount(amount)
-                    .sportType(req.sportType())
-                    .status(BookingStatus.PENDING)
-                    .paid(false)
-                    .build();
-
-            booking = bookingRepository.save(booking);
-
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "data", booking
-            ));
-
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("success", false, "message", e.getMessage()));
-        }
-    }
+//    @PostMapping("/create-pending")
+//    public ResponseEntity<?> createPendingBooking(
+//            @RequestHeader("Authorization") String authHeader,
+//            @RequestBody CreateBookingRequest req
+//    ) {
+//        try {
+//            User player = authService.validatePlayer(authHeader);
+//            Venue venue = venueRepository.findById(req.venueId())
+//                    .orElseThrow(() -> new RuntimeException("Venue not found"));
+//
+//            LocalDateTime startTime = LocalDateTime.parse(req.startTime());
+//            LocalDateTime endTime = startTime.plusHours(req.durationHours());
+//            List<Booking> overlapping = bookingRepository.findOverlappingBookings(
+//                    req.venueId(),
+//                    startTime,
+//                    endTime,
+//                    List.of(BookingStatus.PENDING, BookingStatus.CONFIRMED)
+//            );
+//
+//            if (!overlapping.isEmpty()) {
+//                return ResponseEntity.badRequest()
+//                        .body(Map.of("success", false, "message", "Time slot is already booked"));
+//            }
+//
+//            if (req.sportType() != null && !venue.getSportTypes().contains(req.sportType())) {
+//                return ResponseEntity.badRequest().body(Map.of(
+//                        "success", false,
+//                        "message", "Selected sport is not available at this venue"
+//                ));
+//            }
+//
+//            startTime = LocalDateTime.parse(req.startTime());
+//            endTime = startTime.plusHours(req.durationHours());
+//
+//            // Calculate amount
+//            double amount = venue.getPricePerHour() * req.durationHours();
+//
+//            // Create booking
+//            Booking booking = Booking.builder()
+//                    .venue(venue)
+//                    .player(player)
+//                    .startTime(startTime)
+//                    .endTime(endTime)
+//                    .amount(amount)
+//                    .sportType(req.sportType())
+//                    .status(BookingStatus.PENDING)
+//                    .paid(false)
+//                    .build();
+//
+//            booking = bookingRepository.save(booking);
+//
+//            return ResponseEntity.ok(Map.of(
+//                    "success", true,
+//                    "data", booking
+//            ));
+//
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest()
+//                    .body(Map.of("success", false, "message", e.getMessage()));
+//        }
+//    }
 
     /**
      * Get my bookings (player view)
@@ -238,6 +240,77 @@ public class BookingController {
                     "success", true,
                     "data", toResponse(booking)
             ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/create-pending")
+    public ResponseEntity<?> createPendingBooking(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody CreateBookingRequest req
+    ) {
+        try {
+            User player = authService.validatePlayer(authHeader);
+            Venue venue = venueRepository.findById(req.venueId())
+                    .orElseThrow(() -> new RuntimeException("Venue not found"));
+
+            LocalDateTime startTime = LocalDateTime.parse(req.startTime());
+            LocalDateTime endTime = startTime.plusHours(req.durationHours());
+
+            // Check for overlapping bookings
+            List<Booking> overlapping = bookingRepository.findOverlappingBookings(
+                    req.venueId(),
+                    startTime,
+                    endTime,
+                    List.of(BookingStatus.PENDING, BookingStatus.CONFIRMED)
+            );
+
+            if (!overlapping.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "Time slot is already booked"));
+            }
+
+            if (req.sportType() != null && !venue.getSportTypes().contains(req.sportType())) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "message", "Selected sport is not available at this venue"
+                ));
+            }
+
+            // Calculate amount
+            double amount = venue.getPricePerHour() * req.durationHours();
+
+            // Create booking
+            Booking booking = Booking.builder()
+                    .venue(venue)
+                    .player(player)
+                    .startTime(startTime)
+                    .endTime(endTime)
+                    .amount(amount)
+                    .sportType(req.sportType())
+                    .status(BookingStatus.PENDING)
+                    .paid(false)
+                    .build();
+
+            booking = bookingRepository.save(booking);
+
+            // 🆕 CREATE PAYMENT RECORD IMMEDIATELY
+            Payment payment = Payment.builder()
+                    .booking(booking)
+                    .amount(amount)
+                    .status("pending")  // lowercase
+                    .build();
+            paymentRepository.save(payment);
+
+            System.out.println("✅ Created PENDING payment record for booking " + booking.getId());
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "data", booking
+            ));
+
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("success", false, "message", e.getMessage()));

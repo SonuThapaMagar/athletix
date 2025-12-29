@@ -2,7 +2,9 @@ package com.athletix.service;
 
 import com.athletix.entity.Booking;
 import com.athletix.entity.BookingStatus;
+import com.athletix.entity.Payment;
 import com.athletix.repository.BookingRepository;
+import com.athletix.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -24,6 +26,7 @@ public class PaymentService {
 
     private final BookingRepository bookingRepository;
     private final RestTemplate restTemplate = new RestTemplate();
+    private final PaymentRepository paymentRepository;
 
     @Value("${esewa.merchant-code:EPAYTEST}")
     private String merchantCode;
@@ -61,6 +64,20 @@ public class PaymentService {
         }
 
         // 3. Prepare payment parameters
+        Payment payment = paymentRepository.findByBooking_Id(bookingId)
+                .orElseGet(() -> {
+                    System.out.println("✅ Creating new PENDING payment record for booking " + bookingId);
+                    Payment newPayment = Payment.builder()
+                            .booking(booking)
+                            .amount(booking.getAmount())
+                            .status("pending")  // lowercase to match frontend
+                            .build();
+                    return paymentRepository.save(newPayment);
+                });
+
+        System.out.println("✅ Payment record exists: " + payment.getId());
+
+        // 4. Prepare payment parameters
         double amount = booking.getAmount();
         String transactionUuid = "B" + bookingId; // Must be unique
 
@@ -181,6 +198,20 @@ public class PaymentService {
                 throw new RuntimeException("Payment not completed. Status: " + status);
             }
 
+            // ✅ Update booking
+            booking.setPaid(true);
+            booking.setStatus(BookingStatus.CONFIRMED);
+            booking.setPaymentRefId(transactionCode);
+            bookingRepository.save(booking);
+
+            // ✅ UPDATE PAYMENT RECORD TO COMPLETED
+            Payment payment = paymentRepository.findByBooking_Id(bookingId)
+                    .orElseThrow(() -> new RuntimeException("Payment record not found for booking " + bookingId));
+
+            payment.setStatus("completed");  // ← Lowercase to match frontend filter
+            payment.setRefId(transactionCode);
+            paymentRepository.save(payment);
+
             // ⚠️ IMPORTANT: Check different possible field names for transaction code
             String responseTransactionCode = null;
 
@@ -217,6 +248,7 @@ public class PaymentService {
             System.out.println("   Booking ID: " + bookingId);
             System.out.println("   Status: CONFIRMED");
             System.out.println("   Payment Ref: " + transactionCode);
+            System.out.println("   Payment Status: completed");
             System.out.println("=".repeat(60));
 
             return "Payment successful! Booking " + bookingId + " confirmed.";
@@ -228,6 +260,13 @@ public class PaymentService {
             System.err.println("   Error: " + e.getMessage());
             e.printStackTrace();
             System.err.println("=".repeat(60));
+
+            // ✅ UPDATE PAYMENT TO FAILED
+            paymentRepository.findByBooking_Id(bookingId).ifPresent(payment -> {
+                payment.setStatus("failed");  // ← Lowercase to match frontend filter
+                paymentRepository.save(payment);
+            });
+
             throw new RuntimeException("Payment verification failed: " + e.getMessage());
         }
     }
@@ -240,7 +279,11 @@ public class PaymentService {
             booking.setStatus(BookingStatus.FAILED);
             bookingRepository.save(booking);
         });
-
+        // ✅ UPDATE PAYMENT TO FAILED
+        paymentRepository.findByBooking_Id(bookingId).ifPresent(payment -> {
+            payment.setStatus("failed");  // ← Lowercase to match frontend filter
+            paymentRepository.save(payment);
+        });
         return "Payment failed for booking " + bookingId;
     }
 

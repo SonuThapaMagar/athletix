@@ -2,6 +2,7 @@ package com.athletix.repository;
 
 import com.athletix.entity.Booking;
 import com.athletix.entity.BookingStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -57,4 +58,146 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime,
             @Param("statuses") List<BookingStatus> statuses
-    );}
+    );
+
+    // Count active bookings (PENDING or CONFIRMED) for venue owner
+    @Query("""
+    SELECT COUNT(b) FROM Booking b
+    WHERE b.venue.owner.userId = :ownerId
+    AND b.status IN ('PENDING', 'CONFIRMED')
+""")
+    Long countActiveBookings(@Param("ownerId") Long ownerId);
+
+    // Get recent bookings for venue owner (limited)
+    @Query("""
+    SELECT b FROM Booking b
+    WHERE b.venue.owner.userId = :ownerId
+    ORDER BY b.createdAt DESC
+""")
+    List<Booking> findRecentBookingsByOwner(@Param("ownerId") Long ownerId, Pageable pageable);
+
+    // ========== ANALYTICS QUERIES ==========
+
+    /**
+     * Get monthly revenue - Fixed ORDER BY issue
+     */
+    @Query("""
+        SELECT 
+            MONTH(b.startTime) as month,
+            YEAR(b.startTime) as year,
+            COALESCE(SUM(p.amount), 0.0) as revenue
+        FROM Booking b
+        LEFT JOIN Payment p ON p.booking.id = b.id
+        WHERE b.venue.owner.userId = :ownerId
+        AND p.status = 'completed'
+        AND b.startTime BETWEEN :startDate AND :endDate
+        GROUP BY YEAR(b.startTime), MONTH(b.startTime)
+        ORDER BY YEAR(b.startTime), MONTH(b.startTime)
+    """)
+    List<Object[]> getMonthlyRevenue(
+            @Param("ownerId") Long ownerId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Get top performing venues
+     */
+    @Query("""
+        SELECT 
+            v.id,
+            v.name,
+            COUNT(b.id),
+            COALESCE(SUM(p.amount), 0.0)
+        FROM Venue v
+        LEFT JOIN Booking b ON b.venue.id = v.id
+        LEFT JOIN Payment p ON p.booking.id = b.id
+        WHERE v.owner.userId = :ownerId
+        AND b.startTime BETWEEN :startDate AND :endDate
+        AND p.status = 'completed'
+        GROUP BY v.id, v.name
+        ORDER BY COALESCE(SUM(p.amount), 0.0) DESC
+    """)
+    List<Object[]> getTopVenues(
+            @Param("ownerId") Long ownerId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Get sport popularity
+     */
+    @Query("""
+        SELECT 
+            b.sportType,
+            COUNT(b.id),
+            (COUNT(b.id) * 100.0 / (
+                SELECT COUNT(b2.id) 
+                FROM Booking b2 
+                WHERE b2.venue.owner.userId = :ownerId
+                AND b2.startTime BETWEEN :startDate AND :endDate
+            ))
+        FROM Booking b
+        WHERE b.venue.owner.userId = :ownerId
+        AND b.sportType IS NOT NULL
+        AND b.startTime BETWEEN :startDate AND :endDate
+        GROUP BY b.sportType
+        ORDER BY COUNT(b.id) DESC
+    """)
+    List<Object[]> getSportPopularity(
+            @Param("ownerId") Long ownerId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Get peak booking times (by hour)
+     */
+    @Query("""
+        SELECT 
+            HOUR(b.startTime),
+            COUNT(b.id)
+        FROM Booking b
+        WHERE b.venue.owner.userId = :ownerId
+        AND b.startTime BETWEEN :startDate AND :endDate
+        GROUP BY HOUR(b.startTime)
+        ORDER BY HOUR(b.startTime)
+    """)
+    List<Object[]> getPeakBookingTimes(
+            @Param("ownerId") Long ownerId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Count unique active customers
+     */
+    @Query("""
+        SELECT COUNT(DISTINCT b.player.userId)
+        FROM Booking b
+        WHERE b.venue.owner.userId = :ownerId
+        AND b.startTime BETWEEN :startDate AND :endDate
+        AND b.status IN ('CONFIRMED', 'PENDING')
+    """)
+    Long countActiveCustomers(
+            @Param("ownerId") Long ownerId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Count total bookings for period
+     */
+    @Query("""
+        SELECT COUNT(b.id)
+        FROM Booking b
+        WHERE b.venue.owner.userId = :ownerId
+        AND b.startTime BETWEEN :startDate AND :endDate
+    """)
+    Long countTotalBookings(
+            @Param("ownerId") Long ownerId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+}
+

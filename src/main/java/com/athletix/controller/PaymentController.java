@@ -1,9 +1,14 @@
 package com.athletix.controller;
 
+import com.athletix.dto.pagination.PaginationResponse;
+import com.athletix.dto.payment.PaymentResponse;
+import com.athletix.dto.payment.PaymentSummary;
+import com.athletix.dto.response.ApiResponse;
 import com.athletix.entity.Booking;
 import com.athletix.entity.BookingStatus;
 import com.athletix.repository.BookingRepository;
 import com.athletix.service.PaymentService;
+import com.athletix.service.VenueOwnerPaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +22,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
     private final BookingRepository bookingRepository;
+    private final VenueOwnerPaymentService venueOwnerPaymentService;
 
     /**
      * Initiate eSewa payment - returns payment URL
@@ -148,6 +154,74 @@ public class PaymentController {
             return ResponseEntity.badRequest()
                     .body(Map.of("success", false, "message", e.getMessage()));
         }
+    }
+
+    // ==================== VENUE OWNER PAYMENT MANAGEMENT ====================
+
+    /**
+     * GET /api/payments/venue-owner/summary
+     * Get payment summary statistics for venue owner
+     */
+    @GetMapping("/venue-owner/summary")
+    public ResponseEntity<ApiResponse<PaymentSummary>> getPaymentSummary(
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        PaymentSummary summary = venueOwnerPaymentService.getPaymentSummary(authHeader);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        "success",
+                        "Payment summary fetched successfully",
+                        summary
+                )
+        );
+    }
+
+    /**
+     * GET /api/payments/venue-owner
+     * Get all payments for venue owner with pagination and optional filtering
+     */
+    @GetMapping("/venue-owner")
+    public ResponseEntity<ApiResponse<PaginationResponse<PaymentResponse>>> getMyPayments(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int perPage,
+            @RequestParam(required = false, defaultValue = "all") String status
+    ) {
+        PaginationResponse<PaymentResponse> payments = venueOwnerPaymentService.getMyPayments(
+                authHeader,
+                page,
+                perPage,
+                status
+        );
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        "success",
+                        "Payments fetched successfully",
+                        payments
+                )
+        );
+    }
+
+    /**
+     * GET /api/payments/venue-owner/{id}
+     * Get single payment details
+     */
+    @GetMapping("/venue-owner/{id}")
+    public ResponseEntity<ApiResponse<PaymentResponse>> getPaymentById(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long id
+    ) {
+        PaymentResponse payment = venueOwnerPaymentService.getPaymentById(authHeader, id);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        "success",
+                        "Payment details fetched successfully",
+                        payment
+                )
+        );
     }
 
     @GetMapping("/test")

@@ -33,4 +33,6 @@ public interface VenueRepository extends JpaRepository<Venue, Long> {
 
     List<Venue> findByOwner_UserId(Long ownerId);
     Page<Venue> findByOwner_UserId(Long ownerId, Pageable pageable);
+    Long countByOwner_UserId(Long ownerId);
+
 }
