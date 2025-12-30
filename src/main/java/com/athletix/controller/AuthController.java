@@ -41,26 +41,60 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
         String email = body.get("email");
-        authService.sendPasswordResetEmail(email);
-        return ResponseEntity.ok(Map.of("message", "Password reset link sent to your email."));
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email is required"));
+        }
+
+        try {
+            authService.sendPasswordResetOTP(email);
+            return ResponseEntity.ok(Map.of("message", "OTP sent to your email"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
+    // Reset password with OTP
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
-        String token = body.get("token");
+        String email = body.get("email");
+        String otp = body.get("otp");
         String newPassword = body.get("newPassword");
-        authService.resetPassword(token, newPassword);
-        return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
+
+        if (email == null || otp == null || newPassword == null) {
+            return ResponseEntity.badRequest().body(
+                    Map.of("message", "Email, OTP, and new password are required")
+            );
+        }
+
+        try {
+            authService.resetPasswordWithOTP(email, otp, newPassword);
+            return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String authHeader,
-                                            @RequestBody Map<String, String> body) {
+    public ResponseEntity<?> changePassword(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody Map<String, String> body) {
         String oldPassword = body.get("oldPassword");
         String newPassword = body.get("newPassword");
-        authService.changePassword(authHeader, oldPassword, newPassword);
-        return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
+
+        if (oldPassword == null || newPassword == null) {
+            return ResponseEntity.badRequest().body(
+                    Map.of("message", "Old password and new password are required")
+            );
+        }
+
+        try {
+            authService.changePassword(authHeader, oldPassword, newPassword);
+            return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
+
 
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(@RequestBody Map<String, String> body) {

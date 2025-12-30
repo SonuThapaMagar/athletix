@@ -3,7 +3,6 @@ package com.athletix.service;
 import com.athletix.dto.auth.AuthResponse;
 import com.athletix.dto.auth.LoginRequest;
 import com.athletix.dto.auth.RegisterRequest;
-import com.athletix.dto.user.UserResponse;
 import com.athletix.entity.RefreshToken;
 import com.athletix.entity.Role;
 import com.athletix.entity.User;
@@ -12,18 +11,12 @@ import com.athletix.repository.UserRepository;
 import com.athletix.security.JwtUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.Instant;
-import java.util.Map;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -83,6 +76,7 @@ public class AuthService {
         );
     }
 
+    // ---------- REFRESH TOKEN ----------
     @Transactional
     public AuthResponse refresh(String refreshToken) {
         RefreshToken rt = refreshTokenRepository.findByToken(refreshToken)
@@ -103,39 +97,64 @@ public class AuthService {
         );
     }
 
+    // ---------- LOGOUT ----------
     @Transactional
     public void logout(String refreshToken) {
         refreshTokenRepository.findByToken(refreshToken)
                 .ifPresent(refreshTokenRepository::delete);
     }
 
+    // ---------- PASSWORD RESET WITH OTP ----------
     @Transactional
-    public void sendPasswordResetEmail(String email) {
+    public void sendPasswordResetOTP(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String token = UUID.randomUUID().toString();
-        user.setResetToken(token);
+        // Generate 6-digit OTP
+        String otp = String.format("%06d", new Random().nextInt(999999));
+
+        // Set OTP and expiry (10 minutes from now)
+        user.setResetToken(otp);
+        user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(10));
         userRepository.save(user);
 
-        String resetLink = "http://localhost:5173/reset-password?token=" + token;
+        // Send OTP via email
+        String emailBody = String.format(
+                "Your password reset OTP is: %s\n\nThis OTP will expire in 10 minutes.\n\nIf you didn't request this, please ignore this email.",
+                otp
+        );
+
         emailService.sendEmail(
                 user.getEmail(),
-                "Reset your password",
-                "Click the link to reset your password: " + resetLink
+                "Password Reset OTP - Athletix",
+                emailBody
         );
     }
 
     @Transactional
-    public void resetPassword(String token, String newPassword) {
-        User user = userRepository.findByResetToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid or expired reset token"));
+    public void resetPasswordWithOTP(String email, String otp, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Check if OTP matches
+        if (user.getResetToken() == null || !user.getResetToken().equals(otp)) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        // Check if OTP has expired
+        if (user.getResetTokenExpiry() == null ||
+                user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("OTP has expired");
+        }
+
+        // Reset password and clear OTP
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setResetToken(null);
+        user.setResetTokenExpiry(null);
         userRepository.save(user);
     }
 
+    // ---------- CHANGE PASSWORD ----------
     @Transactional
     public void changePassword(String authHeader, String oldPassword, String newPassword) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -155,6 +174,7 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    // ---------- USER VALIDATION ----------
     public User validateUser(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new RuntimeException("Invalid token");
