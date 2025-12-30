@@ -9,9 +9,6 @@ import {
   MdMenu,
   MdClose,
   MdKeyboardArrowDown,
-  MdSettings,
-  MdHelp,
-  MdLogout
 } from 'react-icons/md'
 import LogoutModal from '@/components/common/LogoutModalNew'
 import { LOGOUT_ACTION } from '@/redux/actions/auth.actions'

@@ -1,6 +1,7 @@
 // src/layout/VenueOwnerLayout.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   MdDashboard, MdBusiness, MdSchedule, MdEvent,
   MdAnalytics, MdPayment, MdPerson, MdLogout,
@@ -8,6 +9,8 @@ import {
 } from 'react-icons/md';
 import LogoutModal from '@/components/common/LogoutModalNew';
 import { LOGOUT_ACTION } from '@/redux/actions/auth.actions';
+import { FETCH_PROFILE } from '@/redux/actions/user.actions';
+import type { StateType } from '@/redux/slices';
 
 interface MenuItem {
   id: string;
@@ -21,8 +24,18 @@ interface MenuItem {
 const VenueOwnerLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { profile } = useSelector((state: StateType) => state.authSlice);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  // Fetch profile on mount if not already loaded
+  useEffect(() => {
+    if (!profile) {
+      FETCH_PROFILE().catch((err) => {
+        console.error('Failed to fetch profile:', err);
+      });
+    }
+  }, [profile]);
 
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: MdDashboard, path: '/venue-owner/dashboard' },
@@ -87,21 +100,9 @@ const VenueOwnerLayout = () => {
                 <p className="text-xs text-gray-500">Venue Owner</p>
               </div>
             </div>
-            <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-100">
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-100 cursor-pointer">
               <MdClose className="w-5 h-5" />
             </button>
-          </div>
-
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-lg">VO</span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">John Smith</h3>
-                <p className="text-sm text-gray-500">Venue Owner</p>
-              </div>
-            </div>
           </div>
 
           <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
@@ -157,10 +158,20 @@ const VenueOwnerLayout = () => {
                 <p className="text-gray-600">Manage your venues and bookings efficiently</p>
               </div>
               <div className="flex items-center gap-4">
-                <button className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"><MdNotifications className="w-6 h-6" /></button>
-                <button className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"><MdSettings className="w-6 h-6" /></button>
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">JS</span>
+                <button className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer"><MdNotifications className="w-6 h-6" /></button>
+                <button className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer"><MdSettings className="w-6 h-6" /></button>
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900">
+                      {profile?.name || "Venue Owner"}
+                    </p>
+                    <p className="text-xs text-gray-500">{profile?.email || ""}</p>
+                  </div>
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">
+                      {profile?.name ? profile.name.charAt(0).toUpperCase() : "V"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
