@@ -131,20 +131,26 @@ public class VenueOwnerPaymentService {
         var venue = booking.getVenue();
         var player = booking.getPlayer();
 
+        // Override status for accurate display (based on reliable booking.paid flag)
+        String displayStatus = booking.isPaid() ? "completed" : "pending";
+
+        // Use refId from Payment if available, fallback to booking's paymentRefId
+        String refId = payment.getRefId() != null ? payment.getRefId() : booking.getPaymentRefId();
+
         return new PaymentResponse(
-                payment.getId(),
-                booking.getId(),
-                "BK-" + booking.getCreatedAt().getYear() + "-" + String.format("%03d", booking.getId()),
-                venue.getId(),
-                venue.getName(),
-                player.getName(),
-                player.getEmail(),
-                booking.getStartTime(),
-                payment.getAmount(),
-                "ESEWA", // Match your PaymentMethod enum
-                payment.getStatus(),
-                payment.getRefId(),
-                payment.getCreatedAt()
+                payment.getId(),                  // 1. id
+                booking.getId(),                  // 2. bookingId
+                "BK-" + booking.getCreatedAt().getYear() + "-" + String.format("%03d", booking.getId()), // 3. bookingRefId
+                venue.getId(),                    // 4. venueId
+                venue.getName(),                  // 5. venueName
+                player.getName(),                 // 6. customerName
+                player.getEmail(),                // 7. customerEmail
+                booking.getStartTime(),           // 8. bookingDate
+                payment.getAmount(),              // 9. amount
+                "ESEWA",                          // 10. paymentMethod
+                displayStatus,                    // 11. status
+                refId,                            // 12. refId
+                payment.getCreatedAt()            // 13. createdAt
         );
     }
 }

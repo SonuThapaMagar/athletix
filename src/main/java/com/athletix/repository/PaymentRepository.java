@@ -15,6 +15,7 @@ import java.util.Optional;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment,Long> {
+    // === Old/unused methods (you can remove them if you want) ===
     @Query("SELECT SUM(p.amount) FROM Payment p WHERE p.status = 'SUCCESS'")
     Double sumSuccessfulPayments();
 
@@ -27,6 +28,7 @@ public interface PaymentRepository extends JpaRepository<Payment,Long> {
             "GROUP BY DATE(p.createdAt)")
     List<Object[]> getRevenueReport(LocalDate start, LocalDate end);
 
+    // Find payments by venue owner
     @Query("""
         SELECT p FROM Payment p 
         WHERE p.booking.venue.owner.userId = :ownerId
@@ -47,31 +49,33 @@ public interface PaymentRepository extends JpaRepository<Payment,Long> {
             Pageable pageable
     );
 
-    // Calculate total revenue for venue owner
+    // === FIXED: Revenue based on booking.paid = true (reliable) ===
     @Query("""
-        SELECT COALESCE(SUM(p.amount), 0.0) FROM Payment p 
-        WHERE p.booking.venue.owner.userId = :ownerId 
-        AND LOWER(p.status) = 'completed'
+        SELECT COALESCE(SUM(p.amount), 0.0) FROM Payment p
+        WHERE p.booking.venue.owner.userId = :ownerId
+        AND p.booking.paid = true
     """)
     Double calculateTotalRevenue(@Param("ownerId") Long ownerId);
 
-    // Calculate revenue for current month
+    // === FIXED: This month = bookings STARTING this month + paid ===
     @Query("""
-        SELECT COALESCE(SUM(p.amount), 0.0) FROM Payment p 
-        WHERE p.booking.venue.owner.userId = :ownerId 
-        AND LOWER(p.status) = 'completed'
-        AND p.createdAt >= :startOfMonth
+        SELECT COALESCE(SUM(p.amount), 0.0) FROM Payment p
+        WHERE p.booking.venue.owner.userId = :ownerId
+        AND p.booking.paid = true
+        AND YEAR(p.booking.startTime) = YEAR(:startOfMonth)
+        AND MONTH(p.booking.startTime) = MONTH(:startOfMonth)
     """)
     Double calculateMonthlyRevenue(
             @Param("ownerId") Long ownerId,
             @Param("startOfMonth") LocalDateTime startOfMonth
     );
 
-    // Calculate pending payments
+    // === FIXED: Pending = unpaid + PENDING bookings ===
     @Query("""
-        SELECT COALESCE(SUM(p.amount), 0.0) FROM Payment p 
-        WHERE p.booking.venue.owner.userId = :ownerId 
-        AND LOWER(p.status) = 'pending'
+        SELECT COALESCE(SUM(p.amount), 0.0) FROM Payment p
+        WHERE p.booking.venue.owner.userId = :ownerId
+        AND p.booking.paid = false
+        AND p.booking.status = 'PENDING'
     """)
     Double calculatePendingAmount(@Param("ownerId") Long ownerId);
 
