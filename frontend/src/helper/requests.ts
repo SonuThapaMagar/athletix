@@ -16,6 +16,28 @@ const user = {
   changePassword: (data: { currentPassword: string; newPassword: string }) => api.post("/users/changePassword", data),
 }
 
+const notifications = {
+  // Get all notifications
+  getNotifications: (params?: { page?: number; perPage?: number }) =>
+    api.get("/notifications", { params }),
+  
+  // Get unread notifications only
+  getUnreadNotifications: (params?: { page?: number; perPage?: number }) =>
+    api.get("/notifications/unread", { params }),
+  
+  // Get unread count
+  getUnreadCount: () => api.get("/notifications/unread-count"),
+  
+  // Mark as read
+  markAsRead: (id: number) => api.put(`/notifications/${id}/read`),
+  
+  // Mark all as read
+  markAllAsRead: () => api.put("/notifications/mark-all-read"),
+  
+  // Delete notification
+  deleteNotification: (id: number) => api.delete(`/notifications/${id}`),
+};
+
 const venueMgmt = {
   getVenues: (params: { page?: number; perPage?: number }) =>
     api.get("/venues", { params }),
@@ -177,5 +199,5 @@ const venueOwnerAnalytics = {
     api.get("/venue-owner/analytics/export", { params, responseType: 'blob' }),
 };
 
-const requests = { user, venueMgmt, booking, payment, schedule, venueOwnerPayment, venueOwnerDashboard, venueOwnerAnalytics };
+const requests = { user, venueMgmt,notifications , booking, payment, schedule, venueOwnerPayment, venueOwnerDashboard, venueOwnerAnalytics };
 export default requests;

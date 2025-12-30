@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { MdLock, MdVisibility, MdVisibilityOff, MdArrowBack } from "react-icons/md";
-import { VERIFY_OTP_AND_RESET_PASSWORD_ACTION } from "@/redux/actions/auth.actions";
+import { useNavigate } from "react-router-dom";
+import { MdLock, MdVisibility, MdVisibilityOff, MdArrowBack, MdEmail } from "react-icons/md";
+import { VERIFY_OTP_AND_RESET_PASSWORD_ACTION, SEND_OTP_ACTION } from "@/redux/actions/auth.actions";
 import { toast } from "sonner";
 import PromoContent from "@/components/auth/PromoContent";
 import SportsAnimations from "@/components/common/SportsAnimations";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const email = searchParams.get("email") || "";
+  const [email, setEmail] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const [resendingOtp, setResendingOtp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -21,11 +21,15 @@ const ResetPassword = () => {
   });
 
   useEffect(() => {
-    if (!email) {
-      toast.error("Email is required. Please go back and request OTP again.");
+    // Get email from localStorage (set when OTP was sent)
+    const storedEmail = localStorage.getItem("resetPasswordEmail");
+    if (!storedEmail) {
+      toast.error("Please request an OTP first.");
       navigate("/forgot-password");
+    } else {
+      setEmail(storedEmail);
     }
-  }, [email, navigate]);
+  }, [navigate]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -60,6 +64,25 @@ const ResetPassword = () => {
     return true;
   };
 
+  const handleResendOTP = async () => {
+    if (!email) {
+      toast.error("Email not found. Please go back and request OTP again.");
+      navigate("/forgot-password");
+      return;
+    }
+
+    setResendingOtp(true);
+    try {
+      await SEND_OTP_ACTION(email);
+      toast.success("OTP has been resent to your email");
+    } catch (err: any) {
+      console.error("Resend OTP error:", err);
+      toast.error(err?.response?.data?.message || "Failed to resend OTP. Please try again.");
+    } finally {
+      setResendingOtp(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -75,6 +98,9 @@ const ResetPassword = () => {
         newPassword: formData.newPassword,
       });
 
+      // Clear stored email after successful reset
+      localStorage.removeItem("resetPasswordEmail");
+      
       toast.success("Password reset successfully! Redirecting to login...");
       
       setTimeout(() => {
@@ -113,12 +139,14 @@ const ResetPassword = () => {
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">Reset Password</h2>
               <p className="text-sm text-gray-600 mt-1">
-                Enter the OTP sent to your email and set a new password
+                Enter the 6-digit OTP sent to your email and set a new password
               </p>
               {email && (
-                <p className="text-xs text-gray-500 mt-2">
-                  Email: <span className="font-semibold">{email}</span>
-                </p>
+                <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-xs text-blue-800">
+                    OTP sent to: <span className="font-semibold">{email}</span>
+                  </p>
+                </div>
               )}
             </div>
 
@@ -128,7 +156,7 @@ const ResetPassword = () => {
                 <input
                   type="text"
                   placeholder="Enter 6-digit OTP"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-[#2c5aa0] text-center tracking-widest"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-[#2c5aa0] text-center tracking-widest font-mono text-lg"
                   value={formData.otp}
                   onChange={(e) => {
                     const value = e.target.value.replace(/\D/g, "").slice(0, 6);
@@ -138,9 +166,7 @@ const ResetPassword = () => {
                   required
                   disabled={loading}
                 />
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+                <MdEmail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               </div>
 
               {/* New Password */}
@@ -204,6 +230,18 @@ const ResetPassword = () => {
                 {loading ? "Resetting..." : "Reset Password"}
               </button>
             </form>
+
+            {/* Resend OTP */}
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={handleResendOTP}
+                disabled={resendingOtp || loading}
+                className="text-[#2c5aa0] hover:text-[#1e3d6f] font-medium text-sm cursor-pointer disabled:opacity-50"
+              >
+                {resendingOtp ? "Resending OTP..." : "Didn't receive OTP? Resend"}
+              </button>
+            </div>
 
             <div className="text-center text-gray-600 text-sm mt-4">
               Remember your password?{" "}

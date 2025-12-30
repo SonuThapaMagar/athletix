@@ -23,6 +23,8 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       await SEND_OTP_ACTION(email);
+      // Store email in localStorage for OTP verification
+      localStorage.setItem("resetPasswordEmail", email);
       setOtpSent(true);
       toast.success("OTP has been sent to your email");
     } catch (err: any) {
@@ -138,6 +140,7 @@ const ForgotPassword = () => {
                   onClick={() => {
                     setOtpSent(false);
                     setEmail("");
+                    localStorage.removeItem("resetPasswordEmail");
                   }}
                   className="text-gray-600 hover:text-gray-900 font-medium text-sm cursor-pointer"
                 >
