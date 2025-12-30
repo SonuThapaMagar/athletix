@@ -49,3 +49,29 @@ export const LOGOUT_ACTION = () => {
   });
 };
 
+export const SEND_OTP_ACTION = (email: string): Promise<{ message: string }> => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const res = await requests.user.auth.sendOtp(email);
+      resolve(res.data);
+    } catch (err: any) {
+      reject(err?.response?.data || err);
+    }
+  });
+};
+
+export const VERIFY_OTP_AND_RESET_PASSWORD_ACTION = (data: {
+  email: string;
+  otp: string;
+  newPassword: string;
+}): Promise<{ message: string }> => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const res = await requests.user.auth.verifyOtpAndResetPassword(data);
+      resolve(res.data);
+    } catch (err: any) {
+      reject(err?.response?.data || err);
+    }
+  });
+};
+

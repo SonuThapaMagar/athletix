@@ -14,6 +14,7 @@ const Login = () => {
   );
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const [formData, setFormData] = useState<{ email: string; password: string }>({
     email: "",
@@ -22,12 +23,21 @@ const Login = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-  if (isLoggedIn && userRole) {
-    if (userRole === "PLAYER") navigate("/player");
-    if (userRole === "VENUE_OWNER") navigate("/venue-owner");
-    if (userRole === "ADMIN") navigate("/admin");
-  }
-}, [isLoggedIn, userRole, navigate]);
+    if (isLoggedIn && userRole) {
+      if (userRole === "PLAYER") navigate("/player");
+      if (userRole === "VENUE_OWNER") navigate("/venue-owner");
+      if (userRole === "ADMIN") navigate("/admin");
+    }
+  }, [isLoggedIn, userRole, navigate]);
+
+  // Load remembered email on mount
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem("rememberedEmail");
+    if (rememberedEmail) {
+      setFormData((prev) => ({ ...prev, email: rememberedEmail }));
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleInputChange = (field: "email" | "password", value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -43,6 +53,13 @@ const Login = () => {
       };
 
       const res = await LOGIN_ACTION(loginData);
+
+      // Save email if remember me is checked
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", formData.email);
+      } else {
+        localStorage.removeItem("rememberedEmail");
+      }
 
       const role = res.userRole;
       if (role === "PLAYER") navigate("/player");
@@ -112,6 +129,26 @@ const Login = () => {
                   ) : (
                     <MdVisibility className="w-5 h-5" />
                   )}
+                </button>
+              </div>
+
+              {/* Remember Me and Forgot Password */}
+              <div className="flex items-center justify-between text-sm">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 text-[#2c5aa0] border-gray-300 rounded focus:ring-[#2c5aa0] cursor-pointer"
+                  />
+                  <span className="text-gray-600">Remember me</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => navigate("/forgot-password")}
+                  className="text-[#2c5aa0] hover:text-[#1e3d6f] font-medium hover:underline cursor-pointer"
+                >
+                  Forgot Password?
                 </button>
               </div>
 

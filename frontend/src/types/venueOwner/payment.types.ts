@@ -1,9 +1,4 @@
-export interface Pagination {
-  page: number;
-  per_page: number;
-  total_record: number;
-  total_page: number;
-}
+import type { Pagination } from "../pagination.types";
 
 export type PaymentStatus = 'completed' | 'pending' | 'failed' | 'refunded';
 export type PaymentMethod =  'ESEWA' | 'PAYPAL'  | 'CASH';
@@ -14,18 +9,14 @@ export interface VenueOwnerPayment {
   bookingRefId: string;
   venueId: number;
   venueName: string;
-  playerId?: number;
-  playerName: string;
-  playerEmail?: string;
+  customerName: string;
+  customerEmail: string;
   bookingDate: string;
   amount: number;
-  status: PaymentStatus;
   paymentMethod: PaymentMethod;
-  transactionId?: string;
+  status: PaymentStatus;
   refId?: string;
-  paidAt?: string;
   createdAt: string;
-  updatedAt?: string;
 }
 
 export interface PaymentSummary {
@@ -45,8 +36,8 @@ export interface PaymentFilters {
   perPage?: number;
 }
 
-// Your existing pagination response structure
+// Pagination response structure (matches backend DTO)
 export interface PaginationResponse<T> {
-  data: T[];
+  items: T[];
   pagination: Pagination;
 }

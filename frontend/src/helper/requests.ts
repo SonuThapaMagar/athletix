@@ -7,6 +7,9 @@ const user = {
     register: (data: { name: string; email: string; password: string; phone: string; location: string; role: string }) =>
       api.post("/auth/register", data),
     refreshToken: () => api.post("/auth/refresh", { refreshToken: localStorage.getItem("refreshToken") }), // Matches your backend
+    sendOtp: (email: string) => api.post("/auth/forgot-password", { email }),
+    verifyOtpAndResetPassword: (data: { email: string; otp: string; newPassword: string }) =>
+      api.post("/auth/reset-password", data),
   },
   getMyProfile: () => api.get("/users/myProfile"),
   updateProfile: (data: { name?: string; phone?: string; location?: string }) => api.put("/users/myProfile", data),

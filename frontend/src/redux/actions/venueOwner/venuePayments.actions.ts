@@ -1,3 +1,4 @@
+// redux/actions/venueOwner/payment.actions.ts
 import requests from "@/helper/requests";
 import { paymentActions } from "@/redux/slices/venueOwner/payment.slice";
 import { AppDispatch } from "@/redux/store";
@@ -5,7 +6,7 @@ import type {
   VenueOwnerPayment, 
   PaymentSummary, 
   PaymentFilters,
-  PaginationResponse 
+  PaginationResponse,
 } from "@/types/venueOwner/payment.types";
 import type { AxiosResponse } from "axios";
 import type { ApiResponse } from "@/types/axiosResponse.types";
@@ -15,27 +16,50 @@ import type { ApiResponse } from "@/types/axiosResponse.types";
  */
 export const FETCH_VENUE_OWNER_PAYMENTS_ACTION = (filters?: PaymentFilters): Promise<VenueOwnerPayment[]> =>
   new Promise((resolve, reject) => {
+    console.log('🔵 FETCH_VENUE_OWNER_PAYMENTS_ACTION called with filters:', filters);
     AppDispatch(paymentActions.setLoading(true));
 
     const params = {
-      ...filters,
       page: filters?.page || 1,
       perPage: filters?.perPage || 10,
+      status: filters?.status || 'all',
+      ...filters,
     };
+
+    console.log('🔵 Calling API with params:', params);
 
     requests.venueOwnerPayment
       .getPayments(params)
       .then((res: AxiosResponse<ApiResponse<PaginationResponse<VenueOwnerPayment>>>) => {
-        // Backend returns: { status: "success", message: "...", data: { data: [], pagination: {} } }
+        console.log('✅ Raw API response:', res.data);
+
+        // Backend returns: 
+        // { status: "success", message: "...", data: { items: PaymentResponse[], pagination: Pagination } }
         const paginatedData = res.data.data;
-        const payments = paginatedData?.data || [];
+        
+        if (!paginatedData) {
+          console.error('❌ No data in response');
+          AppDispatch(paymentActions.setPayments([]));
+          AppDispatch(paymentActions.setLoading(false));
+          resolve([]);
+          return;
+        }
+
+        const payments = paginatedData.items || [];
+        console.log('✅ Payments:', payments);
+        console.log('✅ Total payments:', payments.length);
         
         AppDispatch(paymentActions.setPayments(payments));
+        AppDispatch(paymentActions.setLoading(false));
         resolve(payments);
       })
       .catch((err: any) => {
+        console.error('❌ Error fetching payments:', err);
+        console.error('❌ Error response:', err.response?.data);
+        
         const message = err.response?.data?.message || "Failed to fetch payments";
         AppDispatch(paymentActions.setError(message));
+        AppDispatch(paymentActions.setLoading(false));
         reject(err);
       });
   });
@@ -49,18 +73,26 @@ export const FETCH_PAYMENT_SUMMARY_ACTION = (params?: {
   venueId?: number;
 }): Promise<PaymentSummary> =>
   new Promise((resolve, reject) => {
+    console.log('🔵 FETCH_PAYMENT_SUMMARY_ACTION called');
     AppDispatch(paymentActions.setLoading(true));
 
     requests.venueOwnerPayment
       .getSummary(params)
       .then((res: AxiosResponse<ApiResponse<PaymentSummary>>) => {
+        console.log('✅ Payment summary response:', res.data);
+        
         const summary = res.data.data || res.data;
+        console.log('✅ Extracted summary:', summary);
+        
         AppDispatch(paymentActions.setSummary(summary));
         resolve(summary);
       })
       .catch((err: any) => {
+        console.error('❌ Error fetching summary:', err);
+        
         const message = err.response?.data?.message || "Failed to fetch payment summary";
         AppDispatch(paymentActions.setError(message));
+        AppDispatch(paymentActions.setLoading(false));
         reject(err);
       });
   });
@@ -76,13 +108,16 @@ export const FETCH_PAYMENT_BY_ID_ACTION = (paymentId: number): Promise<VenueOwne
       .getPaymentById(paymentId)
       .then((res: AxiosResponse<ApiResponse<VenueOwnerPayment>>) => {
         const payment = res.data.data || res.data;
-        // Update payment in list if it exists
+        
         AppDispatch(paymentActions.updatePayment(payment));
+        AppDispatch(paymentActions.setLoading(false));
         resolve(payment);
       })
       .catch((err: any) => {
+        console.error('❌ Error fetching payment by ID:', err);
         const message = err.response?.data?.message || "Failed to fetch payment";
         AppDispatch(paymentActions.setError(message));
+        AppDispatch(paymentActions.setLoading(false));
         reject(err);
       });
   });

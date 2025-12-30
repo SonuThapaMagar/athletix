@@ -355,11 +355,11 @@ const Payments = () => {
                       <span className="text-sm text-gray-900">{payment.venueName}</span>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-sm text-gray-600">{payment.playerName}</span>
+                      <span className="text-sm text-gray-600">{payment.customerName}</span>
                     </td>
                     <td className="py-4 px-4">
                       <span className="text-sm text-gray-600">
-                        {formatDate(payment.paidAt || payment.createdAt)}
+                        {formatDate(payment.createdAt)}
                       </span>
                     </td>
                     <td className="py-4 px-4">
