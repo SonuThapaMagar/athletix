@@ -118,19 +118,28 @@ const Profile = () => {
       if (!profile) {
         setIsLoading(true)
         try {
-          await FETCH_PROFILE()
+          const fetchedProfile = await FETCH_PROFILE()
+          // Set form data immediately after fetching
+          if (fetchedProfile) {
+            setFormData({
+              name: fetchedProfile.name || '',
+              phone: fetchedProfile.phone || '',
+              location: fetchedProfile.location || '',
+              bio: ''
+            })
+          }
         } catch (err: any) {
           console.error('Failed to fetch profile:', err)
-          toast.error(err?.message || 'Failed to load profile')
+          toast.error(err?.response?.data?.message || err?.message || 'Failed to load profile')
         } finally {
           setIsLoading(false)
         }
       }
     }
     loadProfile()
-  }, [])
+  }, [profile])
 
-  // Update form data when profile loads
+  // Update form data when profile loads or changes
   useEffect(() => {
     if (profile) {
       setFormData({
@@ -139,8 +148,11 @@ const Profile = () => {
         location: profile.location || '',
         bio: '' // Bio might not be in IUserProfile, keeping for future
       })
-      setErrors({})
-      setTouched({})
+      // Only reset errors and touched when profile changes, not when entering edit mode
+      if (!isEditing) {
+        setErrors({})
+        setTouched({})
+      }
     }
   }, [profile])
 
@@ -152,6 +164,15 @@ const Profile = () => {
   }, [formData, touched, isEditing])
 
   const handleEdit = () => {
+    // Ensure form data is populated from profile before entering edit mode
+    if (profile) {
+      setFormData({
+        name: profile.name || '',
+        phone: profile.phone || '',
+        location: profile.location || '',
+        bio: ''
+      })
+    }
     setIsEditing(true)
     setTouched({})
     setErrors({})
@@ -223,6 +244,10 @@ const Profile = () => {
       setIsEditing(false)
       setTouched({})
       setErrors({})
+      // Redirect to dashboard after successful update
+      setTimeout(() => {
+        navigate('/player')
+      }, 1000)
     } catch (err: any) {
       console.error('Failed to update profile:', err)
       toast.error(err?.response?.data?.message || err?.message || 'Failed to update profile')
@@ -266,10 +291,40 @@ const Profile = () => {
       <div className="min-h-screen bg-gray-50">
         <PlayerNavLayout />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Skeleton className="h-32 w-full mb-6" />
+          {/* Header Skeleton */}
+          <div className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50 mb-6">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+              <Skeleton className="h-16 w-full" />
+            </div>
+          </div>
+          
+          {/* Profile Header Card Skeleton */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6 mb-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+              <Skeleton className="w-24 h-24 rounded-2xl" />
+              <div className="flex-1 w-full">
+                <Skeleton className="h-8 w-48 mb-2" />
+                <Skeleton className="h-4 w-32 mb-2" />
+                <Skeleton className="h-4 w-40" />
+              </div>
+              <Skeleton className="h-10 w-32" />
+            </div>
+          </div>
+
+          {/* Content Skeleton */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Skeleton className="h-64" />
-            <Skeleton className="lg:col-span-2 h-64" />
+            <div className="space-y-6">
+              <Skeleton className="h-48 rounded-2xl" />
+              <Skeleton className="h-64 rounded-2xl" />
+            </div>
+            <div className="lg:col-span-2 space-y-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-32 rounded-2xl" />
+                ))}
+              </div>
+              <Skeleton className="h-48 rounded-2xl" />
+            </div>
           </div>
         </div>
       </div>
@@ -282,6 +337,20 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <PlayerNavLayout />
+      {/* Loading overlay when saving */}
+      {isSaving && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4">
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 border-4 border-[#2c5aa0] border-t-transparent rounded-full animate-spin"></div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Saving Profile</h3>
+                <p className="text-sm text-gray-600">Please wait...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

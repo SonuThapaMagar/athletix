@@ -9,7 +9,7 @@ const user = {
     refreshToken: () => api.post("/auth/refresh", { refreshToken: localStorage.getItem("refreshToken") }), // Matches your backend
   },
   getMyProfile: () => api.get("/users/myProfile"),
-  updateProfile: (data: { name?: string; phone?: string; location?: string }) => api.put("/users/updateProfile", data),
+  updateProfile: (data: { name?: string; phone?: string; location?: string }) => api.put("/users/myProfile", data),
   changePassword: (data: { currentPassword: string; newPassword: string }) => api.post("/users/changePassword", data),
 }
 
@@ -59,5 +59,120 @@ const payment = {
     }), 
 
 };
-const requests = { user, venueMgmt, booking, payment };
+
+const schedule = {
+  // Get schedules (with optional filters)
+  getSchedules: (params?: { venueId?: number; startDate?: string; endDate?: string }) =>
+    api.get("/schedules", { params }),
+  
+  // Get schedules for specific venue
+  getVenueSchedules: (venueId: number, params?: { startDate?: string; endDate?: string }) =>
+    api.get(`/schedules/venue/${venueId}`, { params }),
+  
+  // Create or update schedule
+  createSchedule: (data: {
+    venueId: number;
+    date: string;
+    startTime?: string;
+    endTime?: string;
+    type?: string;
+    isBlocked?: boolean;
+    reason?: string;
+    notes?: string;
+  }) => api.post("/schedules", data),
+  
+  // Update schedule (not used - create endpoint handles updates)
+  updateSchedule: (id: number, data: any) => api.put(`/schedules/${id}`, data),
+  
+  // Delete schedule
+  deleteSchedule: (id: number) => api.delete(`/schedules/${id}`),
+  
+  // Block a date
+  blockDate: (data: { venueId: number; date: string; reason: string }) =>
+    api.post("/schedules/block", data),
+  
+  // Unblock a schedule
+  unblockSchedule: (scheduleId: number) =>
+    api.post(`/schedules/unblock/${scheduleId}`),
+  
+  // Generate schedules from operating hours
+  generateSchedules: (venueId: number, startDate: string, endDate: string) =>
+    api.post(`/schedules/generate/${venueId}`, null, {
+      params: { startDate, endDate }
+    }),
+};
+
+const venueOwnerPayment = {
+  // Get all payments for venue owner
+  getPayments: (params?: {
+    status?: string;
+    venueId?: number;
+    startDate?: string;
+    endDate?: string;
+    paymentMethod?: string;
+  }) => api.get("/payments/venue-owner", { params }),
+  
+  // Get payment summary/statistics
+  getSummary: (params?: {
+    startDate?: string;
+    endDate?: string;
+    venueId?: number;
+  }) => api.get("/payments/venue-owner/summary", { params }),
+  
+  // Get single payment by ID
+  getPaymentById: (paymentId: number) => api.get(`/payments/venue-owner/${paymentId}`),
+  
+  // Export payments to CSV/Excel
+  exportPayments: (params?: {
+    status?: string;
+    venueId?: number;
+    startDate?: string;
+    endDate?: string;
+    format?: 'csv' | 'excel';
+  }) => api.get("/payments/venue-owner/export", { params, responseType: 'blob' }),
+};
+
+const venueOwnerDashboard = {
+  // Get complete dashboard data (stats + recent bookings)
+  getDashboardData: () => api.get("/venue-owner/dashboard"),
+  
+  // Get dashboard statistics only
+  getStats: () => api.get("/venue-owner/dashboard/stats"),
+  
+  // Get recent bookings for dashboard
+  getRecentBookings: (limit?: number) => 
+    api.get("/venue-owner/dashboard/recent-bookings", { params: { limit } }),
+};
+
+const venueOwnerAnalytics = {
+  // Get complete analytics data
+  getAnalyticsData: (params?: { startDate?: string; endDate?: string; venueId?: number }) =>
+    api.get("/venue-owner/analytics", { params }),
+  
+  // Get analytics statistics only
+  getStats: (params?: { startDate?: string; endDate?: string; venueId?: number }) =>
+    api.get("/venue-owner/analytics/stats", { params }),
+  
+  // Get revenue data (monthly/periodic)
+  getRevenueData: (params?: { startDate?: string; endDate?: string; venueId?: number }) =>
+    api.get("/venue-owner/analytics/revenue", { params }),
+  
+  // Get top performing venues
+  getTopVenues: (params?: { startDate?: string; endDate?: string; limit?: number }) =>
+    api.get("/venue-owner/analytics/top-venues", { params }),
+  
+  // Get sport popularity data
+  getSportPopularity: (params?: { startDate?: string; endDate?: string; venueId?: number }) =>
+    api.get("/venue-owner/analytics/sport-popularity", { params }),
+  
+  // Get peak booking times
+  getPeakBookingTimes: (params?: { startDate?: string; endDate?: string; venueId?: number }) =>
+    api.get("/venue-owner/analytics/peak-times", { params }),
+  
+  // Export analytics data
+  exportAnalytics: (params?: { startDate?: string; endDate?: string; venueId?: number; format?: 'csv' | 'excel' }) =>
+    api.get("/venue-owner/analytics/export", { params, responseType: 'blob' }),
+};
+
+const requests = { user, venueMgmt, booking, payment, schedule, venueOwnerPayment, venueOwnerDashboard, venueOwnerAnalytics };
 export default requests;

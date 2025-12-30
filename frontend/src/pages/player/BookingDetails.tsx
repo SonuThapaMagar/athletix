@@ -8,6 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FETCH_BOOKING_BY_ID_ACTION } from "@/redux/actions/user/venueBooking.actions";
 import { FETCH_VENUE_BY_ID_ACTION } from "@/redux/actions/user/playerVenue.actions";
 import { toast } from "sonner";
+import { AppDispatch } from "@/redux/store";
+import { venueBookingActions } from "@/redux/slices/player/venueBooking.slice";
 
 const BookingDetails = () => {
   const { id } = useParams<{ id: string }>();

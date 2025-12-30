@@ -26,6 +26,7 @@ import {
   UPDATE_VENUE_ACTION,
 } from "@/redux/actions/venue/venue.actions";
 import { venueSchema } from "@/validation/venueCreation.validation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const initialOperatingHours = [
   { day: "Monday", openTime: "06:00", closeTime: "22:00" },
@@ -69,7 +70,14 @@ export default function VenueForm(): JSX.Element {
       requests.venueMgmt
         .getVenueById(Number(id))
         .then((res) => {
-          const v = res.data;
+          // Handle API response structure: res.data.data or res.data
+          const v = res.data.data || res.data;
+          console.log("✅ Venue data fetched:", v);
+          
+          if (!v) {
+            throw new Error("No venue data received");
+          }
+
           setFormData((prev) => ({
             ...prev,
             name: v.name ?? "",
@@ -92,8 +100,8 @@ export default function VenueForm(): JSX.Element {
           setExistingImages(Array.isArray(v.images) ? v.images : []);
         })
         .catch((err) => {
-          console.error("Failed to load venue data", err);
-          toast.error("Failed to load venue data");
+          console.error("❌ Failed to load venue data:", err);
+          toast.error(err?.response?.data?.message || "Failed to load venue data");
           navigate("/venue-owner/venues");
         })
         .finally(() => setLoading(false));
@@ -230,14 +238,18 @@ export default function VenueForm(): JSX.Element {
 
       if (!isEditing) {
         // CREATE
-        await dispatch(CREATE_VENUE_ACTION(payload));
+        await CREATE_VENUE_ACTION(payload);
         toast.success("Venue created successfully");
       } else {
-        await dispatch(UPDATE_VENUE_ACTION(Number(id), payload));
+        await UPDATE_VENUE_ACTION(Number(id), payload);
         toast.success("Venue updated successfully");
+        navigate("/venue-owner/venues");
       }
 
-      navigate("/venue-owner/venues");
+      // Redirect to venues list after showing toast
+      setTimeout(() => {
+        navigate("/venue-owner/venues");
+      }, 1000);
     } catch (err: any) {
       console.error("Submit error:", err);
       toast.error(err?.response?.data?.message || "Failed to submit venue");
@@ -248,7 +260,101 @@ export default function VenueForm(): JSX.Element {
 
   const handleCancel = () => navigate("/venue-owner/venues");
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Skeleton className="w-10 h-10 rounded-lg" />
+          <Skeleton className="h-8 w-48" />
+        </div>
+        
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Basic Info Skeleton */}
+          <div className="bg-white p-6 rounded-2xl shadow border">
+            <Skeleton className="h-6 w-40 mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Skeleton className="h-4 w-24 mb-2" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div>
+                <Skeleton className="h-4 w-20 mb-2" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div>
+                <Skeleton className="h-4 w-32 mb-2" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="md:col-span-2">
+                <Skeleton className="h-4 w-28 mb-2" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+            </div>
+            <div className="mt-4">
+              <Skeleton className="h-4 w-32 mb-2" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          </div>
+
+          {/* Sports & Amenities Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-6 rounded-2xl shadow border">
+              <Skeleton className="h-6 w-40 mb-4" />
+              <div className="grid grid-cols-2 gap-2">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <Skeleton key={i} className="h-6 w-full" />
+                ))}
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow border">
+              <Skeleton className="h-6 w-32 mb-4" />
+              <div className="grid grid-cols-2 gap-2">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <Skeleton key={i} className="h-6 w-full" />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Operating Hours Skeleton */}
+          <div className="bg-white p-6 rounded-2xl shadow border">
+            <Skeleton className="h-6 w-40 mb-4" />
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-10 w-32" />
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-10 w-32" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Contact Info Skeleton */}
+          <div className="bg-white p-6 rounded-2xl shadow border">
+            <Skeleton className="h-6 w-48 mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Skeleton className="h-4 w-20 mb-2" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div>
+                <Skeleton className="h-4 w-16 mb-2" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </div>
+          </div>
+
+          {/* Buttons Skeleton */}
+          <div className="flex justify-end gap-4 pt-4">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">

@@ -140,7 +140,7 @@ const Booking = () => {
     try {
       const startTime = `${selectedDate}T${selectedTime}:00`;
 
-      // Create pending booking with sport type
+      // Step 1: Create pending booking with sport type
       const booking = await CREATE_PENDING_BOOKING_ACTION({
         venueId: venue.id,
         startTime,
@@ -149,9 +149,21 @@ const Booking = () => {
       });
 
       console.log("✅ Booking created:", booking);
+      
+      // Step 2: Initiate payment record in backend (creates payment record)
+      try {
+        await INITIATE_ESEWA_PAYMENT_ACTION(booking.id);
+        console.log("✅ Payment record created for booking:", booking.id);
+      } catch (initError: any) {
+        console.error("⚠️ Failed to initiate payment record:", initError);
+        // Continue anyway - backend might create it during verification
+        // But log the error for debugging
+        toast.warning("Payment initiation had issues, but continuing...");
+      }
+
       toast.success("Redirecting to eSewa...");
 
-      // Redirect to payment
+      // Step 3: Redirect to eSewa payment
       submitEsewaPayment({
         bookingId: booking.id,
         amount: calculateTotal(),

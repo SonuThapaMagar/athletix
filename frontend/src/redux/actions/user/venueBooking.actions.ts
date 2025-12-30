@@ -15,14 +15,40 @@ export const CREATE_PENDING_BOOKING_ACTION = (data: {
         .then((res) => {
             const booking = res.data.data;
             AppDispatch(venueBookingActions.addBooking(booking));
+            AppDispatch(venueBookingActions.setLoading(false));
             resolve(booking);
         })
         .catch((err) => {
             const message = err.response?.data?.message || "Failed to create booking";
             AppDispatch(venueBookingActions.setError(message));
+            AppDispatch(venueBookingActions.setLoading(false));
             reject(err);
         });
 });
+
+/**
+ * Initiate eSewa payment - creates payment record in backend
+ */
+export const INITIATE_ESEWA_PAYMENT_ACTION = (bookingId: number): Promise<void> =>
+    new Promise((resolve, reject) => {
+        AppDispatch(venueBookingActions.setLoading(true));
+        console.log("🔵 Initiating eSewa payment for booking:", bookingId);
+
+        requests.payment
+            .initiateEsewa(bookingId)
+            .then(() => {
+                console.log("✅ Payment record created in backend for booking:", bookingId);
+                AppDispatch(venueBookingActions.setLoading(false));
+                resolve();
+            })
+            .catch((err) => {
+                console.error("❌ Failed to initiate payment:", err.response?.data);
+                const message = err.response?.data?.message || "Failed to initiate payment";
+                AppDispatch(venueBookingActions.setError(message));
+                AppDispatch(venueBookingActions.setLoading(false));
+                reject(err);
+            });
+    });
 
 export const VERIFY_PAYMENT_ACTION = (data: {
     bookingId: number;

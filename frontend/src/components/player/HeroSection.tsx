@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { MdLocationOn } from "react-icons/md";
 import type { StateType } from "@/redux/slices";
@@ -8,6 +8,7 @@ import { FETCH_ALL_VENUES_ACTION } from "@/redux/actions/user/playerVenue.action
 
 const HeroSection = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Use playerVenueSlice instead of venueSlice
   const {
@@ -27,6 +28,8 @@ const HeroSection = () => {
         console.error("❌ Error in HeroSection:", error);
       });
   }, []);
+
+  // Note: Venues are refreshed after payment verification in PaymentSuccess component
 
   // Debug: Log current state
   useEffect(() => {

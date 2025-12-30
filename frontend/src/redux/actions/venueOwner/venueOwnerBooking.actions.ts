@@ -59,3 +59,21 @@ export const CANCEL_VENUE_OWNER_BOOKING_ACTION = (bookingId: number): Promise<vo
         reject(err);
       });
   });
+
+export const FETCH_VENUE_OWNER_BOOKING_BY_ID_ACTION = (bookingId: number): Promise<VenueOwnerBooking> =>
+  new Promise((resolve, reject) => {
+    AppDispatch(venueOwnerBookingActions.setLoading(true));
+
+    requests.booking
+      .getBookingById(bookingId)
+      .then((res: AxiosResponse<ApiResponse<VenueOwnerBooking>>) => {
+        const booking = res.data.data || res.data;
+        AppDispatch(venueOwnerBookingActions.setSelectedBooking(booking));
+        resolve(booking);
+      })
+      .catch((err: any) => {
+        const message = err.response?.data?.message || "Failed to fetch booking";
+        AppDispatch(venueOwnerBookingActions.setError(message));
+        reject(err);
+      });
+  });

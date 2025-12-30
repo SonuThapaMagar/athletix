@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { VERIFY_PAYMENT_ACTION } from "@/redux/actions/user/venueBooking.actions";
+import { FETCH_ALL_VENUES_ACTION } from "@/redux/actions/user/playerVenue.actions";
 import { Loader2, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { extractBookingId } from "@/lib/esewa";
 
@@ -144,6 +145,17 @@ const PaymentSuccess = () => {
         }
 
         console.log("✅ Extracted Booking ID:", bookingId);
+        console.log("✅ Booking ID type:", typeof bookingId);
+
+        // Ensure bookingId is a number
+        const bookingIdNum = Number(bookingId);
+        if (isNaN(bookingIdNum) || bookingIdNum <= 0) {
+          console.error("❌ Invalid booking ID:", bookingId);
+          setError(`Invalid booking ID: ${bookingId}`);
+          toast.error("Invalid booking reference");
+          setTimeout(() => navigate("/player"), 3000);
+          return;
+        }
 
         // Step 7: Verify with backend
         console.log("🔵 Calling backend verification...");
@@ -155,13 +167,13 @@ const PaymentSuccess = () => {
 
         console.log("Verification payload:");
         console.log({
-          bookingId,
+          bookingId: bookingIdNum,
           refId: params.transaction_code,
           amt: amountStr,
         });
 
         const verifiedBooking = await VERIFY_PAYMENT_ACTION({
-          bookingId,
+          bookingId: bookingIdNum,
           refId: params.transaction_code,
           amt: amountStr,
         });
@@ -172,6 +184,14 @@ const PaymentSuccess = () => {
 
         setSuccess(true);
         toast.success("Payment verified successfully!");
+
+        // Refresh venue list to update booking counts
+        try {
+          await FETCH_ALL_VENUES_ACTION({ page: 1, perPage: 6 });
+          console.log("✅ Venue list refreshed after payment verification");
+        } catch (err) {
+          console.error("Failed to refresh venue list:", err);
+        }
 
         // Navigate to booking page to show venue details
         setTimeout(() => {

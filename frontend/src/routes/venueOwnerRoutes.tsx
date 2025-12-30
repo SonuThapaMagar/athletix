@@ -5,6 +5,7 @@ import VenueManagement from '@/pages/venueOwner/VenueManagement';
 import VenueForm from '@/pages/venueOwner/VenueForm';
 import VenueDetails from '@/pages/venueOwner/VenueDetails';
 import BookingManagement from '@/pages/venueOwner/BookingManagement';
+import BookingDetails from '@/pages/venueOwner/BookingDetails';
 import Schedules from '@/pages/venueOwner/Schedules';
 import Analytics from '@/pages/venueOwner/Analytics';
 import Payments from '@/pages/venueOwner/Payments';
@@ -27,6 +28,7 @@ export const venueOwnerRoutes: RouteObject[] = [
       { path: 'venues/edit/:id', element: <VenueForm /> },
       { path: 'venues/view/:id', element: <VenueDetails /> },
       { path: 'bookings', element: <BookingManagement /> },
+      { path: 'bookings/:id', element: <BookingDetails /> },
       { path: 'analytics', element: <Analytics /> },
       { path: 'schedules', element: <Schedules /> },
       { path: 'payments', element: <Payments /> },

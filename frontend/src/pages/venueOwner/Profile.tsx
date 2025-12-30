@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import {
   MdPerson,
   MdEmail,
@@ -11,38 +12,112 @@ import {
   MdCameraAlt,
   MdCancel
 } from 'react-icons/md'
+import { FETCH_PROFILE, UPDATE_PROFILE_ACTION } from '@/redux/actions/user.actions'
+import { toast } from 'sonner'
+import { Skeleton } from '@/components/ui/skeleton'
+import type { StateType } from '@/redux/slices'
 
 const Profile = () => {
   const navigate = useNavigate()
+  const { profile } = useSelector((state: StateType) => state.authSlice)
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
-    name: 'John Smith',
-    email: 'john.smith@athletix.com',
-    phone: '+1 (555) 123-4567',
-    businessName: 'Elite Sports Management',
-    address: '123 Sports Avenue, Downtown District',
-    city: 'New York',
-    state: 'NY',
-    zipCode: '10001',
-    bio: 'Passionate about sports and providing excellent facilities for athletes of all levels.'
+    name: '',
+    email: '',
+    phone: '',
+    location: '',
+    businessName: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    bio: ''
   })
 
-  const [originalData] = useState(formData)
+  const [originalData, setOriginalData] = useState(formData)
+
+  // Fetch profile on mount
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!profile) {
+        setIsLoading(true)
+        try {
+          await FETCH_PROFILE()
+        } catch (err: any) {
+          console.error('Failed to fetch profile:', err)
+          toast.error(err?.message || 'Failed to load profile')
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    }
+    loadProfile()
+  }, [])
+
+  // Update form data when profile loads
+  useEffect(() => {
+    if (profile) {
+      const newFormData = {
+        name: profile.name || '',
+        email: profile.email || '',
+        phone: profile.phone || '',
+        location: profile.location || '',
+        businessName: '',
+        address: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        bio: ''
+      }
+      setFormData(newFormData)
+      setOriginalData(newFormData)
+    }
+  }, [profile])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   const handleSave = async () => {
+    if (!profile) return
+
     setIsSaving(true)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      console.log('Saving profile:', formData)
+      const updateData: { name?: string; phone?: string; location?: string } = {}
+      
+      const trimmedName = formData.name.trim()
+      const trimmedPhone = formData.phone.trim()
+      const trimmedLocation = formData.location.trim()
+      
+      if (trimmedName !== (profile.name || '')) {
+        updateData.name = trimmedName || ''
+      }
+      if (trimmedPhone !== (profile.phone || '')) {
+        updateData.phone = trimmedPhone || ''
+      }
+      if (trimmedLocation !== (profile.location || '')) {
+        updateData.location = trimmedLocation || ''
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        setIsEditing(false)
+        toast.info('No changes to save')
+        return
+      }
+
+      await UPDATE_PROFILE_ACTION(updateData)
+      toast.success('Profile updated successfully')
       setIsEditing(false)
-    } catch (error) {
+      
+      // Redirect to dashboard after successful update
+      setTimeout(() => {
+        navigate('/venue-owner')
+      }, 1000)
+    } catch (error: any) {
       console.error('Error saving profile:', error)
+      toast.error(error?.response?.data?.message || error?.message || 'Failed to update profile')
     } finally {
       setIsSaving(false)
     }
@@ -59,6 +134,18 @@ const Profile = () => {
     { label: 'Member Since', value: 'Jan 2024', icon: MdLocationOn }
   ]
 
+  if (isLoading || !profile) {
+    return (
+      <div className="p-6">
+        <Skeleton className="h-8 w-64 mb-6" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-96 rounded-2xl" />
+          <Skeleton className="lg:col-span-2 h-96 rounded-2xl" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -73,7 +160,9 @@ const Profile = () => {
             <div className="text-center mb-6">
               <div className="relative inline-block">
                 <div className="w-32 h-32 bg-gradient-to-br from-[#2c5aa0] to-[#1e3d6f] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white font-bold text-4xl">JS</span>
+                  <span className="text-white font-bold text-4xl">
+                    {profile.name?.charAt(0).toUpperCase() || 'U'}
+                  </span>
                 </div>
                 {isEditing && (
                   <button className="absolute bottom-2 right-2 p-2 bg-white rounded-full shadow-lg hover:bg-gray-50">
@@ -81,8 +170,8 @@ const Profile = () => {
                   </button>
                 )}
               </div>
-              <h3 className="text-xl font-bold text-gray-900">{formData.name}</h3>
-              <p className="text-gray-600">{formData.businessName}</p>
+              <h3 className="text-xl font-bold text-gray-900">{formData.name || profile.name}</h3>
+              <p className="text-gray-600">{formData.businessName || 'Venue Owner'}</p>
               <div className="mt-4">
                 <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
                   Verified
@@ -161,11 +250,8 @@ const Profile = () => {
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  disabled={!isEditing}
-                  className={`w-full p-3 border rounded-lg ${
-                    isEditing ? 'border-gray-300 focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20' : 'bg-gray-50 border-gray-200'
-                  }`}
+                  disabled
+                  className="w-full p-3 border rounded-lg bg-gray-50 border-gray-200"
                 />
               </div>
 
@@ -183,11 +269,11 @@ const Profile = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
                 <input
                   type="text"
-                  value={formData.businessName}
-                  onChange={(e) => handleInputChange('businessName', e.target.value)}
+                  value={formData.location}
+                  onChange={(e) => handleInputChange('location', e.target.value)}
                   disabled={!isEditing}
                   className={`w-full p-3 border rounded-lg ${
                     isEditing ? 'border-gray-300 focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20' : 'bg-gray-50 border-gray-200'

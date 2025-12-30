@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   MdAdd,
@@ -9,6 +9,7 @@ import {
   MdAccessTime,
   MdAttachMoney,
   MdVisibility,
+  MdRefresh,
 } from "react-icons/md";
 
 import DeleteVenueDialog from "@/components/venueOwner/DeleteVenueDialog";
@@ -19,12 +20,16 @@ import {
   DELETE_VENUE_ACTION,
   FETCH_MY_VENUES_ACTION,
 } from "@/redux/actions/venue/venue.actions";
+import { FETCH_VENUE_OWNER_BOOKINGS_ACTION } from "@/redux/actions/venueOwner/venueOwnerBooking.actions";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const VenueManagement = () => {
   const navigate = useNavigate();
   const { venues = [], pagination } = useSelector(
     (state: StateType) => state.venueSlice
+  );
+  const { bookings: venueBookings = [] } = useSelector(
+    (state: StateType) => state.venueOwnerBookingSlice
   );
 
   const [loading, setLoading] = useState(true);
@@ -35,6 +40,18 @@ const VenueManagement = () => {
     venueId: null as number | null,
     venueName: "",
   });
+
+  // Calculate booking counts per venue from bookings list
+  const venueBookingCounts = useMemo(() => {
+    const counts: Record<number, number> = {};
+    venueBookings.forEach((booking) => {
+      // Only count confirmed bookings
+      if (booking.status === 'CONFIRMED' || booking.status === 'PENDING') {
+        counts[booking.venueId] = (counts[booking.venueId] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [venueBookings]);
 
   const fetchVenues = async (page = 1) => {
     setLoading(true);
@@ -49,9 +66,53 @@ const VenueManagement = () => {
     }
   };
 
+  const fetchBookings = async () => {
+    try {
+      await FETCH_VENUE_OWNER_BOOKINGS_ACTION();
+    } catch (error: any) {
+      console.error("Error fetching bookings:", error);
+      // Don't show error toast for bookings, just log it
+    }
+  };
+
   useEffect(() => {
-    fetchVenues(currentPage);
+    // Fetch both venues and bookings on mount
+    const loadData = async () => {
+      await Promise.all([
+        fetchVenues(currentPage),
+        fetchBookings()
+      ]);
+    };
+    loadData();
   }, []);
+
+  // Refresh bookings when page becomes visible (user navigates back)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchBookings();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  const handleRefresh = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchVenues(currentPage),
+        fetchBookings()
+      ]);
+      toast.success('Venue list refreshed');
+    } catch (error: any) {
+      console.error('Error refreshing:', error);
+      toast.error('Failed to refresh');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddVenue = () => navigate("/venue-owner/venues/add");
   const handleEditVenue = (id: number) =>
@@ -107,12 +168,23 @@ const VenueManagement = () => {
               Venue Management
             </h2>
 
-            <button
-              onClick={handleAddVenue}
-              className="bg-[#2c5aa0] text-white px-4 py-2 rounded-lg hover:bg-[#1e3d6f] transition-colors flex items-center gap-2"
-            >
-              <MdAdd className="w-4 h-4" /> Add Venue
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 disabled:opacity-50"
+                title="Refresh venue list"
+              >
+                <MdRefresh className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+              <button
+                onClick={handleAddVenue}
+                className="bg-[#2c5aa0] text-white px-4 py-2 rounded-lg hover:bg-[#1e3d6f] transition-colors flex items-center gap-2"
+              >
+                <MdAdd className="w-4 h-4" /> Add Venue
+              </button>
+            </div>
           </div>
 
           {/* Venues List */}
@@ -154,7 +226,7 @@ const VenueManagement = () => {
 
                             <div className="flex items-center gap-1">
                               <MdAccessTime className="w-4 h-4" />
-                              {venue.bookings || 0} bookings
+                              {venueBookingCounts[venue.id] || venue.bookings || 0} bookings
                             </div>
                           </div>
                         </div>

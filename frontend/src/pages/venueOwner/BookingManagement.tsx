@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import { 
   MdCalendarToday,
   MdPeople,
   MdAttachMoney,
   MdCheckCircle,
-  MdCancel
+  MdCancel,
+  MdVisibility
 } from 'react-icons/md'
 import type { StateType } from '@/redux/slices'
 import { 
@@ -13,9 +15,11 @@ import {
   CONFIRM_BOOKING_ACTION,
   CANCEL_VENUE_OWNER_BOOKING_ACTION
 } from '@/redux/actions/venueOwner/venueOwnerBooking.actions'
+import { FETCH_MY_VENUES_ACTION } from '@/redux/actions/venue/venue.actions'
 import { toast } from 'sonner'
 
 const BookingManagement = () => {
+  const navigate = useNavigate()
   const [selectedFilter, setSelectedFilter] = useState('all')
   const { bookings, loading, error } = useSelector(
     (state: StateType) => state.venueOwnerBookingSlice
@@ -38,6 +42,13 @@ const BookingManagement = () => {
     try {
       await CONFIRM_BOOKING_ACTION(bookingId)
       toast.success('Booking confirmed successfully')
+      // Refresh venue list to update booking counts
+      try {
+        await FETCH_MY_VENUES_ACTION({ page: 1, perPage: 5 })
+        console.log('✅ Venue list refreshed after booking confirmation')
+      } catch (err) {
+        console.error('Failed to refresh venue list:', err)
+      }
     } catch (err: any) {
       toast.error(err?.response?.data?.message || 'Failed to confirm booking')
     }
@@ -50,6 +61,13 @@ const BookingManagement = () => {
     try {
       await CANCEL_VENUE_OWNER_BOOKING_ACTION(bookingId)
       toast.success('Booking cancelled successfully')
+      // Refresh venue list to update booking counts
+      try {
+        await FETCH_MY_VENUES_ACTION({ page: 1, perPage: 5 })
+        console.log('✅ Venue list refreshed after booking cancellation')
+      } catch (err) {
+        console.error('Failed to refresh venue list:', err)
+      }
     } catch (err: any) {
       toast.error(err?.response?.data?.message || 'Failed to cancel booking')
     }
@@ -160,7 +178,10 @@ const BookingManagement = () => {
           ) : (
             <div className="space-y-4">
               {filteredBookings.map((booking) => (
-                <div key={booking.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <div 
+                  key={booking.id} 
+                  className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-[#2c5aa0] to-[#1e3d6f] rounded-lg flex items-center justify-center">
@@ -199,6 +220,13 @@ const BookingManagement = () => {
                         </span>
                       </div>
                       <div className="flex gap-2">
+                        <button
+                          onClick={() => navigate(`/venue-owner/bookings/${booking.id}`)}
+                          className="p-2 text-[#2c5aa0] hover:text-[#1e3d6f] hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                          title="View booking details"
+                        >
+                          <MdVisibility className="w-4 h-4" />
+                        </button>
                         {booking.status === 'PENDING' && (
                           <>
                             <button

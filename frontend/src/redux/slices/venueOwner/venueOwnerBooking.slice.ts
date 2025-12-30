@@ -3,12 +3,14 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export interface IVenueOwnerBookingSlice {
   bookings: VenueOwnerBooking[];
+  selectedBooking: VenueOwnerBooking | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: IVenueOwnerBookingSlice = {
   bookings: [],
+  selectedBooking: null,
   loading: false,
   error: null,
 };
@@ -39,6 +41,14 @@ const venueOwnerBookingSlice = createSlice({
     },
     removeBooking(state, action: PayloadAction<number>) {
       state.bookings = state.bookings.filter(b => b.id !== action.payload);
+      if (state.selectedBooking?.id === action.payload) {
+        state.selectedBooking = null;
+      }
+      state.loading = false;
+      state.error = null;
+    },
+    setSelectedBooking(state, action: PayloadAction<VenueOwnerBooking | null>) {
+      state.selectedBooking = action.payload;
       state.loading = false;
       state.error = null;
     },

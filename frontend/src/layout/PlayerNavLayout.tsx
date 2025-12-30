@@ -95,7 +95,7 @@ const PlayerNavLayout = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
                     isActive
                       ? "text-[#2c5aa0] border-b-2 border-[#2c5aa0]"
                       : "text-gray-700 hover:text-[#2c5aa0]"
@@ -110,7 +110,7 @@ const PlayerNavLayout = () => {
 
           {/* Desktop Right */}
           <div className="hidden md:flex items-center space-x-4">
-            <button className="relative p-2 text-gray-700 hover:text-[#2c5aa0]">
+            <button className="relative p-2 text-gray-700 hover:text-[#2c5aa0] cursor-pointer">
               <MdNotifications className="w-6 h-6" />
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                 3
@@ -145,7 +145,7 @@ const PlayerNavLayout = () => {
                     <button
                       key={item.name}
                       onClick={() => handleNavigation(item)}
-                      className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:text-[#2c5aa0]"
+                      className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:text-[#2c5aa0] cursor-pointer"
                     >
                       {item.name}
                     </button>
@@ -158,7 +158,7 @@ const PlayerNavLayout = () => {
           {/* Mobile Menu */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 text-gray-700"
+            className="md:hidden p-2 text-gray-700 cursor-pointer"
           >
             {isMobileMenuOpen ? (
               <MdClose className="w-6 h-6" />
@@ -180,7 +180,7 @@ const PlayerNavLayout = () => {
                 key={item.name}
                 to={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center space-x-3 px-4 py-3 transition-colors ${
+                className={`flex items-center space-x-3 px-4 py-3 transition-colors cursor-pointer ${
                   isActive
                     ? "text-[#2c5aa0] bg-blue-50"
                     : "text-gray-700 hover:text-[#2c5aa0]"
