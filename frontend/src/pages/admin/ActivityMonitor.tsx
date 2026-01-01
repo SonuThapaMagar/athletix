@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSelector } from 'react-redux'
 import {
   MdToday,
   MdTrendingUp,
@@ -7,10 +8,27 @@ import {
   MdAttachMoney,
   MdEvent
 } from 'react-icons/md'
+import type { StateType } from '@/redux/slices'
+import { FETCH_ADMIN_ACTIVITIES_ACTION } from '@/redux/actions/admin/activity.actions'
+import { Skeleton } from '@/components/ui/skeleton'
+import { toast } from 'sonner'
 
 const ActivityMonitor = () => {
-  const [timeRange, setTimeRange] = useState('today')
+  const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('today')
+  const { activities, loading, error } = useSelector(
+    (state: StateType) => state.adminActivitySlice
+  )
 
+  useEffect(() => {
+    FETCH_ADMIN_ACTIVITIES_ACTION({
+      timeRange,
+    }).catch((err) => {
+      console.error('Failed to fetch activities:', err)
+      toast.error('Failed to load activities')
+    })
+  }, [timeRange])
+
+  // Calculate stats from activities
   const stats = [
     { label: 'Active Users', value: '1,234', change: '+12%', icon: MdPeople, color: 'text-gray-600' },
     { label: 'Bookings Today', value: '89', change: '+8%', icon: MdEvent, color: 'text-gray-600' },
@@ -18,48 +36,7 @@ const ActivityMonitor = () => {
     { label: 'Venues Active', value: '45', change: '+3', icon: MdSportsSoccer, color: 'text-gray-600' }
   ]
 
-  const recentActivities = [
-    {
-      id: 1,
-      user: 'John Doe',
-      action: 'created a new booking',
-      venue: 'Elite Sports Complex',
-      time: '5 minutes ago',
-      type: 'booking'
-    },
-    {
-      id: 2,
-      user: 'Sarah Wilson',
-      action: 'rated a venue',
-      venue: 'City Sports Center',
-      time: '12 minutes ago',
-      type: 'review'
-    },
-    {
-      id: 3,
-      user: 'Mike Chen',
-      action: 'registered as venue owner',
-      venue: '-',
-      time: '1 hour ago',
-      type: 'registration'
-    },
-    {
-      id: 4,
-      user: 'Emma Brown',
-      action: 'updated venue details',
-      venue: 'Metro Sports Hub',
-      time: '2 hours ago',
-      type: 'update'
-    },
-    {
-      id: 5,
-      user: 'David Lee',
-      action: 'cancelled booking',
-      venue: 'Community Gym',
-      time: '3 hours ago',
-      type: 'cancellation'
-    }
-  ]
+  const recentActivities = activities.slice(0, 5)
 
   const getActivityColor = (type: string) => {
     switch (type) {
@@ -87,7 +64,7 @@ const ActivityMonitor = () => {
           <p className="text-gray-600">Real-time monitoring of platform activity</p>
         </div>
         <div className="flex gap-2">
-          {['today', 'week', 'month'].map((range) => (
+          {(['today', 'week', 'month'] as const).map((range) => (
             <button
               key={range}
               onClick={() => setTimeRange(range)}
@@ -131,23 +108,35 @@ const ActivityMonitor = () => {
             <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
             <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium cursor-pointer">View All</button>
           </div>
-          <div className="space-y-4">
-            {recentActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${getActivityColor(activity.type)}`}>
-                  <MdToday className="w-4 h-4" />
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          ) : recentActivities.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              No activities found
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recentActivities.map((activity) => (
+                <div key={activity.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${getActivityColor(activity.type)}`}>
+                    <MdToday className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-900">
+                      <span className="font-medium">{activity.user}</span> {activity.action}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {activity.venue && activity.venue !== '-' && `${activity.venue} • `}{activity.time}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-900">
-                    <span className="font-medium">{activity.user}</span> {activity.action}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {activity.venue !== '-' && `${activity.venue} • `}{activity.time}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Activity Chart */}

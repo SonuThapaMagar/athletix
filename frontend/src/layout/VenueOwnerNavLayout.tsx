@@ -12,6 +12,7 @@ import {
 } from 'react-icons/md'
 import LogoutModal from '@/components/common/LogoutModalNew'
 import { LOGOUT_ACTION } from '@/redux/actions/auth.actions'
+import { toast } from 'sonner'
 
 const VenueOwnerNavLayout = () => {
   const navigate = useNavigate()
@@ -34,6 +35,7 @@ const VenueOwnerNavLayout = () => {
   const handleLogout = async() => {
     setShowLogoutModal(false)
     await LOGOUT_ACTION();
+    toast.success("Logged out successfully");
     navigate('/')
   }
 

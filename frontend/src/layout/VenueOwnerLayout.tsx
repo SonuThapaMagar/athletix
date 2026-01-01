@@ -11,6 +11,7 @@ import LogoutModal from '@/components/common/LogoutModalNew';
 import { LOGOUT_ACTION } from '@/redux/actions/auth.actions';
 import { FETCH_PROFILE } from '@/redux/actions/user.actions';
 import type { StateType } from '@/redux/slices';
+import { toast } from 'sonner';
 
 interface MenuItem {
   id: string;
@@ -57,9 +58,10 @@ const VenueOwnerLayout = () => {
     setSidebarOpen(false);
   };
 
-  const handleLogout =async () => {
+  const handleLogout = async () => {
     setShowLogoutModal(false);
     await LOGOUT_ACTION();
+    toast.success("Logged out successfully");
     navigate('/');
   };
 

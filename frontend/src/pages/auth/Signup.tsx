@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PromoContent from "@/components/auth/PromoContent";
 import { REGISTER_ACTION } from "@/redux/actions/auth.actions";
+import { toast } from "sonner";
 import {
   MdVisibility,
   MdVisibilityOff,
@@ -59,10 +60,13 @@ const Signup = () => {
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("userRole");
 
+      toast.success("Account created successfully! Please login to continue.");
+      
       // Navigate to login
       navigate("/login");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Register error:", err);
+      toast.error(err?.response?.data?.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }

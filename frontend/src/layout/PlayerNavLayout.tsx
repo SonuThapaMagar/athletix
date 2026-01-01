@@ -17,6 +17,7 @@ import { FETCH_PROFILE } from "@/redux/actions/user.actions";
 import type { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
 import { LOGOUT_ACTION } from "@/redux/actions/auth.actions";
+import { toast } from "sonner";
 
 const PlayerNavLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -63,6 +64,7 @@ const PlayerNavLayout = () => {
   const handleLogout = async () => {
     setShowLogoutModal(false);
     await LOGOUT_ACTION();
+    toast.success("Logged out successfully");
     navigate("/login");
   };
 

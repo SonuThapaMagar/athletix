@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation, Outlet } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import {
   MdDashboard,
   MdBusiness,
@@ -12,9 +13,15 @@ import {
   MdClose,
   MdNotifications,
   MdSettings,
-  MdSecurity
+  MdSecurity,
+  MdEvent,
+  MdPayment
 } from 'react-icons/md'
 import LogoutModal from '@/components/common/LogoutModalNew'
+import { LOGOUT_ACTION } from '@/redux/actions/auth.actions'
+import { FETCH_PROFILE } from '@/redux/actions/user.actions'
+import type { StateType } from '@/redux/slices'
+import { toast } from 'sonner'
 
 interface MenuItem {
   id: string
@@ -24,23 +31,31 @@ interface MenuItem {
   badge?: number
 }
 
-interface AdminLayoutProps {
-  children: React.ReactNode
-}
-
-const AdminLayout = ({ children }: AdminLayoutProps) => {
+const AdminLayout = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const { profile } = useSelector((state: StateType) => state.authSlice)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
 
+  // Fetch profile on mount if not already loaded
+  useEffect(() => {
+    if (!profile) {
+      FETCH_PROFILE().catch((err) => {
+        console.error('Failed to fetch profile:', err)
+      })
+    }
+  }, [profile])
+
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: MdDashboard, path: '/admin' },
-    { id: 'venues', label: 'Manage Venues', icon: MdBusiness, path: '/admin/venues' },
     { id: 'users', label: 'User Management', icon: MdPeople, path: '/admin/users' },
-    { id: 'content', label: 'Moderate Content', icon: MdContentCopy, path: '/admin/content', badge: 3 },
-    { id: 'activity', label: 'Activity Monitor', icon: MdTimeline, path: '/admin/activity' },
+    { id: 'venues', label: 'Venue Management', icon: MdBusiness, path: '/admin/venues' },
+    { id: 'bookings', label: 'Booking Management', icon: MdEvent, path: '/admin/bookings' },
+    { id: 'payments', label: 'Payments & Transactions', icon: MdPayment, path: '/admin/payments' },
     { id: 'analytics', label: 'Platform Analytics', icon: MdAnalytics, path: '/admin/analytics' },
+    { id: 'content', label: 'Reports & Moderation', icon: MdContentCopy, path: '/admin/content' },
+    { id: 'activity', label: 'Activity Log', icon: MdTimeline, path: '/admin/activity' },
     { id: 'logout', label: 'Logout', icon: MdLogout, path: '/logout' }
   ]
 
@@ -53,14 +68,17 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     setSidebarOpen(false) // Close mobile menu
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setShowLogoutModal(false)
+    await LOGOUT_ACTION()
+    toast.success("Logged out successfully")
     navigate('/')
   }
 
   const getCurrentPageTitle = () => {
     const currentPath = location.pathname
-    
+    if (currentPath.startsWith('/admin/venues/edit')) return 'Edit Venue'
+    if (currentPath.startsWith('/admin/bookings/') && currentPath !== '/admin/bookings') return 'Booking Details'
     const currentItem = menuItems.find(item => item.path === currentPath)
     return currentItem ? currentItem.label : 'Dashboard'
   }
@@ -78,6 +96,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+          aria-label="Toggle sidebar"
         >
           {sidebarOpen ? <MdClose className="w-6 h-6" /> : <MdMenu className="w-6 h-6" />}
         </button>
@@ -85,7 +104,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
       <div className="flex h-screen">
         {/* Sidebar */}
-        <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col ${
+        <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}>
           {/* Sidebar Header */}
@@ -107,23 +126,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             </button>
           </div>
 
-          {/* User Info */}
-          <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-lg">AD</span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Admin User</h3>
-                <p className="text-sm text-gray-500">Super Administrator</p>
-              </div>
-            </div>
-          </div>
+          {/* User Info - Removed static user info from sidebar */}
 
           {/* Navigation Menu */}
           <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto min-h-0">
             {menuItems.map((item) => {
-              const isActive = location.pathname === item.path
+              const isActive = location.pathname === item.path ||
+                (item.path === '/admin/venues' &&
+                  (location.pathname.startsWith('/admin/venues/edit')))
               return (
                 <button
                   key={item.id}
@@ -171,7 +181,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         )}
 
         {/* Main Content */}
-        <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+        <div className="flex-1 lg:ml-72 flex flex-col min-h-screen">
           {/* Top Bar */}
           <div className="sticky top-0 z-30 bg-white shadow-sm border-b border-gray-200 px-6 py-4 hidden lg:block">
             <div className="flex items-center justify-between">
@@ -189,16 +199,26 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 <button className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer">
                   <MdSettings className="w-6 h-6" />
                 </button>
-                <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">AD</span>
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900">
+                      {profile?.name || "Admin User"}
+                    </p>
+                    <p className="text-xs text-gray-500">{profile?.email || ""}</p>
+                  </div>
+                  <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">
+                      {profile?.name ? profile.name.charAt(0).toUpperCase() : "A"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Page Content */}
-          <div className="flex-1">
-            {children}
+          <div className="flex-1 p-6">
+            <Outlet />
           </div>
         </div>
       </div>

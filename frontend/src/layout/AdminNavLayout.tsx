@@ -15,6 +15,8 @@ import {
   MdSecurity
 } from 'react-icons/md'
 import LogoutModal from '@/components/common/LogoutModalNew'
+import { LOGOUT_ACTION } from '@/redux/actions/auth.actions'
+import { toast } from 'sonner'
 
 const AdminNavLayout = () => {
   const navigate = useNavigate()
@@ -35,8 +37,10 @@ const AdminNavLayout = () => {
     { name: 'Logout', href: '#', action: () => setShowLogoutModal(true) },
   ]
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setShowLogoutModal(false)
+    await LOGOUT_ACTION()
+    toast.success("Logged out successfully")
     navigate('/')
   }
 

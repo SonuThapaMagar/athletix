@@ -7,6 +7,13 @@ import scheduleSlice, { type IScheduleSlice } from "./venueOwner/schedule.slice"
 import paymentSlice, { type IPaymentSlice } from "./venueOwner/payment.slice";
 import dashboardSlice, { type IDashboardSlice } from "./venueOwner/dashboard.slice";
 import analyticsSlice, { type IAnalyticsSlice } from "./venueOwner/analytics.slice";
+import adminDashboardSlice, { type IAdminDashboardSlice } from "./admin/dashboard.slice";
+import adminUserSlice, { type IAdminUserSlice } from "./admin/user.slice";
+import adminBookingSlice, { type IAdminBookingSlice } from "./admin/booking.slice";
+import adminPaymentSlice, { type IAdminPaymentSlice } from "./admin/payment.slice";
+import adminAnalyticsSlice, { type IAdminAnalyticsSlice } from "./admin/analytics.slice";
+import adminContentSlice, { type IAdminContentSlice } from "./admin/content.slice";
+import adminActivitySlice, { type IAdminActivitySlice } from "./admin/activity.slice";
 
 export interface StateType {
   venueSlice: IVenuesSlice;
@@ -18,6 +25,13 @@ export interface StateType {
   paymentSlice: IPaymentSlice;
   dashboardSlice: IDashboardSlice;
   analyticsSlice: IAnalyticsSlice;
+  adminDashboardSlice: IAdminDashboardSlice;
+  adminUserSlice: IAdminUserSlice;
+  adminBookingSlice: IAdminBookingSlice;
+  adminPaymentSlice: IAdminPaymentSlice;
+  adminAnalyticsSlice: IAdminAnalyticsSlice;
+  adminContentSlice: IAdminContentSlice;
+  adminActivitySlice: IAdminActivitySlice;
 }
 
 const reducers = {
@@ -30,6 +44,13 @@ const reducers = {
   paymentSlice,
   dashboardSlice,
   analyticsSlice,
+  adminDashboardSlice,
+  adminUserSlice,
+  adminBookingSlice,
+  adminPaymentSlice,
+  adminAnalyticsSlice,
+  adminContentSlice,
+  adminActivitySlice,
 };
 
 export default reducers;

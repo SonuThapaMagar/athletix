@@ -199,5 +199,42 @@ const venueOwnerAnalytics = {
     api.get("/venue-owner/analytics/export", { params, responseType: 'blob' }),
 };
 
-const requests = { user, venueMgmt,notifications , booking, payment, schedule, venueOwnerPayment, venueOwnerDashboard, venueOwnerAnalytics };
+const admin = {
+  dashboard: {
+    getDashboardData: () => api.get("/admin/dashboard"),
+    getStats: () => api.get("/admin/dashboard/stats"),
+    getRecentActivities: (limit?: number) => 
+      api.get("/admin/dashboard/recent-activities", { params: { limit } }),
+  },
+  user: {
+    getUsers: (params?: any) => api.get("/admin/users", { params }),
+    getUserById: (userId: number) => api.get(`/admin/users/${userId}`),
+    updateUser: (userId: number, data: any) => api.put(`/admin/users/${userId}`, data),
+    deleteUser: (userId: number) => api.delete(`/admin/users/${userId}`),
+  },
+  booking: {
+    getBookings: (params?: any) => api.get("/admin/bookings", { params }),
+    getBookingById: (bookingId: number) => api.get(`/admin/bookings/${bookingId}`),
+  },
+  payment: {
+    getPayments: (params?: any) => api.get("/admin/payments", { params }),
+    getSummary: (params?: any) => api.get("/admin/payments/summary", { params }),
+    exportPayments: (params?: any) => api.get("/admin/payments/export", { params, responseType: 'blob' }),
+  },
+  analytics: {
+    getAnalyticsData: (params?: any) => api.get("/admin/analytics", { params }),
+    getStats: (params?: any) => api.get("/admin/analytics/stats", { params }),
+    exportAnalytics: (params?: any) => api.get("/admin/analytics/export", { params, responseType: 'blob' }),
+  },
+  content: {
+    getContentItems: (params?: any) => api.get("/admin/content", { params }),
+    moderateContent: (contentId: number, action: 'approve' | 'reject') => 
+      api.put(`/admin/content/${contentId}`, { action }),
+  },
+  activity: {
+    getActivities: (params?: any) => api.get("/admin/activities", { params }),
+  },
+};
+
+const requests = { user, venueMgmt, notifications, booking, payment, schedule, venueOwnerPayment, venueOwnerDashboard, venueOwnerAnalytics, admin };
 export default requests;

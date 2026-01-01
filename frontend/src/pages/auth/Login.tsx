@@ -6,6 +6,7 @@ import PromoContent from "@/components/auth/PromoContent";
 import SportsAnimations from "@/components/common/SportsAnimations";
 import { LOGIN_ACTION } from "@/redux/actions/auth.actions";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -61,12 +62,15 @@ const Login = () => {
         localStorage.removeItem("rememberedEmail");
       }
 
+      toast.success("Login successful! Welcome back.");
+      
       const role = res.userRole;
       if (role === "PLAYER") navigate("/player");
       if (role === "VENUE_OWNER") navigate("/venue-owner");
       if (role === "ADMIN") navigate("/admin");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Login error:", err);
+      toast.error(err?.response?.data?.message || "Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
