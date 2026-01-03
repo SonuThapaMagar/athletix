@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -15,76 +16,213 @@ public class AdminController {
 
     private final AdminService adminService;
 
-    // 1. USER MANAGEMENT
-    @GetMapping("/users")
-    public List<UserDto> getAllUsers(){
-        return adminService.getAllUsers();
+    // ==================== DASHBOARD ====================
+    @GetMapping("/dashboard")
+    public ResponseEntity<AdminDashboardData> getDashboardData() {
+        return ResponseEntity.ok(adminService.getDashboardData());
     }
+
+    @GetMapping("/dashboard/stats")
+    public ResponseEntity<AdminDashboardStats> getDashboardStats() {
+        return ResponseEntity.ok(adminService.getDashboardStats());
+    }
+
+    @GetMapping("/dashboard/recent-activities")
+    public ResponseEntity<List<AdminRecentActivity>> getRecentActivities(
+            @RequestParam(required = false) Integer limit) {
+        return ResponseEntity.ok(adminService.getRecentActivities(limit));
+    }
+
+    // ==================== USER MANAGEMENT ====================
+    @GetMapping("/users")
+    public ResponseEntity<List<AdminUserDto>> getAllUsers(
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false, defaultValue = "1") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer perPage) {
+        return ResponseEntity.ok(adminService.getAllUsers(role, status, search, page, perPage));
+    }
+
     @GetMapping("/users/{id}")
-//    public UserDto getUser(@PathVariable Long id) {
-//        return adminService.getUser(id);
-//    }
+    public ResponseEntity<AdminUserDto> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.getUserById(id));
+    }
+
+    @PutMapping("/users/{id}")
+    public ResponseEntity<AdminUserDto> updateUser(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> updates) {
+        return ResponseEntity.ok(adminService.updateUser(id, updates));
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+        adminService.deleteUser(id);
+        return ResponseEntity.ok("User deleted successfully");
+    }
 
     @PutMapping("/users/{id}/suspend")
     public ResponseEntity<String> suspendUser(@PathVariable Long id) {
         adminService.suspendUser(id);
-        return ResponseEntity.ok("User suspended");
+        return ResponseEntity.ok("User suspended successfully");
     }
 
     @PutMapping("/users/{id}/activate")
     public ResponseEntity<String> activateUser(@PathVariable Long id) {
         adminService.activateUser(id);
-        return ResponseEntity.ok("User activated");
+        return ResponseEntity.ok("User activated successfully");
     }
 
-    // 2. VENUE MANAGEMENT
+    // ==================== VENUE MANAGEMENT ====================
     @GetMapping("/venues")
-    public List<VenueDto> getAllVenues() {
-        return adminService.getAllVenues();
+    public ResponseEntity<List<AdminVenueDto>> getAllVenues(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false, defaultValue = "1") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer perPage) {
+        return ResponseEntity.ok(adminService.getAllVenues(status, search, page, perPage));
     }
 
-//    @PutMapping("/venues/{id}/approve")
-//    public ResponseEntity<String> approveVenue(@PathVariable Long id) {
-//        adminService.approveVenue(id);
-//        return ResponseEntity.ok("Venue approved");
-//    }
+    @GetMapping("/venues/{id}")
+    public ResponseEntity<AdminVenueDto> getVenueById(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.getVenueById(id));
+    }
 
-//    @PutMapping("/venues/{id}/reject")
-//    public ResponseEntity<String> rejectVenue(@PathVariable Long id) {
-//        adminService.rejectVenue(id);
-//        return ResponseEntity.ok("Venue rejected");
-//    }
+    @PutMapping("/venues/{id}")
+    public ResponseEntity<AdminVenueDto> updateVenue(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> updates) {
+        return ResponseEntity.ok(adminService.updateVenue(id, updates));
+    }
 
-    // 3. BOOKINGS & PAYMENTS
+    @DeleteMapping("/venues/{id}")
+    public ResponseEntity<String> deleteVenue(@PathVariable Long id) {
+        adminService.deleteVenue(id);
+        return ResponseEntity.ok("Venue deleted successfully");
+    }
+
+    // ==================== BOOKING MANAGEMENT ====================
     @GetMapping("/bookings")
-    public List<BookingDto> getAllBookings() {
-        return adminService.getAllBookings();
+    public ResponseEntity<List<AdminBookingDto>> getAllBookings(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Long venueId,
+            @RequestParam(required = false) Long playerId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false, defaultValue = "1") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer perPage) {
+        return ResponseEntity.ok(adminService.getAllBookings(status, venueId, playerId,
+                startDate, endDate, search, page, perPage));
+    }
+
+    @GetMapping("/bookings/{id}")
+    public ResponseEntity<AdminBookingDto> getBookingById(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.getBookingById(id));
     }
 
     @DeleteMapping("/bookings/{id}")
     public ResponseEntity<String> cancelBooking(@PathVariable Long id) {
         adminService.cancelBooking(id);
-        return ResponseEntity.ok("Booking cancelled");
+        return ResponseEntity.ok("Booking cancelled successfully");
     }
 
-    // 4. ANALYTICS & REPORTS
+    // ==================== PAYMENT MANAGEMENT ====================
+    @GetMapping("/payments")
+    public ResponseEntity<List<AdminPaymentDto>> getAllPayments(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Long venueId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String paymentMethod,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false, defaultValue = "1") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer perPage) {
+        return ResponseEntity.ok(adminService.getAllPayments(status, venueId, startDate,
+                endDate, paymentMethod, search, page, perPage));
+    }
+
+    @GetMapping("/payments/summary")
+    public ResponseEntity<AdminPaymentSummary> getPaymentSummary(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return ResponseEntity.ok(adminService.getPaymentSummary(startDate, endDate));
+    }
+
+    @GetMapping("/payments/export")
+    public ResponseEntity<byte[]> exportPayments(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Long venueId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false, defaultValue = "csv") String format) {
+        byte[] data = adminService.exportPayments(status, venueId, startDate, endDate, format);
+        String filename = "payments_export." + format;
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=" + filename)
+                .body(data);
+    }
+
+    // ==================== ANALYTICS ====================
     @GetMapping("/analytics")
-    public AnalyticsDto getAnalytics() {
-        return adminService.getAnalytics();
+    public ResponseEntity<AdminAnalyticsData> getAnalyticsData(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) Long venueId) {
+        return ResponseEntity.ok(adminService.getAnalyticsData(startDate, endDate, venueId));
     }
 
-    @GetMapping("/reports/revenue")
-    public List<RevenueReportDto> getRevenueReport(
-            @RequestParam String start,
-            @RequestParam String end) {
-        return adminService.getRevenueReport(start, end);
+    @GetMapping("/analytics/stats")
+    public ResponseEntity<AdminAnalyticsStats> getAnalyticsStats(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return ResponseEntity.ok(adminService.getAnalyticsStats(startDate, endDate));
     }
 
-    // 5. PLATFORM CONTROL
-//    @PostMapping("/broadcast")
-//    public ResponseEntity<String> broadcast(@RequestBody BroadcastDto dto) {
-//        adminService.broadcast(dto.message());
-//        return ResponseEntity.ok("Broadcast sent");
-//    }
+    @GetMapping("/analytics/export")
+    public ResponseEntity<byte[]> exportAnalytics(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false, defaultValue = "csv") String format) {
+        byte[] data = adminService.exportAnalytics(startDate, endDate, format);
+        String filename = "analytics_export." + format;
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=" + filename)
+                .body(data);
+    }
 
+    // ==================== CONTENT MODERATION ====================
+    @GetMapping("/content")
+    public ResponseEntity<List<AdminContentItem>> getContentItems(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false, defaultValue = "1") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer perPage) {
+        return ResponseEntity.ok(adminService.getContentItems(status, type, search, page, perPage));
+    }
+
+    @PutMapping("/content/{id}")
+    public ResponseEntity<String> moderateContent(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        String action = body.get("action");
+        adminService.moderateContent(id, action);
+        return ResponseEntity.ok("Content " + action + " successfully");
+    }
+
+    // ==================== ACTIVITY LOG ====================
+    @GetMapping("/activities")
+    public ResponseEntity<List<AdminActivityLog>> getActivities(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) Long venueId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false, defaultValue = "1") Integer page,
+            @RequestParam(required = false, defaultValue = "20") Integer perPage) {
+        return ResponseEntity.ok(adminService.getActivities(type, userId, venueId,
+                startDate, endDate, page, perPage));
+    }
 }
