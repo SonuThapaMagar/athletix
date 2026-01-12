@@ -12,6 +12,12 @@ import PaymentFailure from '@/pages/payment/PaymentFailure';
 import History from '@/pages/player/History';
 import Profile from '@/pages/player/Profile';
 import Settings from '@/pages/player/Settings';
+import Matchmaking from '@/pages/player/Matchmaking';
+import FindMatches from '@/pages/player/FindMatches';
+import CreateMatch from '@/pages/player/CreateMatch';
+import MyMatchPosts from '@/pages/player/MyMatchPosts';
+import MatchDetail from '@/pages/player/MatchDetail';
+import MatchChat from '@/pages/player/MatchChat';
 
 export const playerRoutes: RouteObject[] = [
   {
@@ -89,6 +95,54 @@ export const playerRoutes: RouteObject[] = [
         <Settings />
       </ProtectedRoute>
     ),
-  }
+  },
+  {
+    path: '/player/matchmaking',
+    element: (
+      <ProtectedRoute allowedRoles={['PLAYER']}>
+        <Matchmaking />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/player/matchmaking/find',
+    element: (
+      <ProtectedRoute allowedRoles={['PLAYER']}>
+        <FindMatches />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/player/matchmaking/create',
+    element: (
+      <ProtectedRoute allowedRoles={['PLAYER']}>
+        <CreateMatch />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/player/matchmaking/my-posts',
+    element: (
+      <ProtectedRoute allowedRoles={['PLAYER']}>
+        <MyMatchPosts />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/player/matches/:id',
+    element: (
+      <ProtectedRoute allowedRoles={['PLAYER']}>
+        <MatchDetail />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/player/matches/:id/chat',
+    element: (
+      <ProtectedRoute allowedRoles={['PLAYER']}>
+        <MatchChat />
+      </ProtectedRoute>
+    ),
+  },
 ];
 

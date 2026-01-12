@@ -6,25 +6,12 @@ import {
   DialogDescription
 } from '@/components/ui/dialog'
 import { MdLocationOn, MdPerson, MdCalendarToday, MdAttachMoney } from 'react-icons/md'
-
-interface Venue {
-  id: number
-  name: string
-  owner: string
-  location: string
-  address?: string
-  sports: string[]
-  status: string
-  createdAt: string
-  bookings: number
-  rating: number
-  price?: string
-}
+import type { AdminVenue } from '@/types/admin/venue.types'
 
 interface ViewVenueDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  venue: Venue | null
+  venue?: AdminVenue | null
 }
 
 const ViewVenueDialog = ({ open, onOpenChange, venue }: ViewVenueDialogProps) => {
@@ -54,13 +41,15 @@ const ViewVenueDialog = ({ open, onOpenChange, venue }: ViewVenueDialogProps) =>
         <div className="space-y-0">
           {/* Status Badge */}
           <div className="flex items-center gap-3">
-            <span className={`px-3 py-1 rounded text-sm font-medium ${getStatusColor(venue.status)}`}>
-              {venue.status.charAt(0).toUpperCase() + venue.status.slice(1)}
+            <span className={`px-3 py-1 rounded text-sm font-medium ${getStatusColor(venue.status || 'pending')}`}>
+              {(venue.status || 'pending').charAt(0).toUpperCase() + (venue.status || 'pending').slice(1)}
             </span>
-            <div className="flex items-center gap-1 text-gray-700">
-              <span className="text-sm font-semibold">{venue.rating}</span>
-              <span className="text-sm text-gray-500">out of 5.0</span>
-            </div>
+            {venue.rating && (
+              <div className="flex items-center gap-1 text-gray-700">
+                <span className="text-sm font-semibold">{venue.rating}</span>
+                <span className="text-sm text-gray-500">out of 5.0</span>
+              </div>
+            )}
           </div>
 
           {/* Location */}
@@ -71,7 +60,6 @@ const ViewVenueDialog = ({ open, onOpenChange, venue }: ViewVenueDialogProps) =>
             <div className="flex-1">
               <p className="text-xs text-gray-500 mb-1">Location</p>
               <p className="font-medium text-gray-900">{venue.location}</p>
-              {venue.address && <p className="text-sm text-gray-600 mt-1">{venue.address}</p>}
             </div>
           </div>
 
@@ -82,7 +70,7 @@ const ViewVenueDialog = ({ open, onOpenChange, venue }: ViewVenueDialogProps) =>
             </div>
             <div className="flex-1">
               <p className="text-xs text-gray-500 mb-1">Owner</p>
-              <p className="font-medium text-gray-900">{venue.owner}</p>
+              <p className="font-medium text-gray-900">{venue.owner || venue.ownerName || 'N/A'}</p>
             </div>
           </div>
 
@@ -107,7 +95,9 @@ const ViewVenueDialog = ({ open, onOpenChange, venue }: ViewVenueDialogProps) =>
                 </div>
                 <p className="text-xs text-gray-500">Price</p>
               </div>
-              <p className="text-lg font-semibold text-gray-900">{venue.price || 'Not specified'}</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {venue.pricePerHour ? `Rs. ${venue.pricePerHour}/hour` : 'Not specified'}
+              </p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
               <div className="flex items-center gap-2 mb-2">
@@ -116,7 +106,7 @@ const ViewVenueDialog = ({ open, onOpenChange, venue }: ViewVenueDialogProps) =>
                 </div>
                 <p className="text-xs text-gray-500">Total Bookings</p>
               </div>
-              <p className="text-lg font-semibold text-gray-900">{venue.bookings}</p>
+              <p className="text-lg font-semibold text-gray-900">{venue.bookings || 0}</p>
             </div>
           </div>
 

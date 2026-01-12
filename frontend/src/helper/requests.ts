@@ -212,6 +212,12 @@ const admin = {
     updateUser: (userId: number, data: any) => api.put(`/admin/users/${userId}`, data),
     deleteUser: (userId: number) => api.delete(`/admin/users/${userId}`),
   },
+  venue: {
+    getVenues: (params?: any) => api.get("/admin/venues", { params }),
+    getVenueById: (venueId: number) => api.get(`/admin/venues/${venueId}`),
+    updateVenue: (venueId: number, data: any) => api.put(`/admin/venues/${venueId}`, data),
+    deleteVenue: (venueId: number) => api.delete(`/admin/venues/${venueId}`),
+  },
   booking: {
     getBookings: (params?: any) => api.get("/admin/bookings", { params }),
     getBookingById: (bookingId: number) => api.get(`/admin/bookings/${bookingId}`),
@@ -236,5 +242,20 @@ const admin = {
   },
 };
 
-const requests = { user, venueMgmt, notifications, booking, payment, schedule, venueOwnerPayment, venueOwnerDashboard, venueOwnerAnalytics, admin };
+const player = {
+  matchmaking: {
+    getMatches: (params?: any) => api.get("/player/matches", { params }),
+    getMyMatches: () => api.get("/player/matches/my"),
+    getMatchById: (matchId: number) => api.get(`/player/matches/${matchId}`),
+    createMatch: (data: any) => api.post("/player/matches", data),
+    deleteMatch: (matchId: number) => api.delete(`/player/matches/${matchId}`),
+    requestToJoin: (matchId: number, message?: string) => api.post(`/player/matches/${matchId}/request`, { message }),
+    respondToRequest: (requestId: number, action: 'accept' | 'reject') => api.put(`/player/match-requests/${requestId}`, { action }),
+    getMatchRequests: (matchId: number) => api.get(`/player/matches/${matchId}/requests`),
+    getChatMessages: (matchId: number) => api.get(`/player/matches/${matchId}/chat`),
+    sendChatMessage: (matchId: number, message: string) => api.post(`/player/matches/${matchId}/chat`, { message }),
+  },
+};
+
+const requests = { user, venueMgmt, notifications, booking, payment, schedule, venueOwnerPayment, venueOwnerDashboard, venueOwnerAnalytics, admin, player };
 export default requests;

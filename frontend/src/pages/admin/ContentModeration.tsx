@@ -1,12 +1,14 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import {
   MdCheckCircle,
   MdCancel,
   MdFlag,
   MdComment,
   MdImage,
-  MdDescription
+  MdDescription,
+  MdVisibility
 } from 'react-icons/md'
 import type { StateType } from '@/redux/slices'
 import { FETCH_ADMIN_CONTENT_ITEMS_ACTION, MODERATE_CONTENT_ACTION } from '@/redux/actions/admin/content.actions'
@@ -14,10 +16,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
 
 const ContentModeration = () => {
+  const navigate = useNavigate()
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
   const { contentItems, loading, error } = useSelector(
     (state: StateType) => state.adminContentSlice
   )
+
+  const handleView = (contentId: number) => {
+    navigate(`/admin/content/${contentId}`)
+  }
 
   useEffect(() => {
     FETCH_ADMIN_CONTENT_ITEMS_ACTION({
@@ -173,24 +180,36 @@ const ContentModeration = () => {
                   </div>
                 </div>
               </div>
-              {item.status === 'pending' && (
-                <div className="flex gap-2 pt-4 border-t border-gray-100">
-                  <button
-                    onClick={() => handleModerate(item.id, 'approve')}
-                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <MdCheckCircle className="w-4 h-4" />
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => handleModerate(item.id, 'reject')}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <MdCancel className="w-4 h-4" />
-                    Reject
-                  </button>
+              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                <div className="flex gap-2">
+                  {item.status === 'pending' && (
+                    <>
+                      <button
+                        onClick={() => handleModerate(item.id, 'approve')}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <MdCheckCircle className="w-4 h-4" />
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleModerate(item.id, 'reject')}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <MdCancel className="w-4 h-4" />
+                        Reject
+                      </button>
+                    </>
+                  )}
                 </div>
-              )}
+                <button
+                  onClick={() => handleView(item.id)}
+                  className="px-4 py-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  title="View Details"
+                >
+                  <MdVisibility className="w-4 h-4" />
+                  View
+                </button>
+              </div>
               {item.status === 'approved' && (
                 <div className="pt-4 border-t border-gray-100">
                   <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">

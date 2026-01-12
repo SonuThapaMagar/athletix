@@ -29,7 +29,7 @@ const adminUserSlice = createSlice({
       state.error = action.payload;
       state.loading = false;
     },
-    setUsers(state, action: PayloadAction<{ users: AdminUser[]; pagination: Pagination }>) {
+    setUsers(state, action: PayloadAction<{ users: AdminUser[]; pagination: Pagination | null }>) {
       state.users = action.payload.users;
       state.pagination = action.payload.pagination;
       state.loading = false;

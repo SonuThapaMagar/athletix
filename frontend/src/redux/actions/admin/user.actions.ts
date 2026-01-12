@@ -12,10 +12,22 @@ export const FETCH_ADMIN_USERS_ACTION = (filters?: UserFilters): Promise<{ users
 
     requests.admin.user
       .getUsers(filters)
-      .then((res: AxiosResponse<ApiResponse<PaginationResponse<AdminUser>>>) => {
-        const paginatedData = res.data.data || res.data;
-        const users = paginatedData.items || [];
-        const pagination = paginatedData.pagination;
+      .then((res: AxiosResponse<ApiResponse<PaginationResponse<AdminUser> | AdminUser[]>>) => {
+        const responseData = res.data.data || res.data;
+        
+        // Handle both cases: direct array or paginated response
+        let users: AdminUser[] = [];
+        let pagination: any = null;
+        
+        if (Array.isArray(responseData)) {
+          // Direct array response
+          users = responseData;
+        } else if (responseData && typeof responseData === 'object' && 'items' in responseData) {
+          // Paginated response
+          users = responseData.items || [];
+          pagination = responseData.pagination || null;
+        }
+        
         AppDispatch(adminUserActions.setUsers({ users, pagination }));
         resolve({ users, pagination });
       })

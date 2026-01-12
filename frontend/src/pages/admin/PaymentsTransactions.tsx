@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import {
   MdAttachMoney,
   MdDateRange,
@@ -9,7 +10,10 @@ import {
   MdSearch,
   MdRefresh,
   MdLocationOn,
-  MdPerson
+  MdPerson,
+  MdVisibility,
+  MdEdit,
+  MdDelete
 } from 'react-icons/md'
 import type { StateType } from '@/redux/slices'
 import { FETCH_ADMIN_PAYMENTS_ACTION, FETCH_ADMIN_PAYMENT_SUMMARY_ACTION, EXPORT_ADMIN_PAYMENTS_ACTION } from '@/redux/actions/admin/payment.actions'
@@ -17,12 +21,17 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
 
 const PaymentsTransactions = () => {
+  const navigate = useNavigate()
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'completed' | 'pending' | 'failed'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [isExporting, setIsExporting] = useState(false)
   const { payments, summary, loading, error } = useSelector(
     (state: StateType) => state.adminPaymentSlice
   )
+
+  const handleView = (paymentId: number) => {
+    navigate(`/admin/payments/${paymentId}`)
+  }
 
   useEffect(() => {
     Promise.all([
@@ -273,18 +282,19 @@ const PaymentsTransactions = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4">
+                  <td colSpan={8} className="px-6 py-4">
                     <Skeleton className="h-12 w-full" />
                   </td>
                 </tr>
               ) : filteredPayments.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
                     No transactions found
                   </td>
                 </tr>
@@ -331,6 +341,17 @@ const PaymentsTransactions = () => {
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(payment.status)}`}>
                         {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleView(payment.id)}
+                          className="text-indigo-600 hover:text-indigo-700 transition-colors cursor-pointer"
+                          title="View Details"
+                        >
+                          <MdVisibility className="w-5 h-5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

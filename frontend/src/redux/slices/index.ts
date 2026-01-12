@@ -14,6 +14,8 @@ import adminPaymentSlice, { type IAdminPaymentSlice } from "./admin/payment.slic
 import adminAnalyticsSlice, { type IAdminAnalyticsSlice } from "./admin/analytics.slice";
 import adminContentSlice, { type IAdminContentSlice } from "./admin/content.slice";
 import adminActivitySlice, { type IAdminActivitySlice } from "./admin/activity.slice";
+import adminVenueSlice, { type IAdminVenueSlice } from "./admin/venue.slice";
+import matchmakingSlice, { type IMatchmakingSlice } from "./player/matchmaking.slice";
 
 export interface StateType {
   venueSlice: IVenuesSlice;
@@ -32,6 +34,8 @@ export interface StateType {
   adminAnalyticsSlice: IAdminAnalyticsSlice;
   adminContentSlice: IAdminContentSlice;
   adminActivitySlice: IAdminActivitySlice;
+  adminVenueSlice: IAdminVenueSlice;
+  matchmakingSlice: IMatchmakingSlice;
 }
 
 const reducers = {
@@ -51,6 +55,8 @@ const reducers = {
   adminAnalyticsSlice,
   adminContentSlice,
   adminActivitySlice,
+  adminVenueSlice,
+  matchmakingSlice,
 };
 
 export default reducers;

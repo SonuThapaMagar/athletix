@@ -38,7 +38,7 @@ const PlayerNavLayout = () => {
   const navigationItems = [
     { name: "Home", icon: MdHome, href: "/player" },
     { name: "Booking", icon: MdBookOnline, href: "/player/bookings" },
-    { name: "Matchmaking", icon: MdPeople, href: "/player/matchmaking" },
+    { name: "Find Matches", icon: MdPeople, href: "/player/matchmaking" },
     { name: "History", icon: MdHistory, href: "/player/history" },
   ];
 
@@ -47,6 +47,11 @@ const PlayerNavLayout = () => {
       name: "Profile",
       href: "/player/profile",
       action: () => navigate("/player/profile"),
+    },
+    {
+      name: "My Match Posts",
+      href: "/player/matchmaking/my-posts",
+      action: () => navigate("/player/matchmaking/my-posts"),
     },
     {
       name: "Settings",

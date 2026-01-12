@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import {
   MdSearch,
@@ -10,38 +11,74 @@ import {
   MdPending,
   MdVisibility
 } from 'react-icons/md'
-import ViewVenueDialog from '@/components/admin/ViewVenueDialog'
 import DeleteVenueDialog from '@/components/venueOwner/DeleteVenueDialog'
+import type { StateType } from '@/redux/slices'
+import { FETCH_ADMIN_VENUES_ACTION, DELETE_ADMIN_VENUE_ACTION } from '@/redux/actions/admin/venue.actions'
+import { Skeleton } from '@/components/ui/skeleton'
+import { toast } from 'sonner'
+import type { AdminVenue } from '@/types/admin/venue.types'
 
 const VenueManagement = () => {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedFilter, setSelectedFilter] = useState('all')
-  const [viewDialogOpen, setViewDialogOpen] = useState(false)
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'approved' | 'pending' | 'rejected'>('all')
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [selectedVenue, setSelectedVenue] = useState<any>(null)
+  const [selectedVenue, setSelectedVenue] = useState<AdminVenue | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  
+  const { venues, loading, error } = useSelector(
+    (state: StateType) => state.adminVenueSlice
+  )
+
+  // Calculate filter counts from actual data
+  const filterCounts = useMemo(() => {
+    const all = venues.length
+    const approved = venues.filter(v => v.status === 'approved').length
+    const pending = venues.filter(v => v.status === 'pending').length
+    const rejected = venues.filter(v => v.status === 'rejected').length
+    
+    return { all, approved, pending, rejected }
+  }, [venues])
 
   const filters = [
-    { id: 'all', label: 'All Venues', count: 45 },
-    { id: 'approved', label: 'Approved', count: 38 },
-    { id: 'pending', label: 'Pending Review', count: 5 },
-    { id: 'rejected', label: 'Rejected', count: 2 }
+    { id: 'all' as const, label: 'All Venues', count: filterCounts.all },
+    { id: 'approved' as const, label: 'Approved', count: filterCounts.approved },
+    { id: 'pending' as const, label: 'Pending Review', count: filterCounts.pending },
+    { id: 'rejected' as const, label: 'Rejected', count: filterCounts.rejected }
   ]
 
-  const venues = [
-    {
-      id: 1,
-      name: 'Elite Sports Complex',
-      owner: 'John Smith',
-      location: 'Downtown District',
-      sports: ['Football', 'Basketball', 'Tennis'],
-      status: 'approved',
-      createdAt: '2024-11-15',
-      bookings: 456,
-      rating: 4.8
-    },
-  ]
+  // Filter venues based on selected filter and search query
+  const filteredVenues = useMemo(() => {
+    let filtered = venues
+
+    // Apply status filter
+    if (selectedFilter !== 'all') {
+      filtered = filtered.filter(v => v.status === selectedFilter)
+    }
+
+    // Apply search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(v => 
+        v.name.toLowerCase().includes(query) ||
+        v.location.toLowerCase().includes(query) ||
+        v.ownerName?.toLowerCase().includes(query) ||
+        v.sports.some(sport => sport.toLowerCase().includes(query))
+      )
+    }
+
+    return filtered
+  }, [venues, selectedFilter, searchQuery])
+
+  // Fetch venues on mount and when filters change
+  useEffect(() => {
+    FETCH_ADMIN_VENUES_ACTION({
+      status: selectedFilter !== 'all' ? selectedFilter : undefined,
+      search: searchQuery || undefined,
+    }).catch((err) => {
+      console.error('Failed to fetch venues:', err)
+    })
+  }, [selectedFilter, searchQuery])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -56,9 +93,9 @@ const VenueManagement = () => {
     }
   }
 
-  const handleView = (venue: any) => {
-    setSelectedVenue(venue)
-    setViewDialogOpen(true)
+  const handleView = (venue: AdminVenue) => {
+    // Navigate to venue detail page
+    navigate(`/admin/venues/${venue.id}`)
   }
 
   const handleEdit = (venueId: number) => {
@@ -71,13 +108,25 @@ const VenueManagement = () => {
   }
 
   const confirmDelete = async () => {
+    if (!selectedVenue) return
     setIsDeleting(true)
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    console.log('Venue deleted:', selectedVenue)
-    setIsDeleting(false)
-    setDeleteDialogOpen(false)
-    setSelectedVenue(null)
+    try {
+      await DELETE_ADMIN_VENUE_ACTION(selectedVenue.id)
+      toast.success('Venue deleted successfully')
+      setDeleteDialogOpen(false)
+      setSelectedVenue(null)
+      // Refresh venues list
+      FETCH_ADMIN_VENUES_ACTION({
+        status: selectedFilter !== 'all' ? selectedFilter : undefined,
+        search: searchQuery || undefined,
+      }).catch((err) => {
+        console.error('Failed to refresh venues:', err)
+      })
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to delete venue')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -87,6 +136,12 @@ const VenueManagement = () => {
         <h2 className="text-2xl font-bold text-gray-900">Manage Venues</h2>
         <p className="text-gray-600">Review and manage all registered venues</p>
       </div>
+
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-sm text-red-800">{error}</p>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -148,63 +203,73 @@ const VenueManagement = () => {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-6">Venues List</h3>
         
-        <div className="space-y-4">
-          {venues.map((venue) => (
-            <div key={venue.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center">
-                    <MdLocationOn className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">{venue.name}</h3>
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                      <span>Owner: {venue.owner}</span>
-                      <div className="flex items-center gap-1">
-                        <MdLocationOn className="w-4 h-4" />
-                        {venue.location}
+        {loading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-24 w-full" />
+            ))}
+          </div>
+        ) : filteredVenues.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-sm text-gray-500">No venues found</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredVenues.map((venue) => (
+              <div key={venue.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center">
+                      <MdLocationOn className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900">{venue.name}</h3>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                        <span>Owner: {venue.ownerName || 'N/A'}</span>
+                        <div className="flex items-center gap-1">
+                          <MdLocationOn className="w-4 h-4" />
+                          {venue.location}
+                        </div>
+                        {venue.bookings && <span>{venue.bookings} bookings</span>}
                       </div>
-                      <span>{venue.bookings} bookings</span>
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                      {venue.sports.map((sport, index) => (
-                        <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                          {sport}
-                        </span>
-                      ))}
+                      <div className="flex gap-2 mt-2">
+                        {venue.sports?.slice(0, 3).map((sport, index) => (
+                          <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            {sport}
+                          </span>
+                        ))}
+                        {venue.sports && venue.sports.length > 3 && (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                            +{venue.sports.length - 3} more
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-center">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium cursor-pointer ${getStatusColor(venue.status)}`}>
-                      {venue.status}
-                    </span>
+                  <div className="flex items-center gap-4">
+                    <div className="text-center">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(venue.status || 'pending')}`}>
+                        {venue.status || 'pending'}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => handleView(venue)} className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer" title="View venue">
+                        <MdVisibility className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleEdit(venue.id)} className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer" title="Edit venue">
+                        <MdEdit className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleDelete(venue)} className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer" title="Delete venue">
+                        <MdDelete className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                                     <div className="flex gap-2">
-                     <button onClick={() => handleView(venue)} className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer" title="View venue">
-                       <MdVisibility className="w-4 h-4" />
-                     </button>
-                     <button onClick={() => handleEdit(venue.id)} className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer" title="Edit venue">
-                       <MdEdit className="w-4 h-4" />
-                     </button>
-                     <button onClick={() => handleDelete(venue)} className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer" title="Delete venue">
-                       <MdDelete className="w-4 h-4" />
-                     </button>
-                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-                 </div>
-       </div>
-
-       {/* View Dialog */}
-       <ViewVenueDialog
-         open={viewDialogOpen}
-         onOpenChange={setViewDialogOpen}
-         venue={selectedVenue}
-       />
+            ))}
+          </div>
+        )}
+      </div>
 
        {/* Delete Dialog */}
        <DeleteVenueDialog

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import { 
   MdSearch,
   MdEdit,
@@ -21,13 +22,13 @@ import { toast } from 'sonner'
 import type { AdminUser } from '@/types/admin/user.types'
 
 const UserManagement = () => {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRole, setSelectedRole] = useState<'all' | 'PLAYER' | 'VENUE_OWNER' | 'ADMIN'>('all')
   const { users, loading, error } = useSelector(
     (state: StateType) => state.adminUserSlice
   )
 
-  const [viewOpen, setViewOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null)
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null)
@@ -71,8 +72,8 @@ const UserManagement = () => {
   }
 
   const handleView = (user: any) => {
-    setSelectedUser(user)
-    setViewOpen(true)
+    // Navigate to user detail page
+    navigate(`/admin/users/${user.id}`)
   }
 
   const handleEdit = (user: any) => {
@@ -123,7 +124,6 @@ const UserManagement = () => {
     { id: 'all' as const, label: 'All Users' },
     { id: 'PLAYER' as const, label: 'Players' },
     { id: 'VENUE_OWNER' as const, label: 'Venue Owners' },
-    { id: 'ADMIN' as const, label: 'Admins' }
   ]
 
   return (
@@ -347,57 +347,6 @@ const UserManagement = () => {
         </div>
         </>
       )}
-
-        {/* View User Dialog */}
-        <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-          <DialogContent className="w-full max-w-md sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>View User</DialogTitle>
-              <DialogDescription>Basic information</DialogDescription>
-            </DialogHeader>
-            {selectedUser && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                    {selectedUser.name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{selectedUser.name}</p>
-                    <p className="text-sm text-gray-600">{selectedUser.email}</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-500">Role</p>
-                    <p className="text-sm text-gray-900">{getRoleLabel(selectedUser.role)}</p>
-                  </div>
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-500">Status</p>
-                    <p className="text-sm text-gray-900">{getStatusLabel(selectedUser.status)}</p>
-                  </div>
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-500">Joined</p>
-                    <p className="text-sm text-gray-900">{selectedUser.createdAt ? formatDate(selectedUser.createdAt) : 'N/A'}</p>
-                  </div>
-                  {selectedUser.phone && (
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-xs text-gray-500">Phone</p>
-                      <p className="text-sm text-gray-900">{selectedUser.phone}</p>
-                    </div>
-                  )}
-                </div>
-            </div>
-            )}
-            <DialogFooter className="justify-end mt-6">
-              <button
-                onClick={() => setViewOpen(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer"
-              >
-                Close
-              </button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
         {/* Delete Confirm Dialog */}
         <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
