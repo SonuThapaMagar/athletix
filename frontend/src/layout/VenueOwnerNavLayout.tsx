@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import logo from '@/assets/athletix-logo-icon.svg';
 import { 
   MdDashboard, 
   MdLocationOn, 
@@ -54,10 +55,12 @@ const VenueOwnerNavLayout = () => {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
             <div className="flex items-center space-x-2 cursor-pointer group">
-              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                <span className="text-white font-bold text-lg group-hover:scale-110 transition-transform duration-300">V</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900 group-hover:text-green-600 transition-colors duration-300">Athletix Venue</span>
+              <img 
+                src={logo} 
+                alt="Athletix Logo" 
+                className="h-12 transition-transform duration-300 group-hover:scale-110 object-contain"
+              />
+              <span className="text-xl font-bold text-gray-900 group-hover:text-green-600 transition-colors duration-300">Venue</span>
             </div>
           </div>
 

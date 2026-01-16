@@ -172,7 +172,7 @@ const VenueManagement = () => {
               <button
                 onClick={handleRefresh}
                 disabled={loading}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 disabled:opacity-50"
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                 title="Refresh venue list"
               >
                 <MdRefresh className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -180,7 +180,7 @@ const VenueManagement = () => {
               </button>
               <button
                 onClick={handleAddVenue}
-                className="bg-[#2c5aa0] text-white px-4 py-2 rounded-lg hover:bg-[#1e3d6f] transition-colors flex items-center gap-2"
+                className="bg-[#2c5aa0] text-white px-4 py-2 rounded-lg hover:bg-[#1e3d6f] cursor-pointer transition-colors flex items-center gap-2"
               >
                 <MdAdd className="w-4 h-4" /> Add Venue
               </button>

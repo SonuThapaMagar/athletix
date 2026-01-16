@@ -250,10 +250,12 @@ const player = {
     createMatch: (data: any) => api.post("/player/matches", data),
     deleteMatch: (matchId: number) => api.delete(`/player/matches/${matchId}`),
     requestToJoin: (matchId: number, message?: string) => api.post(`/player/matches/${matchId}/request`, { message }),
-    respondToRequest: (requestId: number, action: 'accept' | 'reject') => api.put(`/player/match-requests/${requestId}`, { action }),
+    respondToRequest: (requestId: number, action: 'accept' | 'reject') => api.put(`/player/matches/requests/${requestId}`, { action }),
     getMatchRequests: (matchId: number) => api.get(`/player/matches/${matchId}/requests`),
     getChatMessages: (matchId: number) => api.get(`/player/matches/${matchId}/chat`),
     sendChatMessage: (matchId: number, message: string) => api.post(`/player/matches/${matchId}/chat`, { message }),
+    // Get player profile by userId
+    getPlayerProfile: (userId: number) => api.get(`/player/profile/${userId}`),
   },
 };
 

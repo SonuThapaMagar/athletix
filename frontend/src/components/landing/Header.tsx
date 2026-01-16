@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { HiMenuAlt3, HiX } from 'react-icons/hi';
+import logo from '@/assets/athletix-logo.svg';
 
 type HeaderProps = {
   onLogin: () => void;
@@ -40,12 +41,11 @@ const Header = ({ onLogin, onSignup }: HeaderProps) => {
               onClick={() => smoothScrollTo('hero')}
               className="flex items-center gap-3 cursor-pointer group"
             >
-              <div className="h-10 w-10 lg:h-12 lg:w-12 rounded-xl bg-gradient-to-br from-primary to-primary-80 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                <span className="text-white font-bold text-lg lg:text-xl">A</span>
-              </div>
-              <span className="font-bold text-xl lg:text-2xl text-gray-900 group-hover:text-primary transition-colors duration-300">
-                ATHLETIX
-              </span>
+              <img 
+                src={logo} 
+                alt="Athletix Logo" 
+                className="h-12 lg:h-16 transition-transform duration-300 group-hover:scale-110 object-contain"
+              />
             </button>
 
             {/* Desktop Navigation */}

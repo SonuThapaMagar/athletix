@@ -52,10 +52,10 @@ const AdminLayout = () => {
     { id: 'users', label: 'User Management', icon: MdPeople, path: '/admin/users' },
     { id: 'venues', label: 'Venue Management', icon: MdBusiness, path: '/admin/venues' },
     { id: 'bookings', label: 'Booking Management', icon: MdEvent, path: '/admin/bookings' },
-    { id: 'payments', label: 'Payments & Transactions', icon: MdPayment, path: '/admin/payments' },
+    // { id: 'payments', label: 'Payments & Transactions', icon: MdPayment, path: '/admin/payments' },
     { id: 'analytics', label: 'Platform Analytics', icon: MdAnalytics, path: '/admin/analytics' },
-    { id: 'content', label: 'Reports & Moderation', icon: MdContentCopy, path: '/admin/content' },
-    { id: 'activity', label: 'Activity Log', icon: MdTimeline, path: '/admin/activity' },
+    // { id: 'content', label: 'Reports & Moderation', icon: MdContentCopy, path: '/admin/content' },
+    // { id: 'activity', label: 'Activity Log', icon: MdTimeline, path: '/admin/activity' },
     { id: 'logout', label: 'Logout', icon: MdLogout, path: '/logout' }
   ]
 
@@ -104,9 +104,8 @@ const AdminLayout = () => {
 
       <div className="flex h-screen">
         {/* Sidebar */}
-        <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}>
+        <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}>
           {/* Sidebar Header */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center gap-3">
@@ -138,18 +137,16 @@ const AdminLayout = () => {
                 <button
                   key={item.id}
                   onClick={() => handleMenuClick(item)}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${
-                    isActive
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${isActive
                       ? 'bg-indigo-600 text-white shadow-lg'
                       : 'text-gray-700 hover:bg-gray-100 hover:text-indigo-600'
-                  }`}
+                    }`}
                 >
                   <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-indigo-600'}`} />
                   <span className="font-medium">{item.label}</span>
                   {item.badge && (
-                    <span className={`ml-auto px-2 py-1 text-xs rounded-full ${
-                      isActive ? 'bg-white text-indigo-600' : 'bg-indigo-500 text-white'
-                    }`}>
+                    <span className={`ml-auto px-2 py-1 text-xs rounded-full ${isActive ? 'bg-white text-indigo-600' : 'bg-indigo-500 text-white'
+                      }`}>
                       {item.badge}
                     </span>
                   )}
@@ -157,19 +154,6 @@ const AdminLayout = () => {
               )
             })}
           </nav>
-
-          {/* Sidebar Footer */}
-          <div className="px-6 py-4 border-t border-gray-200 flex-shrink-0">
-            <div className="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <MdSecurity className="w-4 h-4 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">Security Status</p>
-                <p className="text-xs text-gray-500">All systems operational</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Mobile Overlay */}
@@ -190,15 +174,6 @@ const AdminLayout = () => {
                 <p className="text-gray-600">Manage and monitor the Athletix platform</p>
               </div>
               <div className="flex items-center gap-4">
-                <button className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer relative">
-                  <MdNotifications className="w-6 h-6" />
-                  <span className="absolute top-1 right-1 bg-indigo-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    5
-                  </span>
-                </button>
-                <button className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer">
-                  <MdSettings className="w-6 h-6" />
-                </button>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <p className="text-sm font-medium text-gray-900">
@@ -224,7 +199,7 @@ const AdminLayout = () => {
       </div>
 
       {/* Logout Modal */}
-      <LogoutModal 
+      <LogoutModal
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
         onConfirm={handleLogout}

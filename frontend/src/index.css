@@ -5,10 +5,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Modern Color Palette inspired by ColorHunt */
-  --color-primary: #2563eb; /* Electric Blue */
-  --color-secondary: #06b6d4; /* Cyan */
-  --color-accent: #10b981; /* Emerald */
+  /* Modern Color Palette - Athletix Brand Colors */
+  --color-primary: #00425b; /* Deep Teal Blue - Primary */
+  --color-secondary: #00B44E; /* Vibrant Green - Secondary */
+  --color-accent: #00B44E; /* Secondary Green as Accent */
   --color-warning: #f59e0b; /* Amber */
   --color-error: #ef4444; /* Red */
 
@@ -25,29 +25,29 @@
   --color-bg-accent: #f1f5f9; /* Subtle Gray */
   --color-soft-gray: #f8fafc;
 
-  /* Primary Color Variations */
-  --color-primary-10: #eff6ff;
-  --color-primary-20: #dbeafe;
-  --color-primary-30: #bfdbfe;
-  --color-primary-40: #93c5fd;
-  --color-primary-50: #60a5fa;
-  --color-primary-60: #3b82f6;
-  --color-primary-70: #2563eb;
-  --color-primary-80: #1d4ed8;
-  --color-primary-90: #1e40af;
-  --color-primary-100: #1e3a8a;
+  /* Primary Color Variations (#00425b) */
+  --color-primary-10: #e6f2f5;
+  --color-primary-20: #cce5eb;
+  --color-primary-30: #99cbd7;
+  --color-primary-40: #66b1c3;
+  --color-primary-50: #3397af;
+  --color-primary-60: #007d9b;
+  --color-primary-70: #006885;
+  --color-primary-80: #00536f;
+  --color-primary-90: #003e59;
+  --color-primary-100: #002943;
 
-  /* Secondary Color Variations */
-  --color-secondary-10: #ecfeff;
-  --color-secondary-20: #cffafe;
-  --color-secondary-30: #a5f3fc;
-  --color-secondary-40: #67e8f9;
-  --color-secondary-50: #22d3ee;
-  --color-secondary-60: #06b6d4;
-  --color-secondary-70: #0891b2;
-  --color-secondary-80: #0e7490;
-  --color-secondary-90: #155e75;
-  --color-secondary-100: #164e63;
+  /* Secondary Color Variations (#00B44E) */
+  --color-secondary-10: #e6f9ed;
+  --color-secondary-20: #ccf3db;
+  --color-secondary-30: #99e7b7;
+  --color-secondary-40: #66db93;
+  --color-secondary-50: #33cf6f;
+  --color-secondary-60: #00B44E;
+  --color-secondary-70: #00903e;
+  --color-secondary-80: #006c2e;
+  --color-secondary-90: #00481e;
+  --color-secondary-100: #00240f;
 
   /* Typography */
   --font-primary: "Inter", "Roboto", sans-serif;
@@ -112,10 +112,10 @@
   --destructive-foreground: #ffffff;
   --border: #e5e7eb;
   --input: #f9fafb;
-  --ring: #2563eb;
-  --chart-1: #2563eb;
-  --chart-2: #06b6d4;
-  --chart-3: #10b981;
+  --ring: #00425b;
+  --chart-1: #00425b;
+  --chart-2: #00B44E;
+  --chart-3: #006885;
   --chart-4: #f59e0b;
   --chart-5: #ef4444;
   --sidebar: #ffffff;
@@ -125,7 +125,7 @@
   --sidebar-accent: #f1f5f9;
   --sidebar-accent-foreground: #1f2937;
   --sidebar-border: #e5e7eb;
-  --sidebar-ring: #2563eb;
+  --sidebar-ring: #00425b;
 }
 
 .dark {

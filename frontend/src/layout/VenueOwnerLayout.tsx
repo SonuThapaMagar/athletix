@@ -118,7 +118,7 @@ const VenueOwnerLayout = () => {
                 <button
                   key={item.id}
                   onClick={() => handleMenuClick(item)}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
+                  className={`cursor-pointer w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
                     isActive ? 'bg-[#2c5aa0] text-white shadow-lg' : 'text-gray-700 hover:bg-gray-100 hover:text-[#2c5aa0]'
                   }`}
                 >

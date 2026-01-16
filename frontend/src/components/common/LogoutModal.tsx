@@ -23,32 +23,10 @@ const LogoutModal = ({ isOpen, onClose, onConfirm }: LogoutModalProps) => {
           <button 
             onClick={onClose}
             className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-            aria-label="Close modal"
+            aria-label="Close modal cursor-pointer"
           >
             <MdClose className="w-5 h-5" />
           </button>
-        </div>
-
-        {/* Content */}
-        <div className="mb-6">
-          <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-lg border border-amber-200">
-            <MdWarning className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <h4 className="font-medium text-amber-900 mb-1">Are you sure you want to logout?</h4>
-              <p className="text-sm text-amber-700">
-                You will need to sign in again to access your account and continue booking sports venues.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4 text-sm text-gray-600">
-            <p className="mb-2">Before you leave, make sure you have:</p>
-            <ul className="list-disc list-inside space-y-1 text-gray-500">
-              <li>Saved any pending bookings</li>
-              <li>Completed any ongoing transactions</li>
-              <li>Downloaded any important documents</li>
-            </ul>
-          </div>
         </div>
 
         {/* Actions */}

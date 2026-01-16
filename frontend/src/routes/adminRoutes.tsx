@@ -9,7 +9,7 @@ import BookingManagement from '@/pages/admin/BookingManagement';
 import BookingDetail from '@/pages/admin/BookingDetail';
 import PaymentsTransactions from '@/pages/admin/PaymentsTransactions';
 import PaymentDetail from '@/pages/admin/PaymentDetail';
-import ContentModeration from '@/pages/admin/ContentModeration';
+// import ContentModeration from '@/pages/admin/ContentModeration';
 import ContentDetail from '@/pages/admin/ContentDetail';
 import ActivityMonitor from '@/pages/admin/ActivityMonitor';
 import PlatformAnalytics from '@/pages/admin/PlatformAnalytics';
@@ -35,7 +35,7 @@ export const adminRoutes: RouteObject[] = [
       { path: 'bookings/:id', element: <BookingDetail /> },
       { path: 'payments', element: <PaymentsTransactions /> },
       { path: 'payments/:id', element: <PaymentDetail /> },
-      { path: 'content', element: <ContentModeration /> },
+      // { path: 'content', element: <ContentModeration /> },
       { path: 'content/:id', element: <ContentDetail /> },
       { path: 'activity', element: <ActivityMonitor /> },
       { path: 'analytics', element: <PlatformAnalytics /> },

@@ -1,0 +1,67 @@
+<svg width="320" height="90" viewBox="0 0 280 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="horizRunnerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00425b;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#006885;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00B44E;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Running Person Icon -->
+  <g transform="translate(0, 10)">
+    <!-- Head (dark teal/blue) -->
+    <circle cx="20" cy="15" r="8" fill="#00425b"/>
+    
+    <!-- Torso (horizontal line, dark teal/blue) -->
+    <line x1="12" y1="23" x2="28" y2="23" stroke="#00425b" stroke-width="4" stroke-linecap="round"/>
+    
+    <!-- Right arm - forward (bent upward, green gradient) -->
+    <path d="M 28 23 Q 35 10 38 8" 
+          stroke="url(#horizRunnerGradient)" 
+          stroke-width="5" 
+          fill="none" 
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    
+    <!-- Left arm - backward (bent downward, dark teal/blue) -->
+    <path d="M 12 23 Q 5 28 2 30" 
+          stroke="#00425b" 
+          stroke-width="5" 
+          fill="none" 
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    
+    <!-- Right leg - forward (bent, green gradient) -->
+    <path d="M 28 23 Q 32 35 30 50" 
+          stroke="url(#horizRunnerGradient)" 
+          stroke-width="5" 
+          fill="none" 
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    <path d="M 30 50 Q 28 55 26 58" 
+          stroke="url(#horizRunnerGradient)" 
+          stroke-width="5" 
+          fill="none" 
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    
+    <!-- Left leg - backward (bent upward, dark teal/blue) -->
+    <path d="M 12 23 Q 8 30 6 38" 
+          stroke="#00425b" 
+          stroke-width="5" 
+          fill="none" 
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    <path d="M 6 38 Q 4 42 2 45" 
+          stroke="#00425b" 
+          stroke-width="5" 
+          fill="none" 
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </g>
+  
+  <!-- Text "athletix" -->
+  <text x="50" y="50" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="36" font-weight="700" fill="#00425b" letter-spacing="0.5px">
+    athletix
+  </text>
+</svg>
