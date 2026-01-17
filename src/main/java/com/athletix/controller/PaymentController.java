@@ -162,67 +162,67 @@ public class PaymentController {
      * GET /api/payments/venue-owner/summary
      * Get payment summary statistics for venue owner
      */
-    @GetMapping("/venue-owner/summary")
-    public ResponseEntity<ApiResponse<PaymentSummary>> getPaymentSummary(
-            @RequestHeader("Authorization") String authHeader
-    ) {
-        PaymentSummary summary = venueOwnerPaymentService.getPaymentSummary(authHeader);
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(
-                        "success",
-                        "Payment summary fetched successfully",
-                        summary
-                )
-        );
-    }
+//    @GetMapping("/venue-owner/summary")
+//    public ResponseEntity<ApiResponse<PaymentSummary>> getPaymentSummary(
+//            @RequestHeader("Authorization") String authHeader
+//    ) {
+//        PaymentSummary summary = venueOwnerPaymentService.getPaymentSummary(authHeader);
+//
+//        return ResponseEntity.ok(
+//                new ApiResponse<>(
+//                        "success",
+//                        "Payment summary fetched successfully",
+//                        summary
+//                )
+//        );
+//    }
 
     /**
      * GET /api/payments/venue-owner
      * Get all payments for venue owner with pagination and optional filtering
      */
-    @GetMapping("/venue-owner")
-    public ResponseEntity<ApiResponse<PaginationResponse<PaymentResponse>>> getMyPayments(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int perPage,
-            @RequestParam(required = false, defaultValue = "all") String status
-    ) {
-        PaginationResponse<PaymentResponse> payments = venueOwnerPaymentService.getMyPayments(
-                authHeader,
-                page,
-                perPage,
-                status
-        );
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(
-                        "success",
-                        "Payments fetched successfully",
-                        payments
-                )
-        );
-    }
+//    @GetMapping("/venue-owner")
+//    public ResponseEntity<ApiResponse<PaginationResponse<PaymentResponse>>> getMyPayments(
+//            @RequestHeader("Authorization") String authHeader,
+//            @RequestParam(defaultValue = "1") int page,
+//            @RequestParam(defaultValue = "10") int perPage,
+//            @RequestParam(required = false, defaultValue = "all") String status
+//    ) {
+//        PaginationResponse<PaymentResponse> payments = venueOwnerPaymentService.getMyPayments(
+//                authHeader,
+//                page,
+//                perPage,
+//                status
+//        );
+//
+//        return ResponseEntity.ok(
+//                new ApiResponse<>(
+//                        "success",
+//                        "Payments fetched successfully",
+//                        payments
+//                )
+//        );
+//    }
 
     /**
      * GET /api/payments/venue-owner/{id}
      * Get single payment details
      */
-    @GetMapping("/venue-owner/{id}")
-    public ResponseEntity<ApiResponse<PaymentResponse>> getPaymentById(
-            @RequestHeader("Authorization") String authHeader,
-            @PathVariable Long id
-    ) {
-        PaymentResponse payment = venueOwnerPaymentService.getPaymentById(authHeader, id);
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(
-                        "success",
-                        "Payment details fetched successfully",
-                        payment
-                )
-        );
-    }
+//    @GetMapping("/venue-owner/{id}")
+//    public ResponseEntity<ApiResponse<PaymentResponse>> getPaymentById(
+//            @RequestHeader("Authorization") String authHeader,
+//            @PathVariable Long id
+//    ) {
+//        PaymentResponse payment = venueOwnerPaymentService.getPaymentById(authHeader, id);
+//
+//        return ResponseEntity.ok(
+//                new ApiResponse<>(
+//                        "success",
+//                        "Payment details fetched successfully",
+//                        payment
+//                )
+//        );
+//    }
 
     @GetMapping("/test")
     public ResponseEntity<String> test() {

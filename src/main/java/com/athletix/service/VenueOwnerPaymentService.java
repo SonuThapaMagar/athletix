@@ -12,9 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,12 +33,9 @@ public class VenueOwnerPaymentService {
         if (totalRevenue == null) totalRevenue = 0.0;
 
         // Get start of current month
-        LocalDateTime startOfMonth = YearMonth.now().atDay(1).atStartOfDay();
-        Double monthlyRevenue = paymentRepository.calculateMonthlyRevenue(
-                owner.getUserId(),
-                startOfMonth
-        );
+        Double monthlyRevenue = paymentRepository.calculateTotalRevenueForOwner(owner.getUserId());
         if (monthlyRevenue == null) monthlyRevenue = 0.0;
+
 
         Double pendingAmount = paymentRepository.calculatePendingAmount(owner.getUserId());
         if (pendingAmount == null) pendingAmount = 0.0;
