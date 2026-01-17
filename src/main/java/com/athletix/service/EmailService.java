@@ -1,6 +1,7 @@
 package com.athletix.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,6 +14,7 @@ import jakarta.mail.internet.MimeMessage;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailService {
 
     private final JavaMailSender mailSender;
@@ -24,19 +26,33 @@ public class EmailService {
      * Send simple text email
      */
     @Async
-    public void sendEmail(String to, String subject, String text) {
+    public void sendEmail(String to, String subject, String body) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(to);
             message.setSubject(subject);
-            message.setText(text);
+            message.setText(body);
             message.setFrom("noreply@athletix.com");
+
             mailSender.send(message);
+            log.info("Email sent successfully to: {}", to);
         } catch (Exception e) {
-            System.err.println("Failed to send email: " + e.getMessage());
-            // Log error but don't throw - email failures shouldn't break the main flow
+            log.error("Failed to send email to: {}", to, e);
         }
     }
+//    public void sendEmail(String to, String subject, String text) {
+//        try {
+//            SimpleMailMessage message = new SimpleMailMessage();
+//            message.setTo(to);
+//            message.setSubject(subject);
+//            message.setText(text);
+//            message.setFrom("noreply@athletix.com");
+//            mailSender.send(message);
+//        } catch (Exception e) {
+//            System.err.println("Failed to send email: " + e.getMessage());
+//            // Log error but don't throw - email failures shouldn't break the main flow
+//        }
+//    }
 
     /**
      * Send HTML email
@@ -251,4 +267,6 @@ public class EmailService {
                         java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a")
                 ));
     }
+
+
 }

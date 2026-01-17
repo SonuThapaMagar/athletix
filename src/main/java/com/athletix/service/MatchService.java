@@ -1,14 +1,12 @@
 package com.athletix.service;
 
+import com.athletix.dto.chat.ChatMessageResponse;
+import com.athletix.dto.chat.SendMessageRequest;
 import com.athletix.dto.match.*;
-import com.athletix.entity.Match;
-import com.athletix.entity.MatchRequest;
-//import com.athletix.entity.MatchChat;
-import com.athletix.entity.User;
-import com.athletix.repository.MatchRepository;
-import com.athletix.repository.MatchRequestRepository;
-//import com.athletix.repository.MatchChatRepository;
+import com.athletix.entity.*;
+import com.athletix.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,15 +15,63 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MatchService {
 
     private final MatchRepository matchRepository;
     private final MatchRequestRepository matchRequestRepository;
-//    private final MatchChatRepository matchChatRepository;
+    private final ChatService chatService;
+    private final ChatGroupRepository chatGroupRepository;
+    private final ChatGroupMemberRepository chatGroupMemberRepository;
+
+    // ==================== CHAT METHODS ====================
+
+    public List<ChatMessageResponse> getChatMessages(Long matchId, User user, int page, int size) {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("Match not found"));
+
+        // Find the chat group for this match
+        ChatGroup group = chatGroupRepository.findByRelatedMatchId(matchId)
+                .orElseThrow(() -> new RuntimeException("Chat group not found for this match"));
+
+        // Check if user is a member of the chat group
+        boolean isMember = chatGroupMemberRepository.existsByGroupAndUser(group, user);
+
+        if (!isMember) {
+            log.error("User {} is not a member of chat group {}", user.getUserId(), group.getGroupId());
+            throw new RuntimeException("You are not a member of this chat group");
+        }
+
+        return chatService.getMessages(group.getGroupId(), user, page, size);
+    }
+
+    @Transactional
+    public ChatMessageResponse sendChatMessage(Long matchId, SendMessageRequest request, User user) {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("Match not found"));
+
+        // Find the chat group
+        ChatGroup group = chatGroupRepository.findByRelatedMatchId(matchId)
+                .orElseThrow(() -> new RuntimeException("Chat group not found for this match"));
+
+        // Check if user is a member
+        boolean isMember = chatGroupMemberRepository.existsByGroupAndUser(group, user);
+
+        if (!isMember) {
+            log.error("User {} attempted to send message but is not a member of group {}",
+                    user.getUserId(), group.getGroupId());
+            throw new RuntimeException("You are not a member of this chat group");
+        }
+
+        return chatService.sendMessage(group.getGroupId(), request, user);
+    }
+
+    // ==================== MATCH CRUD ====================
 
     @Transactional
     public MatchResponse createMatch(CreateMatchRequest request, User creator) {
@@ -44,69 +90,13 @@ public class MatchService {
         match.setCurrentPlayers(1);
 
         match = matchRepository.save(match);
+
+        // Create chat group and add creator as admin
+        createMatchChatGroup(match, creator);
+
+        log.info("Created match {} with chat group for creator {}", match.getMatchId(), creator.getUserId());
+
         return toMatchResponse(match, creator, null, null);
-    }
-
-    public Page<MatchResponse> getMatches(
-            String sportType,
-            String location,
-            String skillLevel,
-            String status,
-            LocalDateTime startDate,
-            LocalDateTime endDate,
-            int page,
-            int size,
-            User currentUser
-    ) {
-        Pageable pageable = PageRequest.of(page, size);
-
-        // 1. Prepare the location parameter for the ILIKE query
-        String locationPattern = (location != null && !location.isEmpty())
-                ? "%" + location + "%"
-                : null;
-
-        // 2. Convert status string to enum
-        Match.MatchStatus matchStatus = (status != null && !status.isEmpty())
-                ? Match.MatchStatus.valueOf(status.toUpperCase())
-                : null;
-
-        // 3. Call repository with the pattern
-        Page<Match> matches = matchRepository.findByFilters(
-                sportType,
-                locationPattern, // Pass the formatted pattern here
-                skillLevel,
-                matchStatus,
-                startDate,
-                endDate,
-                pageable
-        );
-
-        return matches.map(match -> {
-            MatchRequest userRequest = matchRequestRepository
-                    .findByMatchAndPlayer(match, currentUser).orElse(null);
-            Boolean hasRequested = userRequest != null;
-            String requestStatus = userRequest != null ? userRequest.getStatus().name() : null;
-
-            return toMatchResponse(match, currentUser, hasRequested, requestStatus);
-        });
-    }
-
-    public Page<MatchResponse> getMyMatches(User user, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return matchRepository.findByCreatorOrderByCreatedAtDesc(user, pageable)
-                .map(match -> toMatchResponse(match, user, null, null));
-    }
-
-    public MatchResponse getMatchById(Long matchId, User currentUser) {
-        Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new RuntimeException("Match not found"));
-
-        MatchRequest userRequest = matchRequestRepository
-                .findByMatchAndPlayer(match, currentUser).orElse(null);
-        Boolean hasRequested = userRequest != null;
-        String requestStatus = userRequest != null ? userRequest.getStatus().name() : null;
-
-        return toMatchResponse(match, currentUser, hasRequested, requestStatus);
     }
 
     @Transactional
@@ -153,6 +143,8 @@ public class MatchService {
         matchRepository.delete(match);
     }
 
+    // ==================== REQUEST FLOW ====================
+
     @Transactional
     public MatchRequestResponse requestToJoin(Long matchId, JoinMatchRequest request, User player) {
         Match match = matchRepository.findById(matchId)
@@ -166,9 +158,15 @@ public class MatchService {
             throw new RuntimeException("This match is not open for requests");
         }
 
-        if (matchRequestRepository.existsByMatchAndPlayer(match, player)) {
-            throw new RuntimeException("You have already requested to join this match");
-        }
+        // Check for existing request
+        matchRequestRepository.findByMatchAndPlayer(match, player).ifPresent(existingRequest -> {
+            if (existingRequest.getStatus() == MatchRequest.RequestStatus.ACCEPTED) {
+                throw new RuntimeException("You have already joined this match");
+            }
+            if (existingRequest.getStatus() == MatchRequest.RequestStatus.PENDING) {
+                throw new RuntimeException("You have already requested to join this match");
+            }
+        });
 
         MatchRequest matchRequest = new MatchRequest();
         matchRequest.setMatch(match);
@@ -178,29 +176,13 @@ public class MatchService {
 
         matchRequest = matchRequestRepository.save(matchRequest);
 
+        log.info("Player {} requested to join match {}", player.getUserId(), matchId);
+
         return toMatchRequestResponse(matchRequest);
     }
 
-    public List<MatchRequestResponse> getMatchRequests(Long matchId, User user) {
-        Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new RuntimeException("Match not found"));
-
-        if (!match.getCreator().getUserId().equals(user.getUserId())) {
-            throw new RuntimeException("Only match creator can view requests");
-        }
-
-        return matchRequestRepository.findByMatchOrderByRequestedAtDesc(match)
-                .stream()
-                .map(this::toMatchRequestResponse)
-                .collect(Collectors.toList());
-    }
-
     @Transactional
-    public MatchRequestResponse respondToRequest(
-            Long requestId,
-            RespondToRequestRequest request,
-            User user
-    ) {
+    public MatchRequestResponse respondToRequest(Long requestId, RespondToRequestRequest request, User user) {
         MatchRequest matchRequest = matchRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
 
@@ -218,11 +200,22 @@ public class MatchService {
             if (match.isFull()) {
                 throw new RuntimeException("Match is already full");
             }
+
+            // Accept the request
             matchRequest.setStatus(MatchRequest.RequestStatus.ACCEPTED);
             match.incrementPlayers();
             matchRepository.save(match);
+
+            // Add player to chat group
+            addPlayerToChatGroup(match, matchRequest.getPlayer());
+
+            log.info("Player {} accepted to match {}. Added to chat group.",
+                    matchRequest.getPlayer().getUserId(), match.getMatchId());
+
         } else {
             matchRequest.setStatus(MatchRequest.RequestStatus.REJECTED);
+            log.info("Player {} rejected from match {}",
+                    matchRequest.getPlayer().getUserId(), match.getMatchId());
         }
 
         matchRequest.setRespondedAt(LocalDateTime.now());
@@ -231,54 +224,175 @@ public class MatchService {
         return toMatchRequestResponse(matchRequest);
     }
 
-//    public List<ChatMessageResponse> getChatMessages(Long matchId, User user) {
-//        Match match = matchRepository.findById(matchId)
-//                .orElseThrow(() -> new RuntimeException("Match not found"));
-//
-//        boolean isCreator = match.getCreator().getUserId().equals(user.getUserId());
-//        boolean isAcceptedMember = matchRequestRepository
-//                .findByMatchAndPlayer(match, user)
-//                .map(req -> req.getStatus() == MatchRequest.RequestStatus.ACCEPTED)
-//                .orElse(false);
-//
-//        if (!isCreator && !isAcceptedMember) {
-//            throw new RuntimeException("You don't have access to this chat");
-//        }
-//
-//        return matchChatRepository.findByMatchOrderBySentAtAsc(match)
-//                .stream()
-//                .map(this::toChatMessageResponse)
-//                .collect(Collectors.toList());
-//    }
-//
-//    @Transactional
-//    public ChatMessageResponse sendChatMessage(
-//            Long matchId,
-//            SendChatMessageRequest request,
-//            User user
-//    ) {
-//        Match match = matchRepository.findById(matchId)
-//                .orElseThrow(() -> new RuntimeException("Match not found"));
-//
-//        boolean isCreator = match.getCreator().getUserId().equals(user.getUserId());
-//        boolean isAcceptedMember = matchRequestRepository
-//                .findByMatchAndPlayer(match, user)
-//                .map(req -> req.getStatus() == MatchRequest.RequestStatus.ACCEPTED)
-//                .orElse(false);
-//
-//        if (!isCreator && !isAcceptedMember) {
-//            throw new RuntimeException("You don't have access to this chat");
-//        }
-//
-//        MatchChat chat = new MatchChat();
-//        chat.setMatch(match);
-//        chat.setUser(user);
-//        chat.setMessage(request.message());
-//
-//        chat = matchChatRepository.save(chat);
-//
-//        return toChatMessageResponse(chat);
-//    }
+    // ==================== QUERY METHODS ====================
+
+    public Page<MatchResponse> getMatches(
+            String sportType,
+            String location,
+            String skillLevel,
+            String status,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            int page,
+            int size,
+            User currentUser
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        String locationPattern = (location != null && !location.isEmpty()) ? "%" + location + "%" : null;
+        Match.MatchStatus matchStatus = (status != null && !status.isEmpty())
+                ? Match.MatchStatus.valueOf(status.toUpperCase()) : null;
+
+        Page<Match> matches = matchRepository.findByFilters(
+                sportType, locationPattern, skillLevel, matchStatus, startDate, endDate, pageable
+        );
+
+        return matches.map(match -> {
+            MatchRequest userRequest = matchRequestRepository
+                    .findByMatchAndPlayer(match, currentUser).orElse(null);
+            Boolean hasRequested = userRequest != null;
+            String requestStatus = userRequest != null ? userRequest.getStatus().name() : null;
+            return toMatchResponse(match, currentUser, hasRequested, requestStatus);
+        });
+    }
+
+    public Page<MatchResponse> getMyMatches(User user, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return matchRepository.findByCreatorOrderByCreatedAtDesc(user, pageable)
+                .map(match -> toMatchResponse(match, user, null, null));
+    }
+
+    public MatchResponse getMatchById(Long matchId, User currentUser) {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("Match not found"));
+
+        MatchRequest userRequest = matchRequestRepository
+                .findByMatchAndPlayer(match, currentUser).orElse(null);
+        Boolean hasRequested = userRequest != null;
+        String requestStatus = userRequest != null ? userRequest.getStatus().name() : null;
+
+        return toMatchResponse(match, currentUser, hasRequested, requestStatus);
+    }
+
+    public List<MatchRequestResponse> getMatchRequests(Long matchId, User user) {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("Match not found"));
+
+        if (!match.getCreator().getUserId().equals(user.getUserId())) {
+            throw new RuntimeException("Only match creator can view requests");
+        }
+
+        return matchRequestRepository.findByMatchOrderByRequestedAtDesc(match)
+                .stream()
+                .map(this::toMatchRequestResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<AcceptedPlayerResponse> getAcceptedPlayers(Long matchId, User user) {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("Match not found"));
+
+        boolean isHost = match.getCreator().getUserId().equals(user.getUserId());
+        boolean isAcceptedPlayer = matchRequestRepository
+                .findByMatchAndPlayer(match, user)
+                .map(req -> req.getStatus() == MatchRequest.RequestStatus.ACCEPTED)
+                .orElse(false);
+
+        if (!isHost && !isAcceptedPlayer) {
+            throw new RuntimeException("You don't have access to view accepted players");
+        }
+
+        List<MatchRequest> acceptedRequests = matchRequestRepository
+                .findByMatchAndStatus(match, MatchRequest.RequestStatus.ACCEPTED);
+
+        return acceptedRequests.stream()
+                .map(req -> new AcceptedPlayerResponse(
+                        req.getPlayer().getUserId(),
+                        req.getPlayer().getName(),
+                        req.getPlayer().getEmail(),
+                        req.getPlayer().getPhone(),
+                        req.getPlayer().getLocation(),
+                        req.getRespondedAt()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<MatchRequestResponse> getMyRequests(User user) {
+        return matchRequestRepository.findByPlayerOrderByRequestedAtDesc(user)
+                .stream()
+                .map(this::toMatchRequestResponse)
+                .collect(Collectors.toList());
+    }
+
+    // ==================== PRIVATE HELPER METHODS ====================
+
+    /**
+     * Creates a chat group for a match and adds the creator as admin
+     */
+    @Transactional
+    protected void createMatchChatGroup(Match match, User creator) {
+        // Check if group already exists
+        if (chatGroupRepository.findByRelatedMatchId(match.getMatchId()).isPresent()) {
+            log.warn("Chat group already exists for match {}", match.getMatchId());
+            return;
+        }
+
+        String inviteCode = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+        ChatGroup group = ChatGroup.builder()
+                .name(match.getTitle() + " - Chat")
+                .description("Chat for match: " + match.getTitle())
+                .type(ChatGroup.GroupType.MATCH)
+                .creator(creator)
+                .inviteCode(inviteCode)
+                .relatedMatchId(match.getMatchId())
+                .isActive(true)
+                .build();
+
+        group = chatGroupRepository.save(group);
+
+        // Add creator as admin member
+        ChatGroupMember adminMember = ChatGroupMember.builder()
+                .group(group)
+                .user(creator)
+                .role(ChatGroupMember.MemberRole.ADMIN)
+                .lastReadAt(LocalDateTime.now())
+                .build();
+
+        chatGroupMemberRepository.save(adminMember);
+
+        log.info("Created chat group {} for match {} with creator {} as admin",
+                group.getGroupId(), match.getMatchId(), creator.getUserId());
+    }
+
+    /**
+     * Adds an accepted player to the match chat group
+     */
+    @Transactional
+    protected void addPlayerToChatGroup(Match match, User player) {
+        ChatGroup group = chatGroupRepository.findByRelatedMatchId(match.getMatchId())
+                .orElseThrow(() -> new RuntimeException("Chat group not found for this match"));
+
+        // Check if player is already a member
+        if (chatGroupMemberRepository.existsByGroupAndUser(group, player)) {
+            log.warn("Player {} is already a member of chat group {}", player.getUserId(), group.getGroupId());
+            return;
+        }
+
+        // Add player as regular member
+        ChatGroupMember member = ChatGroupMember.builder()
+                .group(group)
+                .user(player)
+                .role(ChatGroupMember.MemberRole.MEMBER)
+                .lastReadAt(LocalDateTime.now())
+                .build();
+
+        chatGroupMemberRepository.save(member);
+
+        log.info("Added player {} to chat group {} for match {}",
+                player.getUserId(), group.getGroupId(), match.getMatchId());
+    }
+
+    // ==================== DTO CONVERTERS ====================
 
     private MatchResponse toMatchResponse(
             Match match,
@@ -287,6 +401,20 @@ public class MatchService {
             String requestStatus
     ) {
         Boolean isCreator = match.getCreator().getUserId().equals(currentUser.getUserId());
+
+        // Get accepted players
+        List<AcceptedPlayerResponse> acceptedPlayers = matchRequestRepository
+                .findByMatchAndStatus(match, MatchRequest.RequestStatus.ACCEPTED)
+                .stream()
+                .map(req -> new AcceptedPlayerResponse(
+                        req.getPlayer().getUserId(),
+                        req.getPlayer().getName(),
+                        req.getPlayer().getEmail(),
+                        req.getPlayer().getPhone(),
+                        req.getPlayer().getLocation(),
+                        req.getRespondedAt()
+                ))
+                .collect(Collectors.toList());
 
         return new MatchResponse(
                 match.getMatchId(),
@@ -306,7 +434,8 @@ public class MatchService {
                 match.getUpdatedAt(),
                 isCreator,
                 hasRequested,
-                requestStatus
+                requestStatus,
+                acceptedPlayers
         );
     }
 
@@ -315,22 +444,12 @@ public class MatchService {
                 request.getRequestId(),
                 request.getMatch().getMatchId(),
                 toUserBasicInfo(request.getPlayer()),
-                request.getMessage(),
+                request.getMessage() != null ? request.getMessage() : "",
                 request.getStatus().name(),
                 request.getRequestedAt(),
                 request.getRespondedAt()
         );
     }
-
-//    private ChatMessageResponse toChatMessageResponse(MatchChat chat) {
-//        return new ChatMessageResponse(
-//                chat.getChatId(),
-//                chat.getMatch().getMatchId(),
-//                toUserBasicInfo(chat.getUser()),
-//                chat.getMessage(),
-//                chat.getSentAt()
-//        );
-//    }
 
     private UserBasicInfo toUserBasicInfo(User user) {
         return new UserBasicInfo(

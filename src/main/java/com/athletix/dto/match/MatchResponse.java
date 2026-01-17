@@ -1,6 +1,7 @@
 package com.athletix.dto.match;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record MatchResponse(
         Long matchId,
@@ -20,5 +21,7 @@ public record MatchResponse(
         LocalDateTime updatedAt,
         Boolean isCreator,
         Boolean hasRequested,
-        String requestStatus
-) {}
+        String requestStatus,
+        List<AcceptedPlayerResponse> acceptedPlayers
+) {
+}

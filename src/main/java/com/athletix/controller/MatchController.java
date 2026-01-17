@@ -1,5 +1,7 @@
 package com.athletix.controller;
 
+import com.athletix.dto.chat.ChatMessageResponse;
+import com.athletix.dto.chat.SendMessageRequest;
 import com.athletix.dto.match.*;
 import com.athletix.entity.User;
 import com.athletix.repository.UserRepository;
@@ -234,47 +236,47 @@ public class MatchController {
         }
     }
 
-//    // Get chat messages
-//    @GetMapping("/{matchId}/chat")
-//    public ResponseEntity<?> getChatMessages(
-//            @PathVariable Long matchId,
-//            @RequestHeader("Authorization") String authHeader
-//    ) {
-//        try {
-//            User user = validateTokenAndGetUser(authHeader);
-//            List<ChatMessageResponse> messages = matchService.getChatMessages(matchId, user);
-//
-//            return ResponseEntity.ok(Map.of(
-//                    "success", true,
-//                    "data", messages
-//            ));
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest()
-//                    .body(Map.of("success", false, "message", e.getMessage()));
-//        }
-//    }
-//
-//    // Send chat message
-//    @PostMapping("/{matchId}/chat")
-//    public ResponseEntity<?> sendChatMessage(
-//            @PathVariable Long matchId,
-//            @Valid @RequestBody SendChatMessageRequest request,
-//            @RequestHeader("Authorization") String authHeader
-//    ) {
-//        try {
-//            User user = validateTokenAndGetUser(authHeader);
-//            ChatMessageResponse message = matchService.sendChatMessage(matchId, request, user);
-//
-//            return ResponseEntity.ok(Map.of(
-//                    "success", true,
-//                    "message", "Message sent successfully",
-//                    "data", message
-//            ));
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest()
-//                    .body(Map.of("success", false, "message", e.getMessage()));
-//        }
-//    }
+    // Get chat messages
+    @GetMapping("/{matchId}/chat")
+    public ResponseEntity<?> getChatMessages(
+            @PathVariable Long matchId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size,
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        try {
+            User user = validateTokenAndGetUser(authHeader);
+            List<ChatMessageResponse> messages = matchService.getChatMessages(matchId, user, page, size);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "data", messages
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // Send chat message
+    @PostMapping("/{matchId}/chat")
+    public ResponseEntity<?> sendChatMessage(
+            @PathVariable Long matchId,
+            @Valid @RequestBody SendMessageRequest request,  // ← Changed to chat package version
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        try {
+            User user = validateTokenAndGetUser(authHeader);
+            ChatMessageResponse message = matchService.sendChatMessage(matchId, request, user);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Message sent successfully",
+                    "data", message
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
 
     // Helper method
     private User validateTokenAndGetUser(String authHeader) {
