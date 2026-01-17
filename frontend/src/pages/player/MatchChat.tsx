@@ -56,8 +56,8 @@ const MatchChat = () => {
     if (!id || !isConnected) return
 
     const unsubscribe = subscribe(`/topic/match/${id}/chat`, (newMessage: ChatMessage) => {
-      console.log('Received new message via WebSocket:', newMessage)
-      toast.info(`New message from ${newMessage.senderName}`)
+      // console.log('Received new message via WebSocket:', newMessage)
+      // toast.info(`New message from ${newMessage.senderName}`)
       AppDispatch(matchmakingActions.addChatMessage(newMessage))
     })
 
