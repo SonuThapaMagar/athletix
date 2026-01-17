@@ -97,7 +97,7 @@ const NotificationBell = () => {
       {/* Bell Icon */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
+        className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
       >
         <MdNotifications className="w-6 h-6" />
         {unreadCount > 0 && (
@@ -124,7 +124,7 @@ const NotificationBell = () => {
               {notifications.length > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-sm text-blue-600 hover:text-blue-800"
+                  className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
                 >
                   Mark all read
                 </button>
@@ -165,14 +165,14 @@ const NotificationBell = () => {
                         <div className="flex gap-2">
                           <button
                             onClick={() => markAsRead(notification.notificationId)}
-                            className="p-1 text-green-600 hover:bg-green-50 rounded"
+                            className="p-1 text-green-600 hover:bg-green-50 rounded cursor-pointer"
                             title="Mark as read"
                           >
                             <MdCheck className="w-4 h-4" />
                           </button>
                           <button
                             onClick={(e) => deleteNotification(notification.notificationId, e)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            className="p-1 text-red-600 hover:bg-red-50 rounded cursor-pointer"
                             title="Delete"
                           >
                             <MdDelete className="w-4 h-4" />
@@ -193,7 +193,7 @@ const NotificationBell = () => {
                     setIsOpen(false);
                     // Navigate to full notifications page if you have one
                   }}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
                 >
                   View All Notifications
                 </button>

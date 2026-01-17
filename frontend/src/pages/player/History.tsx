@@ -14,16 +14,16 @@ const History = () => {
         <div className="bg-white rounded-lg shadow mb-8">
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6">
-              <button className="py-4 px-1 border-b-2 border-[#2c5aa0] text-[#2c5aa0] font-medium">
+              <button className="py-4 px-1 border-b-2 border-[#2c5aa0] text-[#2c5aa0] font-medium cursor-pointer">
                 All Bookings
               </button>
-              <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+              <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 cursor-pointer">
                 Upcoming
               </button>
-              <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+              <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 cursor-pointer">
                 Completed
               </button>
-              <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+              <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 cursor-pointer">
                 Cancelled
               </button>
             </nav>
@@ -58,9 +58,9 @@ const History = () => {
                     </div>
                     <p className="text-lg font-semibold text-gray-900">$50.00</p>
                     <div className="flex space-x-2 mt-2">
-                      <button className="text-[#2c5aa0] hover:underline text-sm">View Details</button>
+                      <button className="text-[#2c5aa0] hover:underline text-sm cursor-pointer">View Details</button>
                       {item === 3 && (
-                        <button className="text-red-600 hover:underline text-sm">Cancel</button>
+                        <button className="text-red-600 hover:underline text-sm cursor-pointer">Cancel</button>
                       )}
                     </div>
                   </div>
@@ -74,19 +74,19 @@ const History = () => {
         <div className="mt-8 flex items-center justify-between">
           <p className="text-sm text-gray-700">Showing 1-5 of 25 bookings</p>
           <div className="flex space-x-2">
-            <button className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+            <button className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 cursor-pointer">
               Previous
             </button>
-            <button className="px-3 py-2 bg-[#2c5aa0] text-white rounded-lg text-sm">
+            <button className="px-3 py-2 bg-[#2c5aa0] text-white rounded-lg text-sm cursor-pointer">
               1
             </button>
-            <button className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+            <button className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 cursor-pointer">
               2
             </button>
-            <button className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+            <button className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 cursor-pointer">
               3
             </button>
-            <button className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+            <button className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 cursor-pointer">
               Next
             </button>
           </div>

@@ -82,7 +82,7 @@ const PlayerProfileModal = ({
           
           <button
             onClick={onClose}
-            className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+            className="text-white hover:bg-white/20 rounded-full p-2 transition-colors cursor-pointer"
           >
             <MdClose className="w-6 h-6" />
           </button>
@@ -266,13 +266,13 @@ const PlayerProfileModal = ({
           <div className="sticky bottom-0 bg-gray-50 p-4 rounded-b-lg flex gap-3">
             <button
               onClick={onReject}
-              className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
+              className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors cursor-pointer"
             >
               Reject Request
             </button>
             <button
               onClick={onAccept}
-              className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <MdCheckCircle className="w-5 h-5" />
               Accept Request

@@ -1,11 +1,20 @@
-export type MatchStatus = 'OPEN' | 'CLOSED' | 'CANCELLED' | 'COMPLETED';
-export type RequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
+// src/types/player/matchmaking.types.ts
 
 export interface UserBasicInfo {
   userId: number;
   name: string;
   email: string;
-  avatar?: string;
+  phone: string;
+  location: string;
+}
+
+export interface AcceptedPlayer {
+  playerId: number;
+  playerName: string;
+  playerEmail: string;
+  playerPhone: string;
+  playerLocation: string;
+  acceptedAt: string;
 }
 
 export interface MatchPost {
@@ -15,46 +24,43 @@ export interface MatchPost {
   description: string;
   sportType: string;
   location: string;
-  matchDateTime: string; // ISO 8601 datetime string
+  matchDateTime: string;
   requiredPlayers: number;
   currentPlayers: number;
-  skillLevel: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'ANY';
-  status: MatchStatus;
-  contactInfo?: string;
-  additionalNotes?: string;
+  skillLevel: string;
+  status: string;
+  contactInfo: string;
+  additionalNotes: string;
   createdAt: string;
   updatedAt: string;
+  isCreator: boolean;
+  hasRequested?: boolean;
+  requestStatus?: string;
+  acceptedPlayers?: AcceptedPlayer[];  
   requests?: MatchRequest[];
-  acceptedPlayers?: AcceptedPlayer[];
 }
 
 export interface MatchRequest {
   requestId: number;
   matchId: number;
   player: UserBasicInfo;
-  message?: string;
+  message: string;
   status: string;
   requestedAt: string;
   respondedAt?: string;
 }
 
-export interface AcceptedPlayer {
-  id: number;
-  playerId: number;
-  playerName: string;
-  playerAvatar?: string;
-  playerEmail: string;
-  acceptedAt: string;
-}
-
 export interface ChatMessage {
   id: number;
-  matchId: number;
   senderId: number;
   senderName: string;
-  senderAvatar?: string;
   message: string;
   timestamp: string;
+  groupId?: number;
+}
+
+export interface SendMessageRequest {
+  content: string;
 }
 
 export interface CreateMatchData {
@@ -62,18 +68,19 @@ export interface CreateMatchData {
   description: string;
   sportType: string;
   location: string;
-  matchDateTime: string; // ISO 8601 datetime string
+  matchDateTime: string;
   requiredPlayers: number;
-  skillLevel: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'ANY';
-  contactInfo?: string;
+  skillLevel: string;
+  contactInfo: string;
   additionalNotes?: string;
 }
 
 export interface MatchFilters {
   sportType?: string;
-  skillLevel?: string;
-  status?: MatchStatus;
-  date?: string;
   location?: string;
+  skillLevel?: string;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+  search?: string;
 }
-

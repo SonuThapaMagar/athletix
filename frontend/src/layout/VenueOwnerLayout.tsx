@@ -160,8 +160,8 @@ const VenueOwnerLayout = () => {
                 <p className="text-gray-600">Manage your venues and bookings efficiently</p>
               </div>
               <div className="flex items-center gap-4">
-                <button className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer"><MdNotifications className="w-6 h-6" /></button>
-                <button className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer"><MdSettings className="w-6 h-6" /></button>
+                {/* <button className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer"><MdNotifications className="w-6 h-6" /></button>
+                <button className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer"><MdSettings className="w-6 h-6" /></button> */}
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <p className="text-sm font-medium text-gray-900">

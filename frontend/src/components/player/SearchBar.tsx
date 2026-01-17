@@ -1,18 +1,43 @@
 import { useState } from 'react'
 import { MdSearch, MdFilterList } from 'react-icons/md'
 
-const SearchBar = () => {
-  const [searchData, setSearchData] = useState({
+interface SearchFilters {
+  sport: string
+  location: string
+  date: string
+  time: string
+  searchQuery: string
+}
+
+interface SearchBarProps {
+  onSearch?: (filters: SearchFilters) => void
+  onToggleFilters?: (show: boolean) => void
+  searchFilters?: SearchFilters
+}
+
+const SearchBar = ({ onSearch, onToggleFilters, searchFilters }: SearchBarProps) => {
+  const [searchData, setSearchData] = useState<SearchFilters>(searchFilters || {
     sport: '',
     location: '',
     date: '',
     time: '',
     searchQuery: ''
   })
-  const [showFilters, setShowFilters] = useState(false)
+  const [showFilters, setShowFilters] = useState<boolean>(false)
 
   const handleSearch = () => {
+    if (onSearch) {
+      onSearch(searchData)
+    }
     console.log('Searching with:', searchData)
+  }
+
+  const toggleFilters = () => {
+    const newState = !showFilters
+    setShowFilters(newState)
+    if (onToggleFilters) {
+      onToggleFilters(newState)
+    }
   }
 
   return (
@@ -25,7 +50,7 @@ const SearchBar = () => {
               type="text"
               placeholder="Search venues, sports, or locations..."
               value={searchData.searchQuery}
-              onChange={(e) => setSearchData(prev => ({ ...prev, searchQuery: e.target.value }))}
+              onChange={(e) => setSearchData((prev: SearchFilters) => ({ ...prev, searchQuery: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             />
@@ -34,8 +59,8 @@ const SearchBar = () => {
 
           {/* Filters Toggle Button */}
           <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap"
+            onClick={toggleFilters}
+            className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap cursor-pointer"
           >
             <MdFilterList className="w-5 h-5" />
             Filters
@@ -43,8 +68,11 @@ const SearchBar = () => {
 
           {/* Search Button */}
           <button
-            onClick={handleSearch}
-            className="bg-[#2c5aa0] text-white px-6 py-3 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium whitespace-nowrap"
+            onClick={() => {
+              handleSearch()
+              setShowFilters(false)
+            }}
+            className="bg-[#2c5aa0] text-white px-6 py-3 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium whitespace-nowrap cursor-pointer"
           >
             Search
           </button>
@@ -59,7 +87,7 @@ const SearchBar = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Sport</label>
                 <select 
                   value={searchData.sport}
-                  onChange={(e) => setSearchData(prev => ({ ...prev, sport: e.target.value }))}
+                  onChange={(e) => setSearchData((prev: SearchFilters) => ({ ...prev, sport: e.target.value }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0]"
                 >
                   <option value="">All Sports</option>
@@ -78,7 +106,7 @@ const SearchBar = () => {
                 <input
                   type="date"
                   value={searchData.date}
-                  onChange={(e) => setSearchData(prev => ({ ...prev, date: e.target.value }))}
+                  onChange={(e) => setSearchData((prev: SearchFilters) => ({ ...prev, date: e.target.value }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0]"
                 />
               </div>
@@ -88,7 +116,7 @@ const SearchBar = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
                 <select 
                   value={searchData.time}
-                  onChange={(e) => setSearchData(prev => ({ ...prev, time: e.target.value }))}
+                  onChange={(e) => setSearchData((prev: SearchFilters) => ({ ...prev, time: e.target.value }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0]"
                 >
                   <option value="">Any Time</option>

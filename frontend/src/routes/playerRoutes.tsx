@@ -18,6 +18,7 @@ import CreateMatch from '@/pages/player/CreateMatch';
 import MyMatchPosts from '@/pages/player/MyMatchPosts';
 import MatchDetail from '@/pages/player/MatchDetail';
 import MatchChat from '@/pages/player/MatchChat';
+import VenueChat from '@/pages/player/VenueChat';
 
 export const playerRoutes: RouteObject[] = [
   {
@@ -45,7 +46,15 @@ export const playerRoutes: RouteObject[] = [
     ),
   },
   {
-    path: '/player/booking/:id',  
+    path: '/player/venues/:id/chat',
+    element: (
+      <ProtectedRoute allowedRoles={['PLAYER']}>
+        <VenueChat />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/player/booking/:id',
     element: (
       <ProtectedRoute allowedRoles={['PLAYER']}>
         <Booking />

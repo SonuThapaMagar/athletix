@@ -52,21 +52,21 @@ const Header = ({ onLogin, onSignup }: HeaderProps) => {
             <nav className="hidden lg:flex items-center gap-8">
               <button
                 onClick={() => smoothScrollTo('features')}
-                className="text-gray-700 hover:text-primary font-medium transition-colors duration-300 relative group"
+                className="text-gray-700 hover:text-primary font-medium transition-colors duration-300 relative group cursor-pointer"
               >
                 Features
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </button>
               <button
                 onClick={() => smoothScrollTo('sports')}
-                className="text-gray-700 hover:text-primary font-medium transition-colors duration-300 relative group"
+                className="text-gray-700 hover:text-primary font-medium transition-colors duration-300 relative group cursor-pointer"
               >
                 Sports
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </button>
               <button
                 onClick={() => smoothScrollTo('how')}
-                className="text-gray-700 hover:text-primary font-medium transition-colors duration-300 relative group"
+                className="text-gray-700 hover:text-primary font-medium transition-colors duration-300 relative group cursor-pointer"
               >
                 How it works
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
@@ -92,7 +92,7 @@ const Header = ({ onLogin, onSignup }: HeaderProps) => {
             {/* Mobile menu button */}
             <button
               onClick={toggleMobileMenu}
-              className="lg:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-300"
+              className="lg:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-300 cursor-pointer"
             >
               {isMobileMenuOpen ? (
                 <HiX className="h-6 w-6" />
@@ -110,19 +110,19 @@ const Header = ({ onLogin, onSignup }: HeaderProps) => {
               <nav className="flex flex-col space-y-4">
                 <button
                   onClick={() => smoothScrollTo('features')}
-                  className="text-gray-700 hover:text-primary font-medium py-2 transition-colors duration-300 text-left"
+                  className="text-gray-700 hover:text-primary font-medium py-2 transition-colors duration-300 text-left cursor-pointer"
                 >
                   Features
                 </button>
                 <button
                   onClick={() => smoothScrollTo('sports')}
-                  className="text-gray-700 hover:text-primary font-medium py-2 transition-colors duration-300 text-left"
+                  className="text-gray-700 hover:text-primary font-medium py-2 transition-colors duration-300 text-left cursor-pointer"
                 >
                   Sports
                 </button>
                 <button
                   onClick={() => smoothScrollTo('how')}
-                  className="text-gray-700 hover:text-primary font-medium py-2 transition-colors duration-300 text-left"
+                  className="text-gray-700 hover:text-primary font-medium py-2 transition-colors duration-300 text-left cursor-pointer"
                 >
                   How it works
                 </button>
@@ -134,7 +134,7 @@ const Header = ({ onLogin, onSignup }: HeaderProps) => {
                       onLogin();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full py-3 text-gray-700 font-medium hover:bg-gray-50 rounded-lg transition-colors duration-300"
+                    className="w-full py-3 text-gray-700 font-medium hover:bg-gray-50 rounded-lg transition-colors duration-300 cursor-pointer"
           >
             Log in
           </button>
@@ -143,7 +143,7 @@ const Header = ({ onLogin, onSignup }: HeaderProps) => {
                       onSignup();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-80 transition-colors duration-300 shadow-lg"
+                    className="w-full py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-80 transition-colors duration-300 shadow-lg cursor-pointer"
           >
             Sign up
                   </button>

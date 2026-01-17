@@ -10,8 +10,18 @@ import {
   MdCheckCircle,
   MdCancel,
   MdChat,
-  MdPerson
+  MdPerson,
+  MdShare,
+  MdGroupAdd
 } from 'react-icons/md'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from '@/components/ui/dialog'
 import PlayerNavLayout from '@/layout/PlayerNavLayout'
 import type { StateType } from '@/redux/slices'
 import { FETCH_MATCH_BY_ID_ACTION, FETCH_MATCH_REQUESTS_ACTION, RESPOND_TO_REQUEST_ACTION, REQUEST_TO_JOIN_ACTION } from '@/redux/actions/player/matchmaking.actions'
@@ -28,7 +38,17 @@ const MatchDetail = () => {
   )
 
   const [showRequests, setShowRequests] = useState(false)
+  const [isChatCreationOpen, setIsChatCreationOpen] = useState(false)
+  const [selectedPlayerIds, setSelectedPlayerIds] = useState<number[]>([])
 
+  // Initialize selected players with all accepted players when dialog opens
+  useEffect(() => {
+    if (isChatCreationOpen && selectedMatch?.acceptedPlayers) {
+      setSelectedPlayerIds(selectedMatch.acceptedPlayers.map(p => p.playerId))
+    }
+  }, [isChatCreationOpen, selectedMatch])
+
+  // Load match data
   useEffect(() => {
     if (id) {
       FETCH_MATCH_BY_ID_ACTION(Number(id)).catch((err) => {
@@ -38,30 +58,25 @@ const MatchDetail = () => {
     }
   }, [id])
 
+  // Load requests if user is creator
   useEffect(() => {
     if (selectedMatch && selectedMatch.creator.userId === Number(profile?.userId) && id) {
-      FETCH_MATCH_REQUESTS_ACTION(Number(id)).catch(() => {})
+      FETCH_MATCH_REQUESTS_ACTION(Number(id)).catch(() => { })
     }
   }, [selectedMatch, profile, id])
 
-  const isCreator = selectedMatch?.creator.userId === Number(profile?.userId)
-  const hasRequested = selectedMatch?.requests?.some(r => r.player.userId === Number(profile?.userId))
-  const isAccepted = selectedMatch?.acceptedPlayers?.some(p => p.playerId === Number(profile?.userId))
+  // User status checks
+  const userId = Number(profile?.userId)
+  const isCreator = selectedMatch?.creator.userId === userId
+  const hasRequested = selectedMatch?.hasRequested || false
+  const isAccepted =
+    selectedMatch?.requestStatus === 'ACCEPTED' ||
+    selectedMatch?.acceptedPlayers?.some(p => p.playerId === userId) ||
+    false
 
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString)
-      return date.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
-      })
-    } catch {
-      return dateString
-    }
-  }
+  const canAccessChat = () => isCreator || isAccepted
 
+  // Format date and time
   const formatDateTime = (dateTimeString: string) => {
     try {
       const date = new Date(dateTimeString)
@@ -100,8 +115,8 @@ const MatchDetail = () => {
       await RESPOND_TO_REQUEST_ACTION(requestId, action)
       toast.success(`Request ${action === 'accept' ? 'accepted' : 'rejected'} successfully`)
       if (id) {
-        FETCH_MATCH_BY_ID_ACTION(Number(id)).catch(() => {})
-        FETCH_MATCH_REQUESTS_ACTION(Number(id)).catch(() => {})
+        FETCH_MATCH_BY_ID_ACTION(Number(id)).catch(() => { })
+        FETCH_MATCH_REQUESTS_ACTION(Number(id)).catch(() => { })
       }
     } catch (err: any) {
       toast.error(err?.response?.data?.message || `Failed to ${action} request`)
@@ -113,17 +128,43 @@ const MatchDetail = () => {
       await REQUEST_TO_JOIN_ACTION(Number(id))
       toast.success('Request sent successfully!')
       if (id) {
-        FETCH_MATCH_BY_ID_ACTION(Number(id)).catch(() => {})
+        FETCH_MATCH_BY_ID_ACTION(Number(id)).catch(() => { })
       }
     } catch (err: any) {
       toast.error(err?.response?.data?.message || 'Failed to send request')
     }
   }
 
-  const canAccessChat = () => {
-    return isCreator || isAccepted
+  const handleCopyInviteLink = () => {
+    const url = window.location.href
+    navigator.clipboard.writeText(url)
+    toast.success('Invite link copied to clipboard!')
   }
 
+  const handleCreateTeamChat = () => {
+    if (!selectedMatch) return
+
+    // In a real app, this would send a request to the backend to create a chat group
+    // For now, we simulate it and navigate to the chat
+    if (selectedPlayerIds.length === 0) {
+      toast.error('Please select at least one player')
+      return
+    }
+
+    toast.success('Team chat created successfully!')
+    setIsChatCreationOpen(false)
+    navigate(`/player/matches/${selectedMatch.matchId}/chat`)
+  }
+
+  const togglePlayerSelection = (playerId: number) => {
+    setSelectedPlayerIds(prev =>
+      prev.includes(playerId)
+        ? prev.filter(id => id !== playerId)
+        : [...prev, playerId]
+    )
+  }
+
+  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -136,6 +177,7 @@ const MatchDetail = () => {
     )
   }
 
+  // Error state
   if (error || !selectedMatch) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -146,7 +188,7 @@ const MatchDetail = () => {
           </div>
           <button
             onClick={() => navigate('/player/matchmaking')}
-            className="mt-4 text-[#2c5aa0] hover:text-[#1e3d6f]"
+            className="mt-4 text-[#2c5aa0] hover:text-[#1e3d6f] cursor-pointer"
           >
             Back to Matches
           </button>
@@ -155,35 +197,89 @@ const MatchDetail = () => {
     )
   }
 
+  const dateTime = formatDateTime(selectedMatch.matchDateTime)
+
   return (
     <div className="min-h-screen bg-gray-50">
       <PlayerNavLayout />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
         <div className="mb-6">
           <button
             onClick={() => navigate('/player/matchmaking')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 cursor-pointer"
           >
             <MdArrowBack className="w-5 h-5" />
             <span>Back to Matches</span>
           </button>
-          <div className="flex items-center justify-between">
+
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{selectedMatch.title}</h1>
               <p className="text-gray-600 mt-2">Match details and information</p>
             </div>
-            {canAccessChat() && (
-              <button
-                onClick={() => navigate(`/player/matches/${selectedMatch.matchId}/chat`)}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
-              >
-                <MdChat className="w-5 h-5" />
-                Chat
-              </button>
-            )}
+
+            <div className="flex gap-2 flex-wrap items-center">
+              {/* Chat access for creator or accepted players */}
+              {canAccessChat() && (
+                <>
+                  <button
+                    onClick={handleCopyInviteLink}
+                    className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 flex items-center gap-2 cursor-pointer transition-colors"
+                    title="Copy Invite Link"
+                  >
+                    <MdShare className="w-5 h-5" />
+                    <span className="hidden sm:inline">Invite</span>
+                  </button>
+
+                  {isCreator && selectedMatch.acceptedPlayers && selectedMatch.acceptedPlayers.length > 0 ? (
+                    <button
+                      onClick={() => setIsChatCreationOpen(true)}
+                      className="px-4 py-2 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] flex items-center gap-2 cursor-pointer transition-colors"
+                    >
+                      <MdGroupAdd className="w-5 h-5" />
+                      Create Team Chat
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => navigate(`/player/matches/${selectedMatch.matchId}/chat`)}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 cursor-pointer transition-colors"
+                    >
+                      <MdChat className="w-5 h-5" />
+                      Chat
+                    </button>
+                  )}
+                </>
+              )}
+
+              {/* Status badges for non-chat-access users */}
+              {!canAccessChat() && isAccepted && (
+                <div className="px-4 py-2 bg-green-100 text-green-700 rounded-lg flex items-center gap-2 font-medium">
+                  <MdCheckCircle className="w-5 h-5" />
+                  Accepted
+                </div>
+              )}
+
+              {!canAccessChat() && hasRequested && !isAccepted && (
+                <div className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg flex items-center gap-2 font-medium">
+                  <span className="text-sm">Request Pending</span>
+                </div>
+              )}
+
+              {/* Request to join button */}
+              {!canAccessChat() && !hasRequested && !isAccepted && selectedMatch.status === 'OPEN' && selectedMatch.currentPlayers < selectedMatch.requiredPlayers && (
+                <button
+                  onClick={handleRequestToJoin}
+                  className="px-4 py-2 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] transition-colors cursor-pointer font-medium"
+                >
+                  Request to Join
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
+        {/* Match Details Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="mb-6">
             <p className="text-gray-700 whitespace-pre-wrap">{selectedMatch.description}</p>
@@ -208,12 +304,12 @@ const MatchDetail = () => {
               <p className="text-xs text-gray-500 mb-1">Date</p>
               <p className="text-sm font-medium text-gray-900 flex items-center gap-1">
                 <MdCalendarToday className="w-4 h-4" />
-                {formatDateTime(selectedMatch.matchDateTime).date}
+                {dateTime.date}
               </p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-xs text-gray-500 mb-1">Time</p>
-              <p className="text-sm font-medium text-gray-900">{formatDateTime(selectedMatch.matchDateTime).time}</p>
+              <p className="text-sm font-medium text-gray-900">{dateTime.time}</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-xs text-gray-500 mb-1">Players</p>
@@ -248,28 +344,24 @@ const MatchDetail = () => {
             </div>
           </div>
 
-          {!isCreator && selectedMatch.status === 'OPEN' && selectedMatch.currentPlayers < selectedMatch.requiredPlayers && (
+          {/* Request to join (large button) */}
+          {!isCreator && !hasRequested && !isAccepted && selectedMatch.status === 'OPEN' && selectedMatch.currentPlayers < selectedMatch.requiredPlayers && (
             <div className="pt-4 border-t border-gray-200">
-              {hasRequested ? (
-                <div className="p-4 bg-yellow-50 rounded-lg">
-                  <p className="text-sm text-yellow-800">You have already sent a request to join this match.</p>
-                </div>
-              ) : (
-                <button
-                  onClick={handleRequestToJoin}
-                  className="w-full px-6 py-3 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium"
-                >
-                  Request to Join
-                </button>
-              )}
+              <button
+                onClick={handleRequestToJoin}
+                className="w-full px-6 py-3 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium cursor-pointer"
+              >
+                Request to Join
+              </button>
             </div>
           )}
 
+          {/* Show requests toggle (creator only) */}
           {isCreator && (
             <div className="pt-4 border-t border-gray-200">
               <button
                 onClick={() => setShowRequests(!showRequests)}
-                className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium cursor-pointer"
               >
                 {showRequests ? 'Hide' : 'Show'} Requests ({requests.filter(r => r.status === 'PENDING').length} pending)
               </button>
@@ -277,7 +369,7 @@ const MatchDetail = () => {
           )}
         </div>
 
-        {/* Requests Section */}
+        {/* Requests Section (Creator Only) */}
         {isCreator && showRequests && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Join Requests</h2>
@@ -311,14 +403,14 @@ const MatchDetail = () => {
                           <>
                             <button
                               onClick={() => handleRespondToRequest(request.requestId, 'accept')}
-                              className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                              className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer"
                               title="Accept"
                             >
                               <MdCheckCircle className="w-5 h-5" />
                             </button>
                             <button
                               onClick={() => handleRespondToRequest(request.requestId, 'reject')}
-                              className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                              className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer"
                               title="Reject"
                             >
                               <MdCancel className="w-5 h-5" />
@@ -334,19 +426,23 @@ const MatchDetail = () => {
           </div>
         )}
 
-        {/* Accepted Players */}
+        {/* Accepted Players Section */}
         {selectedMatch.acceptedPlayers && selectedMatch.acceptedPlayers.length > 0 && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Accepted Players</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Accepted Players ({selectedMatch.acceptedPlayers.length})
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {selectedMatch.acceptedPlayers.map((player) => (
-                <div key={player.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div key={player.playerId} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
                     {player.playerName?.charAt(0).toUpperCase() || 'P'}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">{player.playerName}</p>
-                    <p className="text-xs text-gray-500">Accepted {new Date(player.acceptedAt).toLocaleDateString()}</p>
+                    <p className="text-xs text-gray-500">
+                      Accepted {new Date(player.acceptedAt).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -354,9 +450,53 @@ const MatchDetail = () => {
           </div>
         )}
       </div>
+      <Dialog open={isChatCreationOpen} onOpenChange={setIsChatCreationOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Team Chat</DialogTitle>
+            <DialogDescription>
+              Select players to include in the team chat.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-3 max-h-60 overflow-y-auto">
+            {selectedMatch?.acceptedPlayers?.map(player => (
+              <label
+                key={player.playerId}
+                className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedPlayerIds.includes(player.playerId)}
+                  onChange={() => togglePlayerSelection(player.playerId)}
+                  className="w-5 h-5 rounded border-gray-300 text-[#2c5aa0] focus:ring-[#2c5aa0]"
+                />
+                <div className="flex-1">
+                  <p className="font-medium text-gray-900">{player.playerName}</p>
+                  <p className="text-xs text-gray-500">{player.playerEmail}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+
+          <DialogFooter>
+            <button
+              onClick={() => setIsChatCreationOpen(false)}
+              className="px-4 py-2 text-gray-600 hover:text-gray-900 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCreateTeamChat}
+              className="px-4 py-2 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] cursor-pointer"
+            >
+              Create Chat
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
 
 export default MatchDetail
-

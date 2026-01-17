@@ -22,8 +22,8 @@ const LogoutModal = ({ isOpen, onClose, onConfirm }: LogoutModalProps) => {
           </div>
           <button 
             onClick={onClose}
-            className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-            aria-label="Close modal cursor-pointer"
+            className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+            aria-label="Close modal"
           >
             <MdClose className="w-5 h-5" />
           </button>
@@ -33,13 +33,13 @@ const LogoutModal = ({ isOpen, onClose, onConfirm }: LogoutModalProps) => {
         <div className="flex gap-3">
           <button 
             onClick={onClose}
-            className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium cursor-pointer"
           >
             Cancel
           </button>
           <button 
             onClick={onConfirm}
-            className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center justify-center gap-2 cursor-pointer"
           >
             <MdLogout className="w-4 h-4" />
             Logout

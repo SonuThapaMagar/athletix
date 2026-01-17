@@ -46,7 +46,7 @@ const CreateMatch = () => {
         <div className="mb-6">
           <button
             onClick={() => navigate('/player/matchmaking')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 cursor-pointer"
           >
             <MdArrowBack className="w-5 h-5" />
             <span>Back</span>
@@ -195,14 +195,14 @@ const CreateMatch = () => {
             <button
               type="button"
               onClick={() => navigate('/player/matchmaking')}
-              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-6 py-3 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-6 py-3 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium disabled:opacity-50 cursor-pointer *:disabled:cursor-not-allowed"
             >
               {loading ? 'Creating...' : 'Create Match'}
             </button>

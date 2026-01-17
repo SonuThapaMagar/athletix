@@ -335,7 +335,7 @@ const Schedules = () => {
           </button>
           <button
             onClick={handleAddSchedule}
-            className="bg-[#2c5aa0] text-white px-4 py-2 rounded-lg hover:bg-[#1e3d6f] transition-colors flex items-center gap-2"
+            className="bg-[#2c5aa0] text-white px-4 py-2 rounded-lg hover:bg-[#1e3d6f] transition-colors flex items-center gap-2 cursor-pointer"
           >
             <MdAdd className="w-4 h-4" />
             Add Schedule
@@ -531,7 +531,7 @@ const Schedules = () => {
                       <button
                         onClick={() => handleDeleteSchedule(schedule.id)}
                         disabled={isProcessing}
-                        className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                        className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                         title="Delete schedule"
                       >
                         <MdDelete className="w-4 h-4" />
@@ -691,7 +691,7 @@ const Schedules = () => {
               <button
                 onClick={handleSaveBlockDate}
                 disabled={isProcessing}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 cursor-pointer"
               >
                 {isProcessing ? 'Blocking...' : 'Block Date'}
               </button>

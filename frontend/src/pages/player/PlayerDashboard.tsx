@@ -1,10 +1,34 @@
+import { useState } from 'react'
 import PlayerNavLayout from '@/layout/PlayerNavLayout'
 import SearchBar from '@/components/player/SearchBar'
 import HeroSection from '@/components/player/HeroSection'
 import BannerSlider from '@/components/player/BannerSlider'
-import Recommendations from '@/components/player/Recommendations'
+
+interface SearchFilters {
+  sport: string
+  location: string
+  date: string
+  time: string
+  searchQuery: string
+}
 
 const PlayerDashboard = () => {
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    sport: '',
+    location: '',
+    date: '',
+    time: '',
+    searchQuery: ''
+  })
+
+  const handleSearch = (filters: SearchFilters) => {
+    setSearchFilters(filters)
+  }
+
+  const handleToggleFilters = (_show: boolean) => {
+    // Toggle filter panel visibility
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <PlayerNavLayout />
@@ -61,10 +85,14 @@ const PlayerDashboard = () => {
 
 
       </div>
-      <SearchBar />
-      <HeroSection />
+      <SearchBar 
+        onSearch={handleSearch}
+        onToggleFilters={handleToggleFilters}
+        searchFilters={searchFilters}
+      />
+      <HeroSection searchFilters={searchFilters} />
       <BannerSlider />
-      <Recommendations />
+      {/* <Recommendations /> */}
 
       {/* Recent Bookings */}
       {/* <div className="bg-white rounded-lg shadow">

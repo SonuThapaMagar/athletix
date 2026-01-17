@@ -20,20 +20,20 @@ const notifications = {
   // Get all notifications
   getNotifications: (params?: { page?: number; perPage?: number }) =>
     api.get("/notifications", { params }),
-  
+
   // Get unread notifications only
   getUnreadNotifications: (params?: { page?: number; perPage?: number }) =>
     api.get("/notifications/unread", { params }),
-  
+
   // Get unread count
   getUnreadCount: () => api.get("/notifications/unread-count"),
-  
+
   // Mark as read
   markAsRead: (id: number) => api.put(`/notifications/${id}/read`),
-  
+
   // Mark all as read
   markAllAsRead: () => api.put("/notifications/mark-all-read"),
-  
+
   // Delete notification
   deleteNotification: (id: number) => api.delete(`/notifications/${id}`),
 };
@@ -74,14 +74,14 @@ const payment = {
     api.get(`/payments/esewa/initiate/${bookingId}`, { responseType: "text" }),
   verifyEsewa: (data: { bookingId: number; refId: string; amt: string; signature?: string }) =>
     api.post("/payments/esewa/verify", data),
-  handleFailure: (bookingId: number) => 
-    api.post(`/payments/esewa/failure`, null, { 
-      params: { bookingId } 
+  handleFailure: (bookingId: number) =>
+    api.post(`/payments/esewa/failure`, null, {
+      params: { bookingId }
     }),
-  handleSuccess: (bookingId: number) => 
-    api.post(`/payments/esewa/success`, null, { 
-      params: { bookingId } 
-    }), 
+  handleSuccess: (bookingId: number) =>
+    api.post(`/payments/esewa/success`, null, {
+      params: { bookingId }
+    }),
 
 };
 
@@ -89,11 +89,11 @@ const schedule = {
   // Get schedules (with optional filters)
   getSchedules: (params?: { venueId?: number; startDate?: string; endDate?: string }) =>
     api.get("/schedules", { params }),
-  
+
   // Get schedules for specific venue
   getVenueSchedules: (venueId: number, params?: { startDate?: string; endDate?: string }) =>
     api.get(`/schedules/venue/${venueId}`, { params }),
-  
+
   // Create or update schedule
   createSchedule: (data: {
     venueId: number;
@@ -105,21 +105,21 @@ const schedule = {
     reason?: string;
     notes?: string;
   }) => api.post("/schedules", data),
-  
+
   // Update schedule (not used - create endpoint handles updates)
   updateSchedule: (id: number, data: any) => api.put(`/schedules/${id}`, data),
-  
+
   // Delete schedule
   deleteSchedule: (id: number) => api.delete(`/schedules/${id}`),
-  
+
   // Block a date
   blockDate: (data: { venueId: number; date: string; reason: string }) =>
     api.post("/schedules/block", data),
-  
+
   // Unblock a schedule
   unblockSchedule: (scheduleId: number) =>
     api.post(`/schedules/unblock/${scheduleId}`),
-  
+
   // Generate schedules from operating hours
   generateSchedules: (venueId: number, startDate: string, endDate: string) =>
     api.post(`/schedules/generate/${venueId}`, null, {
@@ -136,17 +136,17 @@ const venueOwnerPayment = {
     endDate?: string;
     paymentMethod?: string;
   }) => api.get("/payments/venue-owner", { params }),
-  
+
   // Get payment summary/statistics
   getSummary: (params?: {
     startDate?: string;
     endDate?: string;
     venueId?: number;
   }) => api.get("/payments/venue-owner/summary", { params }),
-  
+
   // Get single payment by ID
   getPaymentById: (paymentId: number) => api.get(`/payments/venue-owner/${paymentId}`),
-  
+
   // Export payments to CSV/Excel
   exportPayments: (params?: {
     status?: string;
@@ -160,12 +160,12 @@ const venueOwnerPayment = {
 const venueOwnerDashboard = {
   // Get complete dashboard data (stats + recent bookings)
   getDashboardData: () => api.get("/venue-owner/dashboard"),
-  
+
   // Get dashboard statistics only
   getStats: () => api.get("/venue-owner/dashboard/stats"),
-  
+
   // Get recent bookings for dashboard
-  getRecentBookings: (limit?: number) => 
+  getRecentBookings: (limit?: number) =>
     api.get("/venue-owner/dashboard/recent-bookings", { params: { limit } }),
 };
 
@@ -173,27 +173,27 @@ const venueOwnerAnalytics = {
   // Get complete analytics data
   getAnalyticsData: (params?: { startDate?: string; endDate?: string; venueId?: number }) =>
     api.get("/venue-owner/analytics", { params }),
-  
+
   // Get analytics statistics only
   getStats: (params?: { startDate?: string; endDate?: string; venueId?: number }) =>
     api.get("/venue-owner/analytics/stats", { params }),
-  
+
   // Get revenue data (monthly/periodic)
   getRevenueData: (params?: { startDate?: string; endDate?: string; venueId?: number }) =>
     api.get("/venue-owner/analytics/revenue", { params }),
-  
+
   // Get top performing venues
   getTopVenues: (params?: { startDate?: string; endDate?: string; limit?: number }) =>
     api.get("/venue-owner/analytics/top-venues", { params }),
-  
+
   // Get sport popularity data
   getSportPopularity: (params?: { startDate?: string; endDate?: string; venueId?: number }) =>
     api.get("/venue-owner/analytics/sport-popularity", { params }),
-  
+
   // Get peak booking times
   getPeakBookingTimes: (params?: { startDate?: string; endDate?: string; venueId?: number }) =>
     api.get("/venue-owner/analytics/peak-times", { params }),
-  
+
   // Export analytics data
   exportAnalytics: (params?: { startDate?: string; endDate?: string; venueId?: number; format?: 'csv' | 'excel' }) =>
     api.get("/venue-owner/analytics/export", { params, responseType: 'blob' }),
@@ -203,7 +203,7 @@ const admin = {
   dashboard: {
     getDashboardData: () => api.get("/admin/dashboard"),
     getStats: () => api.get("/admin/dashboard/stats"),
-    getRecentActivities: (limit?: number) => 
+    getRecentActivities: (limit?: number) =>
       api.get("/admin/dashboard/recent-activities", { params: { limit } }),
   },
   user: {
@@ -234,7 +234,7 @@ const admin = {
   },
   content: {
     getContentItems: (params?: any) => api.get("/admin/content", { params }),
-    moderateContent: (contentId: number, action: 'approve' | 'reject') => 
+    moderateContent: (contentId: number, action: 'approve' | 'reject') =>
       api.put(`/admin/content/${contentId}`, { action }),
   },
   activity: {
@@ -252,10 +252,19 @@ const player = {
     requestToJoin: (matchId: number, message?: string) => api.post(`/player/matches/${matchId}/request`, { message }),
     respondToRequest: (requestId: number, action: 'accept' | 'reject') => api.put(`/player/matches/requests/${requestId}`, { action }),
     getMatchRequests: (matchId: number) => api.get(`/player/matches/${matchId}/requests`),
-    getChatMessages: (matchId: number) => api.get(`/player/matches/${matchId}/chat`),
-    sendChatMessage: (matchId: number, message: string) => api.post(`/player/matches/${matchId}/chat`, { message }),
+   
+    
+    getChatMessages: (matchId: number, page: number = 0, size: number = 50) => 
+      api.get(`/player/matches/${matchId}/chat`, { params: { page, size } }),
+    sendChatMessage: (matchId: number, message: string) => 
+      api.post(`/player/matches/${matchId}/chat`, { content: message }),
+   
     // Get player profile by userId
     getPlayerProfile: (userId: number) => api.get(`/player/profile/${userId}`),
+  },
+  venueChat: {
+    getMessages: (venueId: number) => api.get(`/player/venues/${venueId}/chat`),
+    sendMessage: (venueId: number, message: string) => api.post(`/player/venues/${venueId}/chat`, { message }),
   },
 };
 

@@ -361,7 +361,7 @@ export default function VenueForm(): JSX.Element {
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={handleCancel}
-          className="p-2 rounded-lg hover:bg-gray-100"
+          className="p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
         >
           <MdArrowBack className="w-5 h-5" />
         </button>
@@ -489,7 +489,7 @@ export default function VenueForm(): JSX.Element {
                     <button
                       type="button"
                       onClick={() => removeExistingImage(url)}
-                      className="absolute top-1 right-1 bg-white rounded-full p-1 text-xs shadow"
+                      className="absolute top-1 right-1 bg-white rounded-full p-1 text-xs shadow cursor-pointer"
                       title="Remove image"
                     >
                       ✕
@@ -517,7 +517,7 @@ export default function VenueForm(): JSX.Element {
                       <button
                         type="button"
                         onClick={() => removeNewImage(idx)}
-                        className="absolute top-1 right-1 bg-white rounded-full p-1 text-xs shadow"
+                        className="absolute top-1 right-1 bg-white rounded-full p-1 text-xs shadow cursor-pointer"
                         title="Remove file"
                       >
                         ✕
@@ -676,14 +676,14 @@ export default function VenueForm(): JSX.Element {
           <button
             type="button"
             onClick={handleCancel}
-            className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
           >
             <MdCancel className="inline mr-2" /> Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-[#2c5aa0] text-white px-6 py-2 rounded-lg hover:bg-[#1e3d6f] disabled:opacity-50 flex items-center gap-2"
+            className="bg-[#2c5aa0] text-white px-6 py-2 rounded-lg hover:bg-[#1e3d6f] disabled:opacity-50 flex items-center gap-2 cursor-pointer"
           >
             <MdSave className="w-4 h-4" />
             {isSubmitting ? "Saving..." : "Save Venue"}

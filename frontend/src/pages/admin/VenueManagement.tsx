@@ -25,7 +25,7 @@ const VenueManagement = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedVenue, setSelectedVenue] = useState<AdminVenue | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  
+
   const { venues, loading, error } = useSelector(
     (state: StateType) => state.adminVenueSlice
   )
@@ -36,7 +36,7 @@ const VenueManagement = () => {
     const approved = venues.filter(v => v.status === 'approved').length
     const pending = venues.filter(v => v.status === 'pending').length
     const rejected = venues.filter(v => v.status === 'rejected').length
-    
+
     return { all, approved, pending, rejected }
   }, [venues])
 
@@ -59,7 +59,7 @@ const VenueManagement = () => {
     // Apply search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(v => 
+      filtered = filtered.filter(v =>
         v.name.toLowerCase().includes(query) ||
         v.location.toLowerCase().includes(query) ||
         v.ownerName?.toLowerCase().includes(query) ||
@@ -152,16 +152,15 @@ const VenueManagement = () => {
                 <p className="text-2xl font-bold text-gray-900">{filter.count}</p>
                 <p className="text-sm text-gray-600">{filter.label}</p>
               </div>
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                filter.id === 'all' ? 'bg-blue-100' :
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${filter.id === 'all' ? 'bg-blue-100' :
                 filter.id === 'approved' ? 'bg-green-100' :
-                filter.id === 'pending' ? 'bg-yellow-100' :
-                'bg-red-100'
-              }`}>
+                  filter.id === 'pending' ? 'bg-yellow-100' :
+                    'bg-red-100'
+                }`}>
                 {filter.id === 'approved' ? <MdCheckCircle className="w-5 h-5 text-green-600" /> :
-                 filter.id === 'pending' ? <MdPending className="w-5 h-5 text-yellow-600" /> :
-                 filter.id === 'rejected' ? <MdCancel className="w-5 h-5 text-red-600" /> :
-                 <MdLocationOn className="w-5 h-5 text-blue-600" />}
+                  filter.id === 'pending' ? <MdPending className="w-5 h-5 text-yellow-600" /> :
+                    filter.id === 'rejected' ? <MdCancel className="w-5 h-5 text-red-600" /> :
+                      <MdLocationOn className="w-5 h-5 text-blue-600" />}
               </div>
             </div>
           </div>
@@ -185,12 +184,11 @@ const VenueManagement = () => {
             {filters.map((filter) => (
               <button
                 key={filter.id}
-                                    onClick={() => setSelectedFilter(filter.id)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                      selectedFilter === filter.id
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                onClick={() => setSelectedFilter(filter.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${selectedFilter === filter.id
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 {filter.label}
               </button>
@@ -202,7 +200,7 @@ const VenueManagement = () => {
       {/* Venues List */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-6">Venues List</h3>
-        
+
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
@@ -271,16 +269,16 @@ const VenueManagement = () => {
         )}
       </div>
 
-       {/* Delete Dialog */}
-       <DeleteVenueDialog
-         isOpen={deleteDialogOpen}
-         onClose={() => setDeleteDialogOpen(false)}
-         onConfirm={confirmDelete}
-         venueName={selectedVenue?.name}
-         isLoading={isDeleting}
-       />
-     </div>
-   )
- }
+      {/* Delete Dialog */}
+      <DeleteVenueDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        venueName={selectedVenue?.name}
+        isLoading={isDeleting}
+      />
+    </div>
+  )
+}
 
- export default VenueManagement
+export default VenueManagement

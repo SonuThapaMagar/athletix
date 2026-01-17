@@ -138,7 +138,7 @@ const MatchRequestsManagerWithProfile = ({ matchId }: MatchRequestsManagerProps)
                       </h4>
                       <button
                         onClick={() => handleViewProfile(request.player.userId)}
-                        className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
+                        className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1 cursor-pointer"
                         title="View full profile"
                       >
                         <MdPerson className="w-4 h-4" />
@@ -164,7 +164,7 @@ const MatchRequestsManagerWithProfile = ({ matchId }: MatchRequestsManagerProps)
                     <button
                       onClick={() => handleRespond(request.requestId, 'accept')}
                       disabled={responding === request.requestId}
-                      className="flex items-center gap-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                      className="flex items-center gap-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium cursor-pointer"
                       title="Accept immediately"
                     >
                       <MdCheck className="w-4 h-4" />
@@ -173,7 +173,7 @@ const MatchRequestsManagerWithProfile = ({ matchId }: MatchRequestsManagerProps)
                     <button
                       onClick={() => handleRespond(request.requestId, 'reject')}
                       disabled={responding === request.requestId}
-                      className="flex items-center gap-1 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                      className="flex items-center gap-1 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium cursor-pointer"
                       title="Reject immediately"
                     >
                       <MdClose className="w-4 h-4" />
@@ -204,7 +204,7 @@ const MatchRequestsManagerWithProfile = ({ matchId }: MatchRequestsManagerProps)
                       </span>
                       <button
                         onClick={() => handleViewProfile(request.player.userId)}
-                        className="text-blue-600 hover:text-blue-700 text-xs"
+                        className="text-blue-600 hover:text-blue-700 text-xs cursor-pointer"
                       >
                         <MdPerson className="w-4 h-4" />
                       </button>

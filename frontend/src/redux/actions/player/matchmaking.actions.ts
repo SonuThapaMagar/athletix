@@ -135,12 +135,18 @@ export const FETCH_MATCH_REQUESTS_ACTION = (matchId: number): Promise<MatchReque
       });
   });
 
-export const FETCH_CHAT_MESSAGES_ACTION = (matchId: number): Promise<ChatMessage[]> =>
+export const FETCH_CHAT_MESSAGES_ACTION = (
+  matchId: number, 
+  page: number = 0, 
+  size: number = 50
+): Promise<ChatMessage[]> =>
   new Promise((resolve, reject) => {
     requests.player.matchmaking
-      .getChatMessages(matchId)
+      .getChatMessages(matchId, page, size)
       .then((res: AxiosResponse<ApiResponse<ChatMessage[]>>) => {
-        const messages = Array.isArray(res.data.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
+        const messages = Array.isArray(res.data.data) 
+          ? res.data.data 
+          : (Array.isArray(res.data) ? res.data : []);
         AppDispatch(matchmakingActions.setChatMessages(messages));
         resolve(messages);
       })
@@ -149,11 +155,12 @@ export const FETCH_CHAT_MESSAGES_ACTION = (matchId: number): Promise<ChatMessage
         reject(err);
       });
   });
+  
 
 export const SEND_CHAT_MESSAGE_ACTION = (matchId: number, message: string): Promise<ChatMessage> =>
   new Promise((resolve, reject) => {
     requests.player.matchmaking
-      .sendChatMessage(matchId, message)
+      .sendChatMessage(matchId, message)  // This sends { message: "..." }
       .then((res: AxiosResponse<ApiResponse<ChatMessage>>) => {
         const chatMessage = res.data.data || res.data;
         AppDispatch(matchmakingActions.addChatMessage(chatMessage));

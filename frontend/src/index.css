@@ -37,6 +37,11 @@
   --color-primary-90: #003e59;
   --color-primary-100: #002943;
 
+  /* Pastel Primary Colors (Soft Teal) */
+  --color-primary-pastel-light: #C8E8F0; /* Soft Pastel Teal */
+  --color-primary-pastel: #B0DFE8; /* Primary Pastel */
+  --color-primary-pastel-medium: #98D6E0; /* Medium Pastel */
+
   /* Secondary Color Variations (#00B44E) */
   --color-secondary-10: #e6f9ed;
   --color-secondary-20: #ccf3db;
@@ -48,6 +53,10 @@
   --color-secondary-80: #006c2e;
   --color-secondary-90: #00481e;
   --color-secondary-100: #00240f;
+
+  /* Pastel Secondary Colors (Soft Green) */
+  --color-secondary-pastel-light: #D4F5E3; /* Soft Pastel Green */
+  --color-secondary-pastel: #C0F0D5; /* Secondary Pastel */
 
   /* Typography */
   --font-primary: "Inter", "Roboto", sans-serif;

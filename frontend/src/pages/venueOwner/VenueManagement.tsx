@@ -246,7 +246,7 @@ const VenueManagement = () => {
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleViewVenue(venue.id)}
-                            className="p-2 text-gray-600 hover:text-[#2c5aa0] hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-2 text-gray-600 hover:text-[#2c5aa0] hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                             title="View Details"
                           >
                             <MdVisibility className="w-4 h-4" />
@@ -254,7 +254,7 @@ const VenueManagement = () => {
 
                           <button
                             onClick={() => handleEditVenue(venue.id)}
-                            className="p-2 text-gray-600 hover:text-[#2c5aa0] hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-2 text-gray-600 hover:text-[#2c5aa0] hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                             title="Edit Venue"
                           >
                             <MdEdit className="w-4 h-4" />
@@ -264,7 +264,7 @@ const VenueManagement = () => {
                             onClick={() =>
                               handleDeleteVenue(venue.id, venue.name)
                             }
-                            className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                             title="Delete Venue"
                           >
                             <MdDelete className="w-4 h-4" />
@@ -283,7 +283,7 @@ const VenueManagement = () => {
                 <button
                   onClick={goToPrevPage}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 cursor-pointer"
                 >
                   Previous
                 </button>
@@ -293,7 +293,7 @@ const VenueManagement = () => {
                 <button
                   onClick={goToNextPage}
                   disabled={currentPage === pagination.total_page}
-                  className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 cursor-pointer"
                 >
                   Next
                 </button>

@@ -13,6 +13,7 @@ import {
   MdClose,
   MdExpandMore,
   MdExpandLess,
+  MdChat,
 } from "react-icons/md";
 import type { RootState } from "@/redux/store";
 import { useDispatch, useSelector } from "react-redux";
@@ -84,9 +85,8 @@ const VenueDetails = () => {
     return Array.from({ length: 5 }, (_, i) => (
       <MdStar
         key={i}
-        className={`w-4 h-4 ${
-          i < rating ? "text-yellow-400" : "text-gray-300"
-        }`}
+        className={`w-4 h-4 ${i < rating ? "text-yellow-400" : "text-gray-300"
+          }`}
       />
     ));
   };
@@ -106,7 +106,7 @@ const VenueDetails = () => {
         <p className="text-red-500 mb-4">Venue not found</p>
         <button
           onClick={() => navigate("/player")}
-          className="text-[#2c5aa0] hover:text-[#1e3d6f] transition-colors"
+          className="text-[#2c5aa0] hover:text-[#1e3d6f] transition-colors cursor-pointer"
         >
           Back to Home
         </button>
@@ -121,7 +121,7 @@ const VenueDetails = () => {
           <div className="flex items-center justify-between h-16">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
             >
               <MdArrowBack className="w-5 h-5" />
               <span className="hidden sm:inline">Back</span>
@@ -129,16 +129,22 @@ const VenueDetails = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={toggleFavorite}
-                className={`p-2 rounded-full transition-colors ${
-                  isFavorite
-                    ? "bg-red-100 text-red-500"
-                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                }`}
+                className={`p-2 rounded-full transition-colors cursor-pointer ${isFavorite
+                  ? "bg-red-100 text-red-500"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  }`}
               >
                 <MdFavorite className="w-5 h-5" />
               </button>
-              <button className="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">
+              <button className="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer">
                 <MdShare className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => navigate(`/player/venues/${id}/chat`)}
+                className="p-2 rounded-full bg-green-100 text-green-600 hover:bg-green-200 transition-colors cursor-pointer"
+                title="Chat with Owner"
+              >
+                <MdChat className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -152,12 +158,11 @@ const VenueDetails = () => {
             {/* Image Gallery */}
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
               <div className="relative">
-                <div className="aspect-video bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                  <div className="text-white text-center">
-                    <div className="text-6xl mb-4">🏟️</div>
-                    <div className="text-lg opacity-90">Sports Venue</div>
-                  </div>
-                </div>
+                <img
+                  src={venue.images?.[0] || "/api/placeholder/800/600"}
+                  alt={venue.name}
+                  className="w-full h-96 object-cover rounded-2xl"
+                />
 
                 {/* Discount Badge */}
                 {/* {venue.discount && (
@@ -179,11 +184,6 @@ const VenueDetails = () => {
                       }`}
                     />
                   ))} */}
-                  <img
-                    src={venue.images?.[0] || "/api/placeholder/800/600"}
-                    alt={venue.name}
-                    className="w-full h-72 object-cover rounded-xl shadow"
-                  />
                 </div>
               </div>
             </div>
@@ -321,7 +321,7 @@ const VenueDetails = () => {
                   </h3>
                   <button
                     onClick={() => setShowAllReviews(!showAllReviews)}
-                    className="text-[#2c5aa0] hover:text-[#1e3d6f] transition-colors flex items-center gap-1"
+                    className="text-[#2c5aa0] hover:text-[#1e3d6f] transition-colors flex items-center gap-1 cursor-pointer"
                   >
                     {showAllReviews ? (
                       <>
@@ -483,7 +483,7 @@ const VenueDetails = () => {
 
                 <button
                   onClick={handleBookNow}
-                  className="w-full bg-[#2c5aa0] text-white py-3 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium"
+                  className="w-full bg-[#2c5aa0] text-white py-3 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium cursor-pointer"
                 >
                   Book Now
                 </button>
@@ -538,7 +538,7 @@ const VenueDetails = () => {
               </h3>
               <button
                 onClick={() => setShowBookingModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 cursor-pointer"
               >
                 <MdClose className="w-5 h-5" />
               </button>

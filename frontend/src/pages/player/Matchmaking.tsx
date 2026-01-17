@@ -83,7 +83,7 @@ const Matchmaking = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <button
             onClick={() => navigate('/player/matchmaking/find')}
-            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all text-left group"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all text-left group cursor-pointer"
           >
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
               <MdSportsSoccer className="w-6 h-6 text-blue-600" />
@@ -94,7 +94,7 @@ const Matchmaking = () => {
 
           <button
             onClick={() => navigate('/player/matchmaking/create')}
-            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all text-left group"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all text-left group cursor-pointer"
           >
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors">
               <MdAdd className="w-6 h-6 text-green-600" />
@@ -105,7 +105,7 @@ const Matchmaking = () => {
 
           <button
             onClick={() => navigate('/player/matchmaking/my-posts')}
-            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all text-left group"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all text-left group cursor-pointer"
           >
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-200 transition-colors">
               <MdList className="w-6 h-6 text-purple-600" />
@@ -121,9 +121,9 @@ const Matchmaking = () => {
             <h2 className="text-2xl font-bold text-gray-900">Recent Matches</h2>
             <button
               onClick={() => navigate('/player/matchmaking/find')}
-              className="text-[#2c5aa0] hover:text-[#1e3d6f] font-medium"
+              className="text-[#2c5aa0] hover:text-[#1e3d6f] font-medium cursor-pointer"
             >
-              View All →
+              View All 
             </button>
           </div>
 
@@ -143,7 +143,7 @@ const Matchmaking = () => {
               <p className="text-gray-600 mb-4">No matches available yet</p>
               <button
                 onClick={() => navigate('/player/matchmaking/create')}
-                className="px-6 py-3 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] transition-colors"
+                className="px-6 py-3 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] transition-colors cursor-pointer"
               >
                 Create Your First Match
               </button>
@@ -208,7 +208,7 @@ const Matchmaking = () => {
                           e.stopPropagation()
                           navigate(`/player/matches/${match.matchId}`)
                         }}
-                        className="px-3 py-1.5 text-[#2c5aa0] border border-[#2c5aa0] rounded-lg hover:bg-[#2c5aa0] hover:text-white transition-colors flex items-center gap-1 text-sm"
+                        className="px-3 py-1.5 text-[#2c5aa0] border border-[#2c5aa0] rounded-lg hover:bg-[#2c5aa0] hover:text-white transition-colors flex items-center gap-1 text-sm cursor-pointer"
                       >
                         <MdVisibility className="w-4 h-4" />
                         View

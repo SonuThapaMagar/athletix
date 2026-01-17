@@ -151,7 +151,7 @@ const Recommendations = () => {
                 Top-rated venues based on your preferences and location
               </p>
             </div>
-            <button className="hidden md:flex items-center gap-2 text-[#2c5aa0] hover:text-[#1e3d6f] transition-colors">
+            <button className="hidden md:flex items-center gap-2 text-[#2c5aa0] hover:text-[#1e3d6f] transition-colors cursor-pointer">
               <span className="font-medium">View All</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -189,7 +189,7 @@ const Recommendations = () => {
                 <div className="absolute top-3 right-3 flex flex-col gap-2">
                   <button
                     onClick={() => toggleFavorite(venue.id)}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
                       venue.isFavorite 
                         ? 'bg-red-500 text-white' 
                         : 'bg-white/20 text-white hover:bg-white/30'
@@ -199,7 +199,7 @@ const Recommendations = () => {
                   </button>
                   <button
                     onClick={() => handleShare(venue.id)}
-                    className="w-8 h-8 rounded-full bg-white/20 text-white hover:bg-white/30 flex items-center justify-center transition-colors"
+                    className="w-8 h-8 rounded-full bg-white/20 text-white hover:bg-white/30 flex items-center justify-center transition-colors cursor-pointer"
                   >
                     <MdShare className="w-4 h-4" />
                   </button>
@@ -281,13 +281,13 @@ const Recommendations = () => {
                 <div className="flex space-x-2">
                   <button 
                     onClick={() => handleBookNow(venue.id)}
-                    className="flex-1 bg-[#2c5aa0] text-white py-2 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium"
+                    className="flex-1 bg-[#2c5aa0] text-white py-2 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium cursor-pointer"
                   >
                     Book Now
                   </button>
                   <button 
                     onClick={() => handleViewDetails(venue.id)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     View Details
                   </button>
@@ -299,7 +299,7 @@ const Recommendations = () => {
 
         {/* Load More Button */}
         <div className="text-center mt-8">
-          <button className="bg-white text-[#2c5aa0] border border-[#2c5aa0] px-8 py-3 rounded-lg hover:bg-[#2c5aa0] hover:text-white transition-colors font-medium">
+          <button className="bg-white text-[#2c5aa0] border border-[#2c5aa0] px-8 py-3 rounded-lg hover:bg-[#2c5aa0] hover:text-white transition-colors font-medium cursor-pointer">
             Load More Recommendations
           </button>
         </div>

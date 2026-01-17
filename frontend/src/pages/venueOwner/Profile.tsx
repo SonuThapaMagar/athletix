@@ -165,7 +165,7 @@ const Profile = () => {
                   </span>
                 </div>
                 {isEditing && (
-                  <button className="absolute bottom-2 right-2 p-2 bg-white rounded-full shadow-lg hover:bg-gray-50">
+                  <button className="absolute bottom-2 right-2 p-2 bg-white rounded-full shadow-lg hover:bg-gray-50 cursor-pointer">
                     <MdCameraAlt className="w-4 h-4 text-gray-600" />
                   </button>
                 )}

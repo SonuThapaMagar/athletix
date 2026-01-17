@@ -92,7 +92,15 @@ const matchmakingSlice = createSlice({
       state.chatMessages = action.payload;
     },
     addChatMessage(state, action: PayloadAction<ChatMessage>) {
-      state.chatMessages.push(action.payload);
+      // Prevent duplicates
+      const exists = state.chatMessages.some(
+        msg => (msg.id && msg.id === action.payload.id) ||
+          (!msg.id && msg.senderId === action.payload.senderId && msg.timestamp === action.payload.timestamp && msg.message === action.payload.message)
+      );
+
+      if (!exists) {
+        state.chatMessages.unshift(action.payload);
+      }
     },
     setFilters(state, action: PayloadAction<MatchFilters>) {
       state.filters = action.payload;

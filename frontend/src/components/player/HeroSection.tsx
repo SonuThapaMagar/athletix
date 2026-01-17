@@ -1,14 +1,23 @@
-import { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { MdLocationOn } from "react-icons/md";
 import type { StateType } from "@/redux/slices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FETCH_ALL_VENUES_ACTION } from "@/redux/actions/user/playerVenue.actions";
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  searchFilters?: {
+    sport: string;
+    location: string;
+    date: string;
+    time: string;
+    searchQuery: string;
+  };
+}
+
+const HeroSection = ({ searchFilters }: HeroSectionProps = {}) => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   // Use playerVenueSlice instead of venueSlice
   const {
@@ -18,25 +27,52 @@ const HeroSection = () => {
   } = useSelector((state: StateType) => state.playerVenueSlice);
 
   useEffect(() => {
-    console.log("🔄 Fetching venues...");
+    // console.log(" Fetching venues...");
     FETCH_ALL_VENUES_ACTION({ page: 1, perPage: 6 })
       .then(({ venues, pagination }) => {
-        console.log("✅ Venues loaded in component:", venues.length);
-        console.log("✅ Pagination:", pagination);
+        console.log(" Venues loaded in component:", venues.length);
+        console.log(" Pagination:", pagination);
       })
       .catch((error) => {
-        console.error("❌ Error in HeroSection:", error);
+        console.error(" Error in HeroSection:", error);
       });
   }, []);
 
-  // Note: Venues are refreshed after payment verification in PaymentSuccess component
+  // Filter venues based on search filters
+  const filteredVenues = useMemo(() => {
+    if (!searchFilters || Object.values(searchFilters).every(v => !v)) {
+      return venues;
+    }
 
-  // Debug: Log current state
-  useEffect(() => {
-    console.log("📊 Current venues in state:", venues);
-    console.log("📊 Current pagination:", pagination);
-    console.log("📊 Loading status:", loading);
-  }, [venues, pagination, loading]);
+    return venues.filter((venue) => {
+      // Search query filter (searches in name, description, location)
+      if (searchFilters.searchQuery) {
+        const query = searchFilters.searchQuery.toLowerCase();
+        const matchesQuery = 
+          venue.name?.toLowerCase().includes(query) ||
+          venue.description?.toLowerCase().includes(query) ||
+          venue.location?.toLowerCase().includes(query);
+        if (!matchesQuery) return false;
+      }
+
+      // Sport filter
+      if (searchFilters.sport) {
+        const hasSport = venue.sports?.some(
+          (s) => s.toLowerCase() === searchFilters.sport.toLowerCase()
+        );
+        if (!hasSport) return false;
+      }
+
+      // Location filter
+      if (searchFilters.location) {
+        const matchesLocation = venue.location
+          ?.toLowerCase()
+          .includes(searchFilters.location.toLowerCase());
+        if (!matchesLocation) return false;
+      }
+      return true;
+    });
+  }, [venues, searchFilters]);
 
   const handlePageChange = (newPage: number) => {
     FETCH_ALL_VENUES_ACTION({ page: newPage, perPage: 6 });
@@ -60,17 +96,21 @@ const HeroSection = () => {
     );
   }
 
-  if (!loading && venues.length === 0) {
+  if (!loading && filteredVenues.length === 0) {
     return (
       <section className="bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">🏟️</div>
+            <div className="text-6xl mb-4">🔍</div>
             <p className="text-gray-500 text-lg">
-              No venues available at the moment.
+              {venues.length === 0 
+                ? "No venues available at the moment." 
+                : "No venues match your search criteria."}
             </p>
             <p className="text-gray-400 text-sm mt-2">
-              Check back later for new venues!
+              {venues.length === 0 
+                ? "Check back later for new venues!" 
+                : "Try adjusting your filters to find more venues."}
             </p>
           </div>
         </div>
@@ -91,8 +131,8 @@ const HeroSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {venues.map((venue) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 cursor-pointer gap-6">
+          {filteredVenues.map((venue) => (
             <div
               key={venue.id}
               className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
@@ -147,13 +187,13 @@ const HeroSection = () => {
                 <div className="flex space-x-2">
                   <button
                     onClick={() => navigate(`/player/booking/${venue.id}`)}
-                    className="flex-1 bg-[#2c5aa0] text-white py-2 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium"
+                    className="flex-1 bg-[#2c5aa0] text-white py-2 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium cursor-pointer"
                   >
                     Book Now
                   </button>
                   <button
                     onClick={() => navigate(`/player/venue/${venue.id}`)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     View Details
                   </button>
@@ -169,7 +209,7 @@ const HeroSection = () => {
             <button
               onClick={() => handlePageChange(pagination.page - 1)}
               disabled={pagination.page === 1}
-              className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               Previous
             </button>
@@ -179,7 +219,7 @@ const HeroSection = () => {
             <button
               onClick={() => handlePageChange(pagination.page + 1)}
               disabled={pagination.page === pagination.total_page}
-              className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               Next
             </button>

@@ -139,7 +139,7 @@ const FindMatches = () => {
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2"
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer flex items-center gap-2 cursor-pointer"
             >
               <MdFilterList className="w-5 h-5" />
               Filters
@@ -252,7 +252,7 @@ const FindMatches = () => {
                         <div className="flex gap-2">
                           <button
                             onClick={() => navigate(`/player/matches/${match.matchId}`)}
-                            className="px-4 py-2 text-[#2c5aa0] border border-[#2c5aa0] rounded-lg hover:bg-[#2c5aa0] hover:text-white transition-colors flex items-center gap-2"
+                            className="px-4 py-2 text-[#2c5aa0] border border-[#2c5aa0] rounded-lg hover:bg-[#2c5aa0] hover:text-white transition-colors flex items-center gap-2 cursor-pointer"
                           >
                             <MdVisibility className="w-4 h-4" />
                             View
@@ -260,7 +260,7 @@ const FindMatches = () => {
                           {match.status === 'OPEN' && match.currentPlayers < match.requiredPlayers && (
                             <button
                               onClick={() => handleRequestToJoin(match.matchId)}
-                              className="px-4 py-2 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] transition-colors"
+                              className="px-4 py-2 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] transition-colors cursor-pointer"
                             >
                               Request to Join
                             </button>
