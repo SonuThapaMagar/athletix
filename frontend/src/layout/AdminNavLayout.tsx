@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import logo from '@/assets/athletix-logo-icon.svg';
-import { 
-  MdDashboard, 
-  MdPeople, 
-  MdLocationOn, 
-  MdBarChart, 
-  MdNotifications, 
+import {
+  MdDashboard,
+  MdPeople,
+  MdLocationOn,
+  MdBarChart,
+  MdNotifications,
   MdPerson,
   MdMenu,
   MdClose,
@@ -60,9 +60,9 @@ const AdminNavLayout = () => {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
             <div className="flex items-center space-x-2 cursor-pointer group">
-              <img 
-                src={logo} 
-                alt="Athletix Logo" 
+              <img
+                src={logo}
+                alt="Athletix Logo"
                 className="h-12 transition-transform duration-300 group-hover:scale-110 object-contain"
               />
               <span className="text-xl font-bold text-gray-900 group-hover:text-red-600 transition-colors duration-300">Admin</span>
@@ -180,7 +180,7 @@ const AdminNavLayout = () => {
       )}
 
       {/* Logout Modal */}
-      <LogoutModal 
+      <LogoutModal
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
         onConfirm={handleLogout}

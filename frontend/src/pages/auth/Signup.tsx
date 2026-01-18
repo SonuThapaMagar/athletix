@@ -12,6 +12,8 @@ import {
   MdPerson,
 } from "react-icons/md";
 import type { IUser } from "@/types/user.types/user.types";
+import loginBg from "@/assets/landing/hero-bg.png";
+import logo from "@/assets/landing/final_logo-removebg-preview.png";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -61,22 +63,29 @@ const Signup = () => {
       localStorage.removeItem("userRole");
 
       toast.success("Account created successfully! Please login to continue.");
-      
+
       // Navigate to login
       navigate("/login");
     } catch (err: any) {
       console.error("Register error:", err);
-      toast.error(err?.response?.data?.message || "Registration failed. Please try again.");
+      toast.error(
+        err?.response?.data?.message ||
+          "Registration failed. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-dvh flex bg-gray-50">
+    <div
+      className="min-h-dvh flex relative overflow-hidden bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${loginBg})` }}
+    >
+      {" "}
       <div className="flex flex-col lg:flex-row w-full gap-8 px-4 py-8">
         {/* Promo Section */}
-        <div className="lg:w-3/5 flex items-center justify-center">
+        <div className="hidden lg:flex lg:w-3/5 items-center justify-center">
           <div className="max-w-lg">
             <PromoContent />
           </div>
@@ -86,6 +95,13 @@ const Signup = () => {
         <div className="lg:w-2/5 flex items-center justify-center">
           <div className="bg-white rounded-xl shadow-lg border w-full max-w-md p-6 sm:p-8">
             <div className="text-center mb-6">
+              {/* Logo */}
+              <img
+                src={logo}
+                alt="Athletix Logo"
+                className="mx-auto h-12 w-auto mb-3"
+              />
+
               <h2 className="text-2xl font-bold text-gray-800">Sign Up</h2>
               <p className="text-sm text-gray-600 mt-1">Join Athletix today</p>
             </div>
@@ -96,7 +112,7 @@ const Signup = () => {
                 <input
                   type="text"
                   placeholder="Full Name"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-[#2c5aa0]"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-primary"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                 />
@@ -108,7 +124,7 @@ const Signup = () => {
                 <input
                   type="email"
                   placeholder="Email Address"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-[#2c5aa0]"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-primary"
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                 />
@@ -120,7 +136,7 @@ const Signup = () => {
                 <input
                   type="tel"
                   placeholder="Phone Number"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-[#2c5aa0]"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-primary"
                   value={formData.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
                 />
@@ -132,14 +148,24 @@ const Signup = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 pr-10 text-sm focus:outline-none focus:border-[#2c5aa0]"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 pr-10 text-sm focus:outline-none focus:border-primary"
                   value={formData.password}
                   onChange={(e) =>
                     handleInputChange("password", e.target.value)
                   }
                 />
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                <svg
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
                 </svg>
                 <button
                   type="button"
@@ -160,7 +186,7 @@ const Signup = () => {
                 <input
                   type="text"
                   placeholder="Location"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-[#2c5aa0]"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-primary"
                   value={formData.location}
                   onChange={(e) =>
                     handleInputChange("location", e.target.value)
@@ -184,9 +210,21 @@ const Signup = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#2c5aa0] text-white py-3 px-4 rounded-lg font-semibold text-sm uppercase tracking-wide hover:bg-[#1e3d6f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex items-center justify-center gap-2
+             bg-primary text-white py-3 px-4 rounded-lg
+             font-semibold text-sm uppercase tracking-wide
+             hover:bg-[#1e3d6f]
+             disabled:opacity-70 disabled:cursor-not-allowed
+             transition-all"
               >
-                {loading ? "Signing Up..." : "SIGN UP"}
+                {loading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    Signing Up...
+                  </>
+                ) : (
+                  "SIGN UP"
+                )}
               </button>
             </form>
 
@@ -194,7 +232,7 @@ const Signup = () => {
               Already have an account?{" "}
               <button
                 type="button"
-                className="text-[#2c5aa0] cursor-pointer font-semibold hover:underline"
+                className="text-primary cursor-pointer font-semibold hover:underline"
                 onClick={() => navigate("/login")}
               >
                 Sign In

@@ -1,157 +1,82 @@
-import { useState } from 'react';
-import { HiMenuAlt3, HiX } from 'react-icons/hi';
-import logo from '@/assets/athletix-logo.svg';
+import { useState } from "react";
+import { HiMenuAlt3, HiX } from "react-icons/hi";
+import logo from "@/assets/landing/final_logo-removebg-preview.png";
 
-type HeaderProps = {
-  onLogin: () => void;
-  onSignup: () => void;
-};
+interface HeaderProps {
+  onLogin?: () => void;
+  onSignup?: () => void;
+}
 
-const Header = ({ onLogin, onSignup }: HeaderProps) => {
+const Header = ({ onLogin, onSignup }: HeaderProps = {}) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  // Smooth scroll function
-  const smoothScrollTo = (elementId: string) => {
-    const element = document.getElementById(elementId);
-    if (element) {
-      const headerHeight = 80; // Account for sticky header height
-      const elementPosition = element.offsetTop - headerHeight;
-      
-      window.scrollTo({
-        top: elementPosition,
-        behavior: 'smooth'
-      });
-    }
-    // Close mobile menu after clicking
-    setIsMobileMenuOpen(false);
-  };
+  const navItems = ["Home", "Features", "About Us", "Contact"];
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
-      {/* Full-width navbar */}
-      <div className="w-full bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20">
-            {/* Logo */}
-            <button 
-              onClick={() => smoothScrollTo('hero')}
-              className="flex items-center gap-3 cursor-pointer group"
-            >
-              <img 
-                src={logo} 
-                alt="Athletix Logo" 
-                className="h-12 lg:h-16 transition-transform duration-300 group-hover:scale-110 object-contain"
-              />
-            </button>
+    <header className="fixed inset-x-0 top-0 z-50">
+      {/* Floating Pill - now properly centered overall, with nav items centered on desktop */}
+      <div className="pointer-events-auto mx-auto">
+        <div className="bg-gradient-to-r from-primary/30 to-primary rounded-b-xl px-6 py-3 shadow-2xl backdrop-blur-sm">
+          <div className="flex items-center">
+            {/* Logo - left aligned */}
+            <div className="flex-shrink-0">
+              <img src={logo} alt="Athletix" className="h-10 lg:h-12 w-auto" />
+            </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-8">
-              <button
-                onClick={() => smoothScrollTo('features')}
-                className="text-gray-700 hover:text-primary font-medium transition-colors duration-300 relative group cursor-pointer"
-              >
-                Features
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </button>
-              <button
-                onClick={() => smoothScrollTo('sports')}
-                className="text-gray-700 hover:text-primary font-medium transition-colors duration-300 relative group cursor-pointer"
-              >
-                Sports
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </button>
-              <button
-                onClick={() => smoothScrollTo('how')}
-                className="text-gray-700 hover:text-primary font-medium transition-colors duration-300 relative group cursor-pointer"
-              >
-                How it works
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </button>
+            {/* Desktop Navigation - centered in the available space */}
+            <nav className="hidden lg:flex flex-1 justify-center gap-10 px-8">
+              {navItems.map((item) => (
+                <a
+                  key={item}
+                  href={`#${item.toLowerCase().replace(" ", "-")}`}
+                  className="text-white/90 hover:text-white text-sm lg:text-base font-medium tracking-wide transition-colors"
+                >
+                  {item}
+                </a>
+              ))}
             </nav>
 
-            {/* Desktop Action Buttons */}
-            <div className="hidden lg:flex items-center gap-4">
+            {/* Optional: Add Login/Signup buttons on the right (uncomment if you pass the props) */}
+            <div className="hidden lg:flex items-center gap-4 flex-shrink-0">
               <button
                 onClick={onLogin}
-                className="px-6 py-2.5 text-gray-700 cursor-pointer font-medium hover:text-primary transition-colors duration-300"
+                className="text-white/90 hover:text-white font-medium cursor-pointer"
               >
-                Log in
+                Login
               </button>
               <button
                 onClick={onSignup}
-                className="px-6 py-2.5 bg-primary text-white cursor-pointer font-medium rounded-lg hover:bg-primary-80 transition-colors duration-300 shadow-lg hover:shadow-xl"
+                className="px-5 py-2 bg-white/20 rounded-full text-white font-medium hover:bg-white/30 transition cursor-pointer"
               >
-                Sign up
+                Sign Up
               </button>
             </div>
 
-            {/* Mobile menu button */}
+            {/* Mobile Menu Button - pushed to the right */}
             <button
-              onClick={toggleMobileMenu}
-              className="lg:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-300 cursor-pointer"
+              className="lg:hidden ml-auto text-white"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              {isMobileMenuOpen ? (
-                <HiX className="h-6 w-6" />
-              ) : (
-                <HiMenuAlt3 className="h-6 w-6" />
-              )}
+              {isMobileMenuOpen ? <HiX size={28} /> : <HiMenuAlt3 size={28} />}
             </button>
           </div>
-        </div>
 
-        {/* Mobile Navigation Menu */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-gray-200 shadow-lg">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-              <nav className="flex flex-col space-y-4">
-                <button
-                  onClick={() => smoothScrollTo('features')}
-                  className="text-gray-700 hover:text-primary font-medium py-2 transition-colors duration-300 text-left cursor-pointer"
+          {/* Mobile Menu Dropdown */}
+          {isMobileMenuOpen && (
+            <div className="mt-6 pb-4 flex flex-col items-center gap-5 lg:hidden">
+              {navItems.map((item) => (
+                <a
+                  key={item}
+                  href={`#${item.toLowerCase().replace(" ", "-")}`}
+                  className="text-white text-lg font-medium hover:text-white/80 transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Features
-                </button>
-                <button
-                  onClick={() => smoothScrollTo('sports')}
-                  className="text-gray-700 hover:text-primary font-medium py-2 transition-colors duration-300 text-left cursor-pointer"
-                >
-                  Sports
-                </button>
-                <button
-                  onClick={() => smoothScrollTo('how')}
-                  className="text-gray-700 hover:text-primary font-medium py-2 transition-colors duration-300 text-left cursor-pointer"
-                >
-                  How it works
-                </button>
-
-                {/* Mobile Action Buttons */}
-                <div className="flex flex-col gap-3 pt-4 border-t border-gray-200">
-          <button
-                    onClick={() => {
-                      onLogin();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full py-3 text-gray-700 font-medium hover:bg-gray-50 rounded-lg transition-colors duration-300 cursor-pointer"
-          >
-            Log in
-          </button>
-          <button
-                    onClick={() => {
-                      onSignup();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-80 transition-colors duration-300 shadow-lg cursor-pointer"
-          >
-            Sign up
-                  </button>
-                </div>
-              </nav>
+                  {item}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
-          </div>
-        )}
       </div>
     </header>
   );

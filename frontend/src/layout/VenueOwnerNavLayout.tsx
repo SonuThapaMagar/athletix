@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import logo from '@/assets/athletix-logo-icon.svg';
-import { 
-  MdDashboard, 
-  MdLocationOn, 
-  MdCalendarToday, 
-  MdNotifications, 
+import {
+  MdDashboard,
+  MdLocationOn,
+  MdCalendarToday,
+  MdNotifications,
   MdPerson,
   MdMenu,
   MdClose,
@@ -33,7 +33,7 @@ const VenueOwnerNavLayout = () => {
     { name: 'Logout', href: '#', action: () => setShowLogoutModal(true) },
   ]
 
-  const handleLogout = async() => {
+  const handleLogout = async () => {
     setShowLogoutModal(false)
     await LOGOUT_ACTION();
     toast.success("Logged out successfully");
@@ -55,9 +55,9 @@ const VenueOwnerNavLayout = () => {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
             <div className="flex items-center space-x-2 cursor-pointer group">
-              <img 
-                src={logo} 
-                alt="Athletix Logo" 
+              <img
+                src={logo}
+                alt="Athletix Logo"
                 className="h-12 transition-transform duration-300 group-hover:scale-110 object-contain"
               />
               <span className="text-xl font-bold text-gray-900 group-hover:text-green-600 transition-colors duration-300">Venue</span>
@@ -169,7 +169,7 @@ const VenueOwnerNavLayout = () => {
       )}
 
       {/* Logout Modal */}
-      <LogoutModal 
+      <LogoutModal
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
         onConfirm={handleLogout}

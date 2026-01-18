@@ -1,31 +1,35 @@
+import promoImg from "@/assets/landing/Secure login-rafiki.svg";
+
 const PromoContent = () => {
   return (
-    <div className="text-center lg:text-left">
-      <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-2">
-        Book sports facilities
-      </h1>
-      <h1 className="text-4xl lg:text-5xl font-bold text-[#2c5aa0] mb-8">
-        in your city
-      </h1>
-      <p className="text-gray-600 text-base lg:text-lg leading-relaxed max-w-md">
-        Join thousands of athletes and sports enthusiasts who book courts, fields, and facilities through Athletix. Find, book, and play at the best sports venues in your area with real-time availability and instant confirmations.
+    <div className="max-w-lg mx-auto text-center lg:text-left">
+      {/* Heading */}
+      <h1 className="pt-6 text-4xl sm:text-5xl lg:text-5xl font-extrabold text-gray-900 leading-[1.1] tracking-tight">
+        Book Sports
+        <span className="block text-primary"> Venues in your city</span>
+      </h1>{" "}
+      <p className="mt-5 max-w-lg text-base sm:text-lg text-gray-600 leading-relaxed">
+        Discover, book, and play at top-rated sports venues with real-time
+        availability, secure payments, and instant confirmations.
       </p>
-      <div className="mt-8 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span className="text-gray-700">Real-time availability & instant booking</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-          <span className="text-gray-700">Multiple sports: Football, Basketball, Tennis & more</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-          <span className="text-gray-700">Secure payments & easy cancellations</span>
-        </div>
+      {/* Image */}
+      <div className="mt-0 flex justify-center lg:justify-start">
+        <img
+          src={promoImg}
+          alt="Book sports venues"
+          className="
+            w-full
+            max-w-xs
+            sm:max-w-sm
+            md:max-w-md
+            lg:max-w-lg
+            h-auto
+            object-contain
+          "
+        />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PromoContent
+export default PromoContent;

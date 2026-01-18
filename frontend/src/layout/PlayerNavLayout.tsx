@@ -88,9 +88,9 @@ const PlayerNavLayout = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/player" className="flex items-center cursor-pointer group">
-            <img 
-              src={logo} 
-              alt="Athletix Logo" 
+            <img
+              src={logo}
+              alt="Athletix Logo"
               className="h-12 transition-transform duration-300 group-hover:scale-110 object-contain"
             />
           </Link>
@@ -104,11 +104,10 @@ const PlayerNavLayout = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium transition-colors rounded-lg cursor-pointer ${
-                    isActive
+                  className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium transition-colors rounded-lg cursor-pointer ${isActive
                       ? "text-[#00425b] bg-white/60 shadow-sm"
                       : "text-[#2c5aa0] hover:text-[#00425b] hover:bg-white/40"
-                  }`}
+                    }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.name}</span>
@@ -134,9 +133,8 @@ const PlayerNavLayout = () => {
                   <MdPerson className="w-5 h-5 text-[#00425b]" />
                 </div>
                 <MdKeyboardArrowDown
-                  className={`w-4 h-4 text-[#2c5aa0] transition-transform ${
-                    isProfileDropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`w-4 h-4 text-[#2c5aa0] transition-transform ${isProfileDropdownOpen ? "rotate-180" : ""
+                    }`}
                 />
               </button>
 
@@ -181,11 +179,10 @@ const PlayerNavLayout = () => {
                 key={item.name}
                 to={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center space-x-3 px-4 py-3 transition-colors cursor-pointer ${
-                  isActive
+                className={`flex items-center space-x-3 px-4 py-3 transition-colors cursor-pointer ${isActive
                     ? "text-[#00425b] bg-[#C8E8F0]/40"
                     : "text-[#2c5aa0] hover:text-[#00425b] hover:bg-[#D4F5E3]/20"
-                }`}
+                  }`}
               >
                 <Icon className="w-5 h-5" />
                 <span>{item.name}</span>

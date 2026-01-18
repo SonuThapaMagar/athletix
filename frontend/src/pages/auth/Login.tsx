@@ -7,20 +7,24 @@ import SportsAnimations from "@/components/common/SportsAnimations";
 import { LOGIN_ACTION } from "@/redux/actions/auth.actions";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { toast } from "sonner";
+import loginBg from "@/assets/landing/hero-bg.png";
+import logo from "@/assets/landing/final_logo-removebg-preview.png";
 
 const Login = () => {
   const navigate = useNavigate();
   const { isLoggedIn, userRole } = useSelector(
-    (state: RootState) => state.authSlice
+    (state: RootState) => state.authSlice,
   );
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  const [formData, setFormData] = useState<{ email: string; password: string }>({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState<{ email: string; password: string }>(
+    {
+      email: "",
+      password: "",
+    },
+  );
 
   // Redirect if already logged in
   useEffect(() => {
@@ -63,25 +67,32 @@ const Login = () => {
       }
 
       toast.success("Login successful! Welcome back.");
-      
+
       const role = res.userRole;
       if (role === "PLAYER") navigate("/player");
       if (role === "VENUE_OWNER") navigate("/venue-owner");
       if (role === "ADMIN") navigate("/admin");
     } catch (err: any) {
       console.error("Login error:", err);
-      toast.error(err?.response?.data?.message || "Login failed. Please check your credentials.");
+      toast.error(
+        err?.response?.data?.message ||
+          "Login failed. Please check your credentials.",
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-dvh flex relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-emerald-50">
+    <div
+      className="min-h-dvh flex relative overflow-hidden bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${loginBg})` }}
+    >
+      {" "}
       <SportsAnimations variant="login" />
       <div className="flex flex-col lg:flex-row w-full gap-8 px-4 py-8 relative z-10">
         {/* Promo Section */}
-        <div className="lg:w-3/5 flex items-center justify-center">
+        <div className="hidden lg:flex lg:w-3/5 items-center justify-center">
           <div className="max-w-lg">
             <PromoContent />
           </div>
@@ -91,8 +102,17 @@ const Login = () => {
         <div className="lg:w-2/5 flex items-center justify-center">
           <div className="bg-white rounded-xl shadow-lg border w-full max-w-md p-6 sm:p-8">
             <div className="text-center mb-6">
+              {/* Logo */}
+              <img
+                src={logo}
+                alt="Athletix Logo"
+                className="mx-auto h-12 w-auto mb-3"
+              />
+
               <h2 className="text-2xl font-bold text-gray-800">Login</h2>
-              <p className="text-sm text-gray-600 mt-1">Welcome back to Athletix</p>
+              <p className="text-sm text-gray-600 mt-1">
+                Welcome back to Athletix
+              </p>
             </div>
 
             <form className="flex flex-col gap-4" onSubmit={handleLoginSubmit}>
@@ -101,7 +121,7 @@ const Login = () => {
                 <input
                   type="email"
                   placeholder="Email Address"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-[#2c5aa0]"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-primary"
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                 />
@@ -115,12 +135,24 @@ const Login = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 pr-10 text-sm focus:outline-none focus:border-[#2c5aa0]"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 pr-10 text-sm focus:outline-none focus:border-primary"
                   value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                 />
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                <svg
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
                 </svg>
                 <button
                   type="button"
@@ -143,14 +175,14 @@ const Login = () => {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 text-[#2c5aa0] border-gray-300 rounded focus:ring-[#2c5aa0] cursor-pointer"
+                    className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary cursor-pointer"
                   />
                   <span className="text-gray-600">Remember me</span>
                 </label>
                 <button
                   type="button"
                   onClick={() => navigate("/forgot-password")}
-                  className="text-[#2c5aa0] hover:text-[#1e3d6f] font-medium hover:underline cursor-pointer"
+                  className="text-primary hover:text-[#1e3d6f] font-medium hover:underline cursor-pointer"
                 >
                   Forgot Password?
                 </button>
@@ -160,9 +192,21 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#2c5aa0] text-white py-3 px-4 rounded-lg font-semibold text-sm uppercase tracking-wide hover:bg-[#1e3d6f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex items-center justify-center gap-2
+             bg-primary text-white py-3 px-4 rounded-lg
+             font-semibold text-sm uppercase tracking-wide
+             hover:bg-[#1e3d6f]
+             disabled:opacity-70 disabled:cursor-not-allowed
+             transition-all"
               >
-                {loading ? "Signing In..." : "SIGN IN"}
+                {loading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    Signing in...
+                  </>
+                ) : (
+                  "SIGN IN"
+                )}
               </button>
             </form>
 
@@ -170,7 +214,7 @@ const Login = () => {
               Don't have an account?{" "}
               <button
                 type="button"
-                className="text-[#2c5aa0] cursor-pointer font-semibold hover:underline"
+                className="text-primary cursor-pointer font-semibold hover:underline"
                 onClick={() => navigate("/signup")}
               >
                 Sign Up
