@@ -1,22 +1,18 @@
-// src/layout/PlayerNavLayout.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import logo from '@/assets/athletix-logo-icon.svg';
-import {
-  MdHome,
-  MdBookOnline,
-  MdPeople,
-  MdHistory,
-  MdNotifications,
-  MdPerson,
-  MdMenu,
-  MdClose,
-  MdKeyboardArrowDown,
-} from "react-icons/md";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
+import { CiBasketball } from "react-icons/ci";
+import { BiBullseye } from "react-icons/bi";
+import { FaUserCircle } from "react-icons/fa";
+import { MdSportsHandball } from "react-icons/md";
+
+import logo from "@/assets/landing/final_logo-removebg-preview.png";
+
+import { MdMenu, MdClose, MdKeyboardArrowDown } from "react-icons/md";
+
 import LogoutModal from "@/components/common/LogoutModalNew";
 import { FETCH_PROFILE } from "@/redux/actions/user.actions";
-import type { RootState } from "@/redux/store";
-import { useSelector } from "react-redux";
 import { LOGOUT_ACTION } from "@/redux/actions/auth.actions";
 import { toast } from "sonner";
 
@@ -24,47 +20,27 @@ const PlayerNavLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
   const user = useSelector((state: RootState) => state.authSlice.profile);
 
   useEffect(() => {
     if (!user && localStorage.getItem("accessToken")) {
-      FETCH_PROFILE().catch((err) =>
-        console.error("Failed to fetch profile", err)
-      );
+      FETCH_PROFILE().catch(console.error);
     }
   }, [user]);
 
   const navigationItems = [
-    { name: "Home", icon: MdHome, href: "/player" },
-    { name: "Booking", icon: MdBookOnline, href: "/player/bookings" },
-    { name: "Find Matches", icon: MdPeople, href: "/player/matchmaking" },
-    // { name: "History", icon: MdHistory, href: "/player/history" },
+    { name: "Home", icon: MdSportsHandball, href: "/player" },
+    { name: "Booking", icon: CiBasketball, href: "/player/bookings" },
+    { name: "Find Matches", icon: BiBullseye, href: "/player/matchmaking" },
   ];
 
   const profileMenuItems = [
-    {
-      name: "Profile",
-      href: "/player/profile",
-      action: () => navigate("/player/profile"),
-    },
-    // {
-    //   name: "My Match Posts",
-    //   href: "/player/matchmaking/my-posts",
-    //   action: () => navigate("/player/matchmaking/my-posts"),
-    // },
-    {
-      name: "Settings",
-      href: "/player/settings",
-      action: () => navigate("/player/settings"),
-    },
-    // {
-    //   name: "Help & Support",
-    //   href: "/player/help",
-    //   action: () => navigate("/player/help"),
-    // },
-    { name: "Logout", href: "#", action: () => setShowLogoutModal(true) },
+    { name: "Profile", action: () => navigate("/player/profile") },
+    { name: "Settings", action: () => navigate("/player/settings") },
+    { name: "Logout", action: () => setShowLogoutModal(true) },
   ];
 
   const handleLogout = async () => {
@@ -74,130 +50,141 @@ const PlayerNavLayout = () => {
     navigate("/login");
   };
 
-  const handleNavigation = (item: any) => {
-    if (item.action) {
-      item.action();
-      setIsProfileDropdownOpen(false);
-      setIsMobileMenuOpen(false);
-    }
-  };
-
   return (
-    <nav className="bg-gradient-to-r from-[#C8E8F0] via-[#D4F5E3] to-[#C8E8F0] shadow-sm border-b border-[#A8DFE8]/30 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <header className="fixed inset-x-0 top-0 z-50">
+      <div className="bg-white backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center">
           {/* Logo */}
-          <Link to="/player" className="flex items-center cursor-pointer group">
-            <img
-              src={logo}
-              alt="Athletix Logo"
-              className="h-12 transition-transform duration-300 group-hover:scale-110 object-contain"
-            />
+          <Link to="/player" className="flex-shrink-0">
+            <img src={logo} alt="Athletix" className="h-10 lg:h-12 w-auto" />
           </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center space-x-2">
+          {/* Desktop Nav (Centered) */}
+          <nav className="hidden lg:flex flex-1 justify-center gap-10 px-10 text-[#004369]">
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href;
+
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium transition-colors rounded-lg cursor-pointer ${isActive
-                      ? "text-[#00425b] bg-white/60 shadow-sm"
-                      : "text-[#2c5aa0] hover:text-[#00425b] hover:bg-white/40"
+                  className={`flex items-center gap-2 text-sm font-medium tracking-wide transition
+                    ${
+                      isActive
+                        ? "bg-[#1061dc]/20 text-[#1061dc] rounded-2xl px-2 py-1"
+                        : "text-[#1061dc] hover:text-[#043b8d]"
                     }`}
                 >
                   <Icon className="w-5 h-5" />
-                  <span>{item.name}</span>
+                  {item.name}
                 </Link>
               );
             })}
+          </nav>
+
+          {/* Profile (Desktop) */}
+          <div className="hidden lg:flex items-center relative">
+            <button
+              onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+              className="flex items-center gap-2 text-[#1061dc] hover:text-[#1061dc]/90 transition cursor-pointer"
+            >
+              <div className="text-right leading-tight">
+                <p className="text-sm font-semibold">
+                  {user?.name || "Player"}
+                </p>
+                <p className="text-xs text-[#1061dc]">{user?.email}</p>
+              </div>
+
+              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
+                <FaUserCircle className="w-5 h-5" />
+              </div>
+
+              <MdKeyboardArrowDown
+                className={`transition-transform ${
+                  isProfileDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {isProfileDropdownOpen && (
+              <div className="absolute right-0 top-full mt-3 w-48 bg-white rounded-xl shadow-lg border py-2">
+                {profileMenuItems.map((item) => (
+                  <button
+                    key={item.name}
+                    onClick={item.action}
+                    className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition"
+                  >
+                    {item.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Desktop Right */}
-          <div className="hidden md:flex items-center space-x-4">
-            <div className="relative">
-              <button
-                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                className="flex items-center space-x-2 text-[#2c5aa0] hover:text-[#00425b] cursor-pointer px-3 py-2 rounded-lg hover:bg-white/40 transition-colors"
-              >
-                <div className="text-right">
-                  <p className="text-sm font-medium text-[#00425b]">
-                    {user?.name || "Player"}
-                  </p>
-                  <p className="text-xs text-[#2c5aa0]">{user?.email || ""}</p>
-                </div>
-                <div className="w-8 h-8 bg-gradient-to-br from-[#B0DFE8] to-[#98D6E0] rounded-full flex items-center justify-center shadow-sm">
-                  <MdPerson className="w-5 h-5 text-[#00425b]" />
-                </div>
-                <MdKeyboardArrowDown
-                  className={`w-4 h-4 text-[#2c5aa0] transition-transform ${isProfileDropdownOpen ? "rotate-180" : ""
-                    }`}
-                />
-              </button>
-
-              {isProfileDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-[#D4F5E3]/40 py-2 z-50">
-                  {profileMenuItems.map((item) => (
-                    <button
-                      key={item.name}
-                      onClick={() => handleNavigation(item)}
-                      className="w-full text-left px-4 py-3 text-sm text-[#2c5aa0] hover:text-[#00425b] hover:bg-[#C8E8F0]/30 cursor-pointer transition-colors"
-                    >
-                      {item.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Mobile Menu */}
+          {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 text-[#2c5aa0] cursor-pointer hover:text-[#00425b]"
+            className="lg:hidden ml-auto text-[#004369]"
           >
-            {isMobileMenuOpen ? (
-              <MdClose className="w-6 h-6" />
-            ) : (
-              <MdMenu className="w-6 h-6" />
-            )}
+            {isMobileMenuOpen ? <MdClose size={26} /> : <MdMenu size={26} />}
           </button>
         </div>
-      </div>
 
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-gradient-to-b from-white/80 to-[#C8E8F0]/20 border-t border-[#A8DFE8]/30">
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center space-x-3 px-4 py-3 transition-colors cursor-pointer ${isActive
-                    ? "text-[#00425b] bg-[#C8E8F0]/40"
-                    : "text-[#2c5aa0] hover:text-[#00425b] hover:bg-[#D4F5E3]/20"
-                  }`}
-              >
-                <Icon className="w-5 h-5" />
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
+        {/* Mobile Menu */}
+        <div
+          className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${
+            isMobileMenuOpen ? "max-h-screen" : "max-h-0"
+          }`}
+        >
+          <div className="bg-[#1061dc] text-white px-4 py-4 flex flex-col gap-2">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.href;
+
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 py-3 px-3 rounded-lg transition
+                    ${
+                      isActive
+                        ? "bg-[#1061dc]/30 text-white"
+                        : "text-white hover:bg-[#1061dc]/20 hover:text-white"
+                    }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  {item.name}
+                </Link>
+              );
+            })}
+
+            {/* Mobile Profile */}
+            <div className="border-t border-white/20 mt-2 pt-2 flex flex-col gap-2">
+              {profileMenuItems.map((item) => (
+                <button
+                  key={item.name}
+                  onClick={() => {
+                    item.action();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 py-2 px-3 rounded-lg text-white hover:bg-[#1061dc]/20 hover:text-white text-left transition"
+                >
+                  {item.name}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      )}
+      </div>
 
       <LogoutModal
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
         onConfirm={handleLogout}
       />
-    </nav>
+    </header>
   );
 };
 
