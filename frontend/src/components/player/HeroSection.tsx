@@ -40,7 +40,7 @@ const HeroSection = ({ searchFilters }: HeroSectionProps = {}) => {
 
   // Filter venues based on search filters
   const filteredVenues = useMemo(() => {
-    if (!searchFilters || Object.values(searchFilters).every(v => !v)) {
+    if (!searchFilters || Object.values(searchFilters).every((v) => !v)) {
       return venues;
     }
 
@@ -48,7 +48,7 @@ const HeroSection = ({ searchFilters }: HeroSectionProps = {}) => {
       // Search query filter (searches in name, description, location)
       if (searchFilters.searchQuery) {
         const query = searchFilters.searchQuery.toLowerCase();
-        const matchesQuery = 
+        const matchesQuery =
           venue.name?.toLowerCase().includes(query) ||
           venue.description?.toLowerCase().includes(query) ||
           venue.location?.toLowerCase().includes(query);
@@ -58,7 +58,7 @@ const HeroSection = ({ searchFilters }: HeroSectionProps = {}) => {
       // Sport filter
       if (searchFilters.sport) {
         const hasSport = venue.sports?.some(
-          (s) => s.toLowerCase() === searchFilters.sport.toLowerCase()
+          (s) => s.toLowerCase() === searchFilters.sport.toLowerCase(),
         );
         if (!hasSport) return false;
       }
@@ -103,13 +103,13 @@ const HeroSection = ({ searchFilters }: HeroSectionProps = {}) => {
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🔍</div>
             <p className="text-gray-500 text-lg">
-              {venues.length === 0 
-                ? "No venues available at the moment." 
+              {venues.length === 0
+                ? "No venues available at the moment."
                 : "No venues match your search criteria."}
             </p>
             <p className="text-gray-400 text-sm mt-2">
-              {venues.length === 0 
-                ? "Check back later for new venues!" 
+              {venues.length === 0
+                ? "Check back later for new venues!"
                 : "Try adjusting your filters to find more venues."}
             </p>
           </div>
@@ -122,7 +122,7 @@ const HeroSection = ({ searchFilters }: HeroSectionProps = {}) => {
     <section className="bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl font-bold text-[#1061dc] mb-4">
             Find Your Perfect Sports Venue
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
