@@ -196,7 +196,7 @@ const Login = () => {
              bg-primary text-white py-3 px-4 rounded-lg
              font-semibold text-sm uppercase tracking-wide
              hover:bg-[#1e3d6f]
-             disabled:opacity-70 disabled:cursor-not-allowed
+             disabled:opacity-70 cursor-pointer
              transition-all"
               >
                 {loading ? (

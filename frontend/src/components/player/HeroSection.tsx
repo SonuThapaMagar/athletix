@@ -157,7 +157,7 @@ const HeroSection = ({ searchFilters }: HeroSectionProps = {}) => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-[#2c5aa0]">
+                    <div className="text-2xl font-bold text-primary">
                       ${venue.pricePerHour}
                     </div>
                     <div className="text-sm text-gray-500">per hour</div>
@@ -187,7 +187,7 @@ const HeroSection = ({ searchFilters }: HeroSectionProps = {}) => {
                 <div className="flex space-x-2">
                   <button
                     onClick={() => navigate(`/player/booking/${venue.id}`)}
-                    className="flex-1 bg-[#2c5aa0] text-white py-2 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium cursor-pointer"
+                    className="flex-1 bg-primary text-white py-2 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium cursor-pointer"
                   >
                     Book Now
                   </button>

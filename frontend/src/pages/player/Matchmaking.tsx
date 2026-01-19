@@ -7,6 +7,8 @@ import type { StateType } from '@/redux/slices'
 import { FETCH_MATCHES_ACTION } from '@/redux/actions/player/matchmaking.actions'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { MatchPost } from '@/types/player/matchmaking.types'
+import { CiBasketball } from "react-icons/ci";
+import { IoCreateOutline } from "react-icons/io5";
 
 const Matchmaking = () => {
   const navigate = useNavigate()
@@ -73,7 +75,7 @@ const Matchmaking = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <PlayerNavLayout />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-22">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Matchmaking</h1>
           <p className="text-gray-600 mt-2">Connect with other athletes and find your perfect match</p>
@@ -86,7 +88,7 @@ const Matchmaking = () => {
             className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all text-left group cursor-pointer"
           >
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
-              <MdSportsSoccer className="w-6 h-6 text-blue-600" />
+              <CiBasketball  className="w-6 h-6 text-blue-600" />
             </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Find Matches</h2>
             <p className="text-gray-600">Discover and join matches with other players</p>
@@ -97,7 +99,7 @@ const Matchmaking = () => {
             className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all text-left group cursor-pointer"
           >
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors">
-              <MdAdd className="w-6 h-6 text-green-600" />
+              <IoCreateOutline className="w-6 h-6 text-green-600" />
             </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Create Match</h2>
             <p className="text-gray-600">Host a game and invite other players to join</p>
@@ -121,7 +123,7 @@ const Matchmaking = () => {
             <h2 className="text-2xl font-bold text-gray-900">Recent Matches</h2>
             <button
               onClick={() => navigate('/player/matchmaking/find')}
-              className="text-[#2c5aa0] hover:text-[#1e3d6f] font-medium cursor-pointer"
+              className="text-primary hover:text-[#1e3d6f] font-medium cursor-pointer"
             >
               View All 
             </button>
@@ -208,7 +210,7 @@ const Matchmaking = () => {
                           e.stopPropagation()
                           navigate(`/player/matches/${match.matchId}`)
                         }}
-                        className="px-3 py-1.5 text-[#2c5aa0] border border-[#2c5aa0] rounded-lg hover:bg-[#2c5aa0] hover:text-white transition-colors flex items-center gap-1 text-sm cursor-pointer"
+                        className="px-3 py-1.5 text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors flex items-center gap-1 text-sm cursor-pointer"
                       >
                         <MdVisibility className="w-4 h-4" />
                         View
@@ -222,7 +224,7 @@ const Matchmaking = () => {
         </div>
 
         {/* Info Section */}
-        <div className="bg-gradient-to-r from-[#2c5aa0] to-[#1e3d6f] rounded-2xl shadow-lg p-8 text-white">
+        <div className="bg-primary rounded-2xl shadow-lg p-8 text-white">
           <h2 className="text-2xl font-bold mb-4">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>

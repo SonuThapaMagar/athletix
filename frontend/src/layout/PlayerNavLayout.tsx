@@ -101,7 +101,7 @@ const PlayerNavLayout = () => {
               </div>
 
               <MdKeyboardArrowDown
-                className={`transition-transform ${
+                className={`transition-transform  ${
                   isProfileDropdownOpen ? "rotate-180" : ""
                 }`}
               />
@@ -113,7 +113,7 @@ const PlayerNavLayout = () => {
                   <button
                     key={item.name}
                     onClick={item.action}
-                    className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition"
+                    className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition cursor-pointer"
                   >
                     {item.name}
                   </button>

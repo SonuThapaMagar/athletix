@@ -417,10 +417,9 @@ export default function VenueForm(): JSX.Element {
 
             <div>
               <label className="block mb-2 text-sm font-medium">
-                Price per Hour *
+                Price per Hour(NRs.) * 
               </label>
               <div className="relative">
-                <MdAttachMoney className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="number"
                   value={formData.pricePerHour}

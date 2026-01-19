@@ -3,19 +3,19 @@ export interface Booking {
   id: number;
   venueId: number;
   venueName: string;
+  venueImage?:string;
   playerId: number;
   playerName: string;
   startTime: string;
   endTime: string;
   amount: number;
-  sportType?: string; // 🆕 Which sport they booked
+  sportType?: string;
   status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'FAILED';
   paid: boolean;
-  paymentRefId?: string; // 🆕 eSewa transaction reference
+  paymentRefId?: string; 
   createdAt: string;
 }
 
-// Update BookingResponse DTO
 export interface BookingResponse extends Booking { }
 
 export interface CreatePendingBookingPayload {

@@ -248,8 +248,22 @@ const VenueOwnerDashboard = () => {
                   onClick={() => navigate(`/venue-owner/bookings/${booking.id}`)}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-[#2c5aa0] to-[#1e3d6f] rounded-xl flex items-center justify-center">
-                      <MdSportsSoccer className="w-6 h-6 text-white" />
+                    <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                        {booking.venueImage ? (
+                          <img
+                            src={booking.venueImage}
+                            alt={booking.venueName}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-primary flex items-center justify-center">
+                            <span className="text-white font-bold text-lg">
+                              {booking.venueName?.charAt(0) || "V"}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">{booking.venueName}</h3>
@@ -273,7 +287,7 @@ const VenueOwnerDashboard = () => {
           <div className="space-y-3">
             <button 
               onClick={() => navigate('/venue-owner/venues/add')}
-              className="w-full flex items-center gap-3 p-3 bg-[#2c5aa0] text-white rounded-xl hover:bg-[#1e3d6f] transition-colors cursor-pointer"
+              className="w-full flex items-center gap-3 p-3 bg-primary text-white rounded-xl hover:bg-[#2c5aa0] transition-colors cursor-pointer"
             >
               <MdBusiness className="w-5 h-5" />
               <span className="font-medium">Add New Venue</span>

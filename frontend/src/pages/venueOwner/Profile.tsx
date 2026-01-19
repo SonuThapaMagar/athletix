@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import {
   MdPerson,
-  MdEmail,
-  MdPhone,
   MdLocationOn,
   MdBusiness,
   MdEdit,
@@ -159,7 +157,7 @@ const Profile = () => {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sticky top-24">
             <div className="text-center mb-6">
               <div className="relative inline-block">
-                <div className="w-32 h-32 bg-gradient-to-br from-[#2c5aa0] to-[#1e3d6f] rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-32 h-32 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-white font-bold text-4xl">
                     {profile.name?.charAt(0).toUpperCase() || 'U'}
                   </span>
@@ -222,7 +220,7 @@ const Profile = () => {
                   <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="px-4 py-2 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-[#1e3d6f] transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
                   >
                     <MdSave className="w-4 h-4" />
                     {isSaving ? 'Saving...' : 'Save Changes'}

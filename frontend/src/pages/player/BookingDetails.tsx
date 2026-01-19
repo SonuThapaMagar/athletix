@@ -25,12 +25,12 @@ const BookingDetails = () => {
   useEffect(() => {
     if (id) {
       const bookingId = Number(id);
-      console.log("🔄 Fetching booking details for ID:", bookingId);
+      // console.log("🔄 Fetching booking details for ID:", bookingId);
       
       // First, check if booking exists in the bookings list
       const existingBooking = bookings.find(b => b.id === bookingId);
       if (existingBooking) {
-        console.log("✅ Found booking in existing list:", existingBooking);
+        // console.log("✅ Found booking in existing list:", existingBooking);
         AppDispatch(venueBookingActions.setSelectedBooking(existingBooking));
         // Fetch venue details if not already loaded
         if (existingBooking.venueId && (!venue || venue.id !== existingBooking.venueId)) {
@@ -141,7 +141,7 @@ const BookingDetails = () => {
             <p className="text-red-800 mb-4">{error || "Booking not found"}</p>
             <button
               onClick={() => navigate("/player/bookings")}
-              className="text-[#2c5aa0] hover:text-[#1e3d6f] font-medium"
+              className="text-primary hover:text-[#1e3d6f] font-medium"
             >
               Back to My Bookings
             </button>
@@ -211,7 +211,7 @@ const BookingDetails = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-500 mb-1">Sport</label>
                   <div className="flex items-center gap-2">
-                    <MdSports className="w-5 h-5 text-[#2c5aa0]" />
+                    <MdSports className="w-5 h-5 text-primary" />
                     <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-medium">
                       {selectedBooking.sportType}
                     </span>
@@ -286,7 +286,7 @@ const BookingDetails = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold text-gray-900 mb-3">{venue.name}</h3>
                   <div className="flex items-center text-gray-600 mb-4">
-                    <MdLocationOn className="w-5 h-5 mr-2 text-[#2c5aa0]" />
+                    <MdLocationOn className="w-5 h-5 mr-2 text-primary" />
                     <span>{venue.location}</span>
                   </div>
                   {venue.sports && venue.sports.length > 0 && (
@@ -322,14 +322,14 @@ const BookingDetails = () => {
         <div className="mt-6 flex gap-4">
           <button
             onClick={() => navigate("/player/bookings")}
-            className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+            className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium cursor-pointer"
           >
             Back to Bookings
           </button>
           {venue && (
             <button
               onClick={() => navigate(`/player/venue/${venue.id}`)}
-              className="flex-1 bg-[#2c5aa0] text-white py-3 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium"
+              className="flex-1 bg-primary text-white py-3 px-4 rounded-lg hover:bg-[#2666ce] transition-colors font-medium cursor-pointer"
             >
               View Venue Details
             </button>

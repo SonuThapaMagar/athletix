@@ -7,10 +7,21 @@ import {
   MdDelete,
   MdLocationOn,
   MdCheckCircle,
-  MdCancel,
-  MdPending,
-  MdVisibility
+  MdVisibility,
+  MdFileDownload
 } from 'react-icons/md'
+import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationEllipsis,
+} from '@/components/ui/pagination'
 import DeleteVenueDialog from '@/components/venueOwner/DeleteVenueDialog'
 import type { StateType } from '@/redux/slices'
 import { FETCH_ADMIN_VENUES_ACTION, DELETE_ADMIN_VENUE_ACTION } from '@/redux/actions/admin/venue.actions'
@@ -21,30 +32,129 @@ import type { AdminVenue } from '@/types/admin/venue.types'
 const VenueManagement = () => {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'approved' | 'pending' | 'rejected'>('all')
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'active'>('all')
+  const [currentPage, setCurrentPage] = useState(1)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedVenue, setSelectedVenue] = useState<AdminVenue | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
-  const { venues, loading, error } = useSelector(
+  const { venues, loading, error, pagination } = useSelector(
     (state: StateType) => state.adminVenueSlice
   )
+
+  // Export to Excel
+  const exportToExcel = () => {
+    if (venues.length === 0) {
+      toast.error('No venues to export')
+      return
+    }
+
+    setIsExporting(true)
+    try {
+      const excelData = venues.map(venue => ({
+        'ID': venue.id,
+        'Name': venue.name,
+        'Owner': venue.ownerName || 'N/A',
+        'Location': venue.location,
+        'Sports': venue.sports?.join(', ') || '',
+        'Price/Hour': venue.pricePerHour || 0,
+        'Bookings': venue.bookings || 0,
+        'Status': venue.status || 'INACTIVE',
+        'Created At': venue.createdAt ? new Date(venue.createdAt).toLocaleDateString() : ''
+      }))
+
+      const worksheet = XLSX.utils.json_to_sheet(excelData)
+      worksheet['!cols'] = [
+        { wch: 8 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 20 },
+        { wch: 12 },
+        { wch: 10 },
+        { wch: 12 },
+        { wch: 12 }
+      ]
+
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Venues')
+      XLSX.writeFile(workbook, `venues-export-${new Date().toISOString().split('T')[0]}.xlsx`)
+      
+      toast.success('Venues exported to Excel successfully')
+    } catch (err) {
+      console.error('Export failed:', err)
+      toast.error('Failed to export venues')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  // Export to PDF
+  const exportToPDF = () => {
+    if (venues.length === 0) {
+      toast.error('No venues to export')
+      return
+    }
+
+    setIsExporting(true)
+    try {
+      const doc = new jsPDF()
+      doc.setFontSize(16)
+      doc.text('Venues Report', 14, 10)
+      doc.setFontSize(10)
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 18)
+
+      const tableData = venues.map(venue => [
+        venue.id,
+        venue.name,
+        venue.ownerName || 'N/A',
+        venue.location,
+        venue.sports?.join(', ') || '',
+        venue.pricePerHour || 0,
+        venue.bookings || 0,
+        venue.status || 'INACTIVE'
+      ])
+
+      autoTable(doc, {
+        head: [['ID', 'Name', 'Owner', 'Location', 'Sports', 'Price/Hour', 'Bookings', 'Status']],
+        body: tableData,
+        startY: 25,
+        theme: 'grid',
+        styles: { fontSize: 9 },
+        columnStyles: {
+          0: { cellWidth: 10 },
+          1: { cellWidth: 25 },
+          2: { cellWidth: 20 },
+          3: { cellWidth: 25 },
+          4: { cellWidth: 30 },
+          5: { cellWidth: 15 },
+          6: { cellWidth: 15 },
+          7: { cellWidth: 15 }
+        }
+      })
+
+      doc.save(`venues-export-${new Date().toISOString().split('T')[0]}.pdf`)
+      toast.success('Venues exported to PDF successfully')
+    } catch (err) {
+      console.error('Export failed:', err)
+      toast.error('Failed to export venues')
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   // Calculate filter counts from actual data
   const filterCounts = useMemo(() => {
     const all = venues.length
-    const approved = venues.filter(v => v.status === 'approved').length
-    const pending = venues.filter(v => v.status === 'pending').length
-    const rejected = venues.filter(v => v.status === 'rejected').length
+    const active = venues.filter(v => v.status === 'ACTIVE').length
 
-    return { all, approved, pending, rejected }
+    return { all, active }
   }, [venues])
 
   const filters = [
     { id: 'all' as const, label: 'All Venues', count: filterCounts.all },
-    { id: 'approved' as const, label: 'Approved', count: filterCounts.approved },
-    { id: 'pending' as const, label: 'Pending Review', count: filterCounts.pending },
-    { id: 'rejected' as const, label: 'Rejected', count: filterCounts.rejected }
+    { id: 'active' as const, label: 'Active Venues', count: filterCounts.active }
   ]
 
   // Filter venues based on selected filter and search query
@@ -52,8 +162,8 @@ const VenueManagement = () => {
     let filtered = venues
 
     // Apply status filter
-    if (selectedFilter !== 'all') {
-      filtered = filtered.filter(v => v.status === selectedFilter)
+    if (selectedFilter === 'active') {
+      filtered = filtered.filter(v => v.status === 'ACTIVE')
     }
 
     // Apply search query
@@ -72,25 +182,31 @@ const VenueManagement = () => {
 
   // Fetch venues on mount and when filters change
   useEffect(() => {
+    setCurrentPage(1)
     FETCH_ADMIN_VENUES_ACTION({
-      status: selectedFilter !== 'all' ? selectedFilter : undefined,
       search: searchQuery || undefined,
+      page: 1,
+      perPage: 10,
     }).catch((err) => {
       console.error('Failed to fetch venues:', err)
     })
-  }, [selectedFilter, searchQuery])
+  }, [searchQuery])
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return 'bg-green-100 text-green-800'
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'rejected':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
+  // Fetch venues when page changes
+  useEffect(() => {
+    if (currentPage > 1) {
+      FETCH_ADMIN_VENUES_ACTION({
+        search: searchQuery || undefined,
+        page: currentPage,
+        perPage: 10,
+      }).catch((err) => {
+        console.error('Failed to fetch venues:', err)
+      })
     }
+  }, [currentPage])
+
+  const getStatusColor = (status?: string) => {
+    return status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
   }
 
   const handleView = (venue: AdminVenue) => {
@@ -117,7 +233,6 @@ const VenueManagement = () => {
       setSelectedVenue(null)
       // Refresh venues list
       FETCH_ADMIN_VENUES_ACTION({
-        status: selectedFilter !== 'all' ? selectedFilter : undefined,
         search: searchQuery || undefined,
       }).catch((err) => {
         console.error('Failed to refresh venues:', err)
@@ -132,9 +247,31 @@ const VenueManagement = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Manage Venues</h2>
-        <p className="text-gray-600">Review and manage all registered venues</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Manage Venues</h2>
+          <p className="text-gray-600">Review and manage all registered venues</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={exportToExcel}
+            disabled={isExporting || loading}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            title="Export to Excel"
+          >
+            <MdFileDownload className="w-4 h-4" />
+            {isExporting ? 'Exporting...' : 'Excel'}
+          </button>
+          <button
+            onClick={exportToPDF}
+            disabled={isExporting || loading}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            title="Export to PDF"
+          >
+            <MdFileDownload className="w-4 h-4" />
+            {isExporting ? 'Exporting...' : 'PDF'}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -144,7 +281,7 @@ const VenueManagement = () => {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {filters.map((filter) => (
           <div key={filter.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-all">
             <div className="flex items-center justify-between">
@@ -153,14 +290,10 @@ const VenueManagement = () => {
                 <p className="text-sm text-gray-600">{filter.label}</p>
               </div>
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${filter.id === 'all' ? 'bg-blue-100' :
-                filter.id === 'approved' ? 'bg-green-100' :
-                  filter.id === 'pending' ? 'bg-yellow-100' :
-                    'bg-red-100'
+                'bg-green-100'
                 }`}>
-                {filter.id === 'approved' ? <MdCheckCircle className="w-5 h-5 text-green-600" /> :
-                  filter.id === 'pending' ? <MdPending className="w-5 h-5 text-yellow-600" /> :
-                    filter.id === 'rejected' ? <MdCancel className="w-5 h-5 text-red-600" /> :
-                      <MdLocationOn className="w-5 h-5 text-blue-600" />}
+                {filter.id === 'active' ? <MdCheckCircle className="w-5 h-5 text-green-600" /> :
+                  <MdLocationOn className="w-5 h-5 text-blue-600" />}
               </div>
             </div>
           </div>
@@ -186,7 +319,7 @@ const VenueManagement = () => {
                 key={filter.id}
                 onClick={() => setSelectedFilter(filter.id)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${selectedFilter === filter.id
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
@@ -217,7 +350,7 @@ const VenueManagement = () => {
               <div key={venue.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
                       <MdLocationOn className="w-6 h-6 text-white" />
                     </div>
                     <div>
@@ -246,15 +379,15 @@ const VenueManagement = () => {
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-center">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(venue.status || 'pending')}`}>
-                        {venue.status || 'pending'}
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(venue.status)}`}>
+                        {venue.status || 'INACTIVE'}
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => handleView(venue)} className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer" title="View venue">
+                      <button onClick={() => handleView(venue)} className="p-2 text-gray-600 hover:text-primary hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer" title="View venue">
                         <MdVisibility className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleEdit(venue.id)} className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer" title="Edit venue">
+                      <button onClick={() => handleEdit(venue.id)} className="p-2 text-gray-600 hover:text-primary hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer" title="Edit venue">
                         <MdEdit className="w-4 h-4" />
                       </button>
                       <button onClick={() => handleDelete(venue)} className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer" title="Delete venue">
@@ -265,6 +398,77 @@ const VenueManagement = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && pagination && pagination.total_page > 1 && (
+          <div className="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Page {currentPage} of {pagination.total_page} • Showing {venues.length} of {pagination.total_record} venues
+            </div>
+            <Pagination>
+              <PaginationContent>
+                {currentPage > 1 && (
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setCurrentPage(currentPage - 1)
+                      }}
+                    />
+                  </PaginationItem>
+                )}
+
+                {/* Page numbers with ellipsis */}
+                {Array.from({ length: pagination.total_page }, (_, i) => i + 1).map((page) => {
+                  const isVisible =
+                    page === 1 ||
+                    page === pagination.total_page ||
+                    Math.abs(page - currentPage) <= 1
+
+                  if (!isVisible) {
+                    return null
+                  }
+
+                  if (
+                    page > 1 &&
+                    page - 1 > 1 &&
+                    Math.abs(page - currentPage) > 2
+                  ) {
+                    return <PaginationItem key={`ellipsis-${page}`}><PaginationEllipsis /></PaginationItem>
+                  }
+
+                  return (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        href="#"
+                        isActive={page === currentPage}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setCurrentPage(page)
+                        }}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )
+                })}
+
+                {currentPage < pagination.total_page && (
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setCurrentPage(currentPage + 1)
+                      }}
+                    />
+                  </PaginationItem>
+                )}
+              </PaginationContent>
+            </Pagination>
           </div>
         )}
       </div>

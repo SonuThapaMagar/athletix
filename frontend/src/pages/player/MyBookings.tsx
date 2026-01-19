@@ -9,6 +9,7 @@ import {
 } from "@/redux/actions/user/venueBooking.actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import CancelModal from "@/components/common/CancelModal";
 
 const MyBookings = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const MyBookings = () => {
   const [selectedFilter, setSelectedFilter] = useState<
     "all" | "PENDING" | "CONFIRMED" | "CANCELLED"
   >("all");
+  const [cancelBookingId, setCancelBookingId] = useState<number | null>(null);
 
   const handleBookingClick = (booking: any) => {
     if (booking.status === "CONFIRMED") {
@@ -40,16 +42,16 @@ const MyBookings = () => {
     return booking.status === selectedFilter;
   });
 
-  const handleCancelBooking = async (bookingId: number) => {
-    if (!confirm("Are you sure you want to cancel this booking?")) {
-      return;
-    }
+  const handleCancelBooking = async () => {
+    if (!cancelBookingId) return;
 
     try {
-      await CANCEL_BOOKING_ACTION(bookingId);
+      await CANCEL_BOOKING_ACTION(cancelBookingId);
       toast.success("Booking cancelled successfully");
     } catch (error: any) {
       toast.error(error.message || "Failed to cancel booking");
+    } finally {
+      setCancelBookingId(null);
     }
   };
 
@@ -109,10 +111,10 @@ const MyBookings = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <PlayerNavLayout />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Bookings</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-[#1061dc]">My Bookings</h1>
+          <p className="text-gray-500 mt-2">
             View and manage all your bookings
           </p>
         </div>
@@ -199,15 +201,15 @@ const MyBookings = () => {
         </div>
 
         {/* Filter Tabs */}
-        <div className="bg-white rounded-lg shadow mb-8">
+        <div className="bg-primary/90 rounded-lg shadow mb-8">
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6">
               <button
                 onClick={() => setSelectedFilter("all")}
                 className={`py-4 px-1 border-b-2 font-medium transition-colors ${
                   selectedFilter === "all"
-                    ? "border-[#2c5aa0] text-[#2c5aa0]"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-[#2c5aa0] text-white"
+                    : "border-transparent text-white  hover:text-white  cursor-pointer"
                 }`}
               >
                 All Bookings ({bookings.length})
@@ -216,8 +218,8 @@ const MyBookings = () => {
                 onClick={() => setSelectedFilter("CONFIRMED")}
                 className={`py-4 px-1 border-b-2 font-medium transition-colors ${
                   selectedFilter === "CONFIRMED"
-                    ? "border-[#2c5aa0] text-[#2c5aa0]"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-[#2c5aa0] text-white "
+                    : "border-transparent text-white  hover:text-white  cursor-pointer"
                 }`}
               >
                 Confirmed (
@@ -227,8 +229,8 @@ const MyBookings = () => {
                 onClick={() => setSelectedFilter("PENDING")}
                 className={`py-4 px-1 border-b-2 font-medium transition-colors ${
                   selectedFilter === "PENDING"
-                    ? "border-[#2c5aa0] text-[#2c5aa0]"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-[#2c5aa0] text-white"
+                    : "border-transparent text-white hover:text-white cursor-pointer"
                 }`}
               >
                 Pending ({bookings.filter((b) => b.status === "PENDING").length}
@@ -238,8 +240,8 @@ const MyBookings = () => {
                 onClick={() => setSelectedFilter("CANCELLED")}
                 className={`py-4 px-1 border-b-2 font-medium transition-colors ${
                   selectedFilter === "CANCELLED"
-                    ? "border-[#2c5aa0] text-[#2c5aa0]"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-[#2c5aa0] text-white"
+                    : "border-transparent text-white hover:text-white cursor-pointer"
                 }`}
               >
                 Cancelled (
@@ -310,11 +312,22 @@ const MyBookings = () => {
                 <div className="p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                      <div className="w-16 h-16 bg-gradient-to-br from-[#2c5aa0] to-[#1e3d6f] rounded-lg flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">
-                          {booking.venueName?.charAt(0) || "V"}
-                        </span>
+                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                        {booking.venueImage ? (
+                          <img
+                            src={booking.venueImage}
+                            alt={booking.venueName}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-primary flex items-center justify-center">
+                            <span className="text-white font-bold text-lg">
+                              {booking.venueName?.charAt(0) || "V"}
+                            </span>
+                          </div>
+                        )}
                       </div>
+
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900">
                           {booking.venueName || "Unknown Venue"}
@@ -347,8 +360,11 @@ const MyBookings = () => {
                       </p>
                       {booking.status === "PENDING" && (
                         <button
-                          onClick={() => handleCancelBooking(booking.id)}
-                          className="mt-2 text-red-600 hover:text-red-700 text-sm font-medium"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCancelBookingId(booking.id);
+                          }}
+                          className="mt-2 text-red-600 hover:text-red-700 text-sm font-medium cursor-pointer"
                         >
                           Cancel Booking
                         </button>
@@ -361,6 +377,16 @@ const MyBookings = () => {
           </div>
         )}
       </div>
+
+      <CancelModal
+        isOpen={cancelBookingId !== null}
+        onClose={() => setCancelBookingId(null)}
+        onConfirm={handleCancelBooking}
+        title="Cancel Booking?"
+        description="Are you sure you want to cancel this booking? This cannot be undone."
+        confirmText="Yes, Cancel Booking"
+        cancelText="Keep Booking"
+      />
     </div>
   );
 };

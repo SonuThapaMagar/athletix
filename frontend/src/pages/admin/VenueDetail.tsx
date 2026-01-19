@@ -62,7 +62,7 @@ const VenueDetail = () => {
         </div>
         <button
           onClick={() => navigate('/admin/venues')}
-          className="mt-4 text-indigo-600 hover:text-indigo-700"
+          className="mt-4 text-primary/90 hover:text-primary cursor-pointer"
         >
           Back to Venues
         </button>
@@ -75,7 +75,7 @@ const VenueDetail = () => {
       <div className="mb-6">
         <button
           onClick={() => navigate('/admin/venues')}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+          className="flex items-center cursor-pointer gap-2 text-gray-600 hover:text-gray-900 mb-4"
         >
           <MdArrowBack className="w-5 h-5" />
           <span>Back to Venues</span>
@@ -91,14 +91,14 @@ const VenueDetail = () => {
           <div className="flex gap-2">
             <button
               onClick={() => navigate(`/admin/venues/edit/${selectedVenue.id}`)}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary cursor-pointer flex items-center gap-2"
             >
               <MdEdit className="w-4 h-4" />
               Edit
             </button>
             <button
               onClick={() => setDeleteOpen(true)}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2 cursor-pointer"
             >
               <MdDelete className="w-4 h-4" />
               Delete

@@ -13,6 +13,7 @@ export interface RecentBooking {
   id: number;
   venueId: number;
   venueName: string;
+  venueImage:string;
   playerId: number;
   playerName: string;
   sport: string;

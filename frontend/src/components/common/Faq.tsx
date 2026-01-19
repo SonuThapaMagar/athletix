@@ -51,10 +51,10 @@ const Faq = () => {
           </div>
 
           {/* Accordion */}
-          <Accordion type="single" collapsible className="w-full space-y-2">
+          <Accordion type="single" collapsible className="w-full space-y-2 ">
             {faqs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`} className="border rounded-lg">
-                <AccordionTrigger className="text-gray-800 font-medium px-4 py-3 hover:bg-gray-100 rounded-lg">
+              <AccordionItem key={index} value={`item-${index}`} className=" rounded-lg cursor-pointer bg-primary/10">
+                <AccordionTrigger className="text-gray-800 font-medium px-4 py-3 hover:bg-gray-100 rounded-lg cursor-pointer hover:no-underline">
                   {faq.question}
                 </AccordionTrigger>
                 <AccordionContent className="px-4 py-3 text-gray-600">

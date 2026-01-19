@@ -59,7 +59,7 @@ const EditVenue = () => {
               type="text"
               value={venue.name}
               onChange={(e) => setVenue({ ...venue, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="Enter venue name"
             />
           </div>
@@ -73,7 +73,7 @@ const EditVenue = () => {
               type="text"
               value={venue.owner}
               onChange={(e) => setVenue({ ...venue, owner: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="Enter owner name"
             />
           </div>
@@ -87,7 +87,7 @@ const EditVenue = () => {
               type="text"
               value={venue.location}
               onChange={(e) => setVenue({ ...venue, location: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="Enter location"
             />
           </div>
@@ -101,7 +101,7 @@ const EditVenue = () => {
               type="text"
               value={venue.address}
               onChange={(e) => setVenue({ ...venue, address: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="Enter full address"
             />
           </div>
@@ -115,7 +115,7 @@ const EditVenue = () => {
               type="text"
               value={venue.price}
               onChange={(e) => setVenue({ ...venue, price: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="Enter price"
             />
           </div>
@@ -128,7 +128,7 @@ const EditVenue = () => {
             <select
               value={venue.status}
               onChange={(e) => setVenue({ ...venue, status: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             >
               <option value="approved">Approved</option>
               <option value="pending">Pending</option>
@@ -143,7 +143,7 @@ const EditVenue = () => {
             </label>
             <div className="flex flex-wrap gap-2">
               {venue.sports.map((sport, index) => (
-                <span key={index} className="px-3 py-1 bg-indigo-100 text-indigo-800 text-sm rounded-full">
+                <span key={index} className="px-3 py-1 bg-indigo-100 text-primary text-sm rounded-full">
                   {sport}
                 </span>
               ))}
@@ -164,7 +164,7 @@ const EditVenue = () => {
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+          className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary transition-colors font-medium flex items-center gap-2 disabled:opacity-50 cursor-pointer"
         >
           {isSaving ? (
             <>

@@ -1,43 +1,66 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import PlayerNavLayout from "@/layout/PlayerNavLayout";
-import { MdLocationOn, MdClose, MdCheckCircle, MdWarning, MdRefresh } from "react-icons/md";
+import {
+  MdLocationOn,
+  MdClose,
+  MdCheckCircle,
+  MdWarning,
+  MdRefresh,
+} from "react-icons/md";
 import { useSelector } from "react-redux";
 import type { StateType } from "@/redux/slices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FETCH_VENUE_BY_ID_ACTION } from "@/redux/actions/user/playerVenue.actions";
-import { CREATE_PENDING_BOOKING_ACTION } from "@/redux/actions/user/venueBooking.actions";
+import {
+  CREATE_PENDING_BOOKING_ACTION,
+  INITIATE_ESEWA_PAYMENT_ACTION,
+} from "@/redux/actions/user/venueBooking.actions";
 import { toast } from "sonner";
 import { submitEsewaPayment } from "@/lib/esewa";
 import api from "@/api/api";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import { Badge } from "@/components/ui/badge";
 
 const Booking = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   const { selectedVenue: venue, loading: venueLoading } = useSelector(
-    (state: StateType) => state.playerVenueSlice
+    (state: StateType) => state.playerVenueSlice,
   );
   const { currentBooking, bookings } = useSelector(
-    (state: StateType) => state.venueBookingSlice
+    (state: StateType) => state.venueBookingSlice,
   );
 
   const bookingIdFromUrl = searchParams.get("bookingId");
   const prefill = (location.state as any) || {};
-  
+
   // Form state
   const [selectedDate, setSelectedDate] = useState(prefill.selectedDate || "");
   const [selectedTime, setSelectedTime] = useState(prefill.selectedTime || "");
-  const [selectedDuration, setSelectedDuration] = useState(prefill.selectedDuration || "1");
+  const [selectedDuration, setSelectedDuration] = useState(
+    prefill.selectedDuration || "1",
+  );
   const [selectedSport, setSelectedSport] = useState("");
-  
+
   // Availability state
   const [isChecking, setIsChecking] = useState(false);
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const [availabilityMessage, setAvailabilityMessage] = useState("");
-  
+
   // UI state
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -46,7 +69,9 @@ const Booking = () => {
   // Fetch venue
   useEffect(() => {
     if (bookingIdFromUrl) {
-      const booking = bookings.find(b => b.id === Number(bookingIdFromUrl)) || currentBooking;
+      const booking =
+        bookings.find((b) => b.id === Number(bookingIdFromUrl)) ||
+        currentBooking;
       if (booking && booking.venueId) {
         setBookingFromPayment(booking);
         if (!venue || venue.id !== booking.venueId) {
@@ -73,23 +98,25 @@ const Booking = () => {
   // ✅ Check availability when selections change
   const checkAvailability = async () => {
     if (!selectedDate || !selectedTime || !venue?.id) return;
-    
+
     setIsChecking(true);
     setIsAvailable(null);
-    
+
     try {
       const startTime = `${selectedDate}T${selectedTime}:00`;
       const res = await api.post("/bookings/check-availability", {
         venueId: venue.id,
         startTime,
-        durationHours: Number(selectedDuration)
+        durationHours: Number(selectedDuration),
       });
-      
+
       setIsAvailable(res.data.available);
       setAvailabilityMessage(res.data.message);
     } catch (err: any) {
       setIsAvailable(false);
-      setAvailabilityMessage(err.response?.data?.message || "Error checking availability");
+      setAvailabilityMessage(
+        err.response?.data?.message || "Error checking availability",
+      );
     } finally {
       setIsChecking(false);
     }
@@ -102,14 +129,27 @@ const Booking = () => {
         checkAvailability();
       }
     }, 500);
-    
+
     return () => clearTimeout(timer);
   }, [selectedDate, selectedTime, selectedDuration]);
 
   const timeSlots = [
-    "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
-    "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
-    "18:00", "19:00", "20:00", "21:00",
+    "06:00",
+    "07:00",
+    "08:00",
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+    "18:00",
+    "19:00",
+    "20:00",
+    "21:00",
   ];
 
   const calculateTotal = () => {
@@ -127,7 +167,9 @@ const Booking = () => {
       return;
     }
     if (isAvailable !== true) {
-      toast.error("Please wait for availability check or select a different time");
+      toast.error(
+        "Please wait for availability check or select a different time",
+      );
       return;
     }
     setShowConfirmation(true);
@@ -149,7 +191,7 @@ const Booking = () => {
       });
 
       console.log("✅ Booking created:", booking);
-      
+
       // Step 2: Initiate payment record in backend (creates payment record)
       try {
         await INITIATE_ESEWA_PAYMENT_ACTION(booking.id);
@@ -170,22 +212,28 @@ const Booking = () => {
         successUrl: "http://localhost:5173/payment/success",
         failureUrl: `http://localhost:5173/payment/failure?bid=${booking.id}`,
       });
-
     } catch (err: any) {
       console.error("Error:", err);
-      const errorMsg = err.response?.data?.message || err?.message || "Booking failed";
+      const errorMsg =
+        err.response?.data?.message || err?.message || "Booking failed";
       toast.error(errorMsg);
       setIsProcessing(false);
       setShowConfirmation(false);
-      
+
       // Re-check availability if slot was just taken
-      if (errorMsg.includes("already booked") || errorMsg.includes("just been taken")) {
+      if (
+        errorMsg.includes("already booked") ||
+        errorMsg.includes("just been taken")
+      ) {
         checkAvailability();
       }
     }
   };
 
-  const showPaymentSuccess = bookingFromPayment && bookingFromPayment.paid && bookingFromPayment.status === "CONFIRMED";
+  const showPaymentSuccess =
+    bookingFromPayment &&
+    bookingFromPayment.paid &&
+    bookingFromPayment.status === "CONFIRMED";
 
   if (venueLoading) {
     return (
@@ -205,7 +253,10 @@ const Booking = () => {
         <PlayerNavLayout />
         <div className="p-6 text-center">
           <p className="text-red-500 mb-4">Venue not found</p>
-          <button onClick={() => navigate("/player")} className="text-[#2c5aa0]">
+          <button
+            onClick={() => navigate("/player")}
+            className="text-[#2c5aa0]"
+          >
             Back to venues
           </button>
         </div>
@@ -227,7 +278,9 @@ const Booking = () => {
                   Booking Confirmed!
                 </h3>
                 <p className="text-sm text-green-700">
-                  Your booking #{bookingFromPayment.id} for {bookingFromPayment.sportType || "sports"} has been confirmed. Payment received successfully.
+                  Your booking #{bookingFromPayment.id} for{" "}
+                  {bookingFromPayment.sportType || "sports"} has been confirmed.
+                  Payment received successfully.
                 </p>
               </div>
               <button
@@ -245,8 +298,18 @@ const Booking = () => {
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
             <span>Back to Venue Details</span>
           </button>
@@ -254,8 +317,8 @@ const Booking = () => {
             {showPaymentSuccess ? "Booking Details" : "Complete Your Booking"}
           </h1>
           <p className="text-gray-600 mt-2">
-            {showPaymentSuccess 
-              ? "View your confirmed booking details" 
+            {showPaymentSuccess
+              ? "View your confirmed booking details"
               : "Select your sport, date, and time to continue"}
           </p>
         </div>
@@ -276,10 +339,10 @@ const Booking = () => {
                         key={sport}
                         onClick={() => setSelectedSport(sport)}
                         disabled={showPaymentSuccess}
-                        className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                        className={`px-6 py-3 rounded-lg font-medium transition-all cursor-pointer ${
                           selectedSport === sport
-                            ? 'bg-[#2c5aa0] text-white shadow-md scale-105'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? "bg-primary text-white shadow-md scale-105"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
                       >
                         {sport}
@@ -289,100 +352,146 @@ const Booking = () => {
                 </div>
 
                 {/* Booking Details Form */}
-                <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                    Booking Details
-                  </h2>
+                <Card className="rounded-2xl shadow-sm">
+                  <CardHeader>
+                    <CardTitle>Booking Details</CardTitle>
+                  </CardHeader>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Select Date *
-                      </label>
-                      <input
-                        type="date"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
-                        min={new Date().toISOString().split("T")[0]}
-                        required
-                      />
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {/* 📅 Date */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Select Date *
+                        </label>
+
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className="w-full justify-start text-left"
+                            >
+                              {selectedDate ? (
+                                format(selectedDate, "PPP")
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  Pick a date
+                                </span>
+                              )}
+                            </Button>
+                          </PopoverTrigger>
+
+                          <PopoverContent className="p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={selectedDate}
+                              onSelect={setSelectedDate}
+                              disabled={(date) =>
+                                date < new Date(new Date().setHours(0, 0, 0, 0))
+                              }
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+
+                      {/* Time */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Select Time *
+                        </label>
+
+                        <Select
+                          value={selectedTime}
+                          onValueChange={setSelectedTime}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose time" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            {timeSlots.map((time) => (
+                              <SelectItem key={time} value={time}>
+                                {time}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* ⌛ Duration */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Duration *
+                        </label>
+
+                        <Select
+                          value={selectedDuration}
+                          onValueChange={setSelectedDuration}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            <SelectItem value="1">1 hour</SelectItem>
+                            <SelectItem value="2">2 hours</SelectItem>
+                            <SelectItem value="3">3 hours</SelectItem>
+                            <SelectItem value="4">4 hours</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Select Time *
-                      </label>
-                      <select
-                        value={selectedTime}
-                        onChange={(e) => setSelectedTime(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
-                        required
-                      >
-                        <option value="">Choose time</option>
-                        {timeSlots.map((time) => (
-                          <option key={time} value={time}>{time}</option>
-                        ))}
-                      </select>
-                    </div>
+                    {/* ✅ Availability Status */}
+                    {selectedDate && selectedTime && (
+                      <div>
+                        {isChecking ? (
+                          <Badge variant="secondary" className="gap-2">
+                            <span className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-primary rounded-full" />
+                            Checking availability...
+                          </Badge>
+                        ) : isAvailable === true ? (
+                          <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div className="flex items-center gap-2 text-green-700">
+                              <MdCheckCircle className="text-lg" />
+                              <span className="font-medium">
+                                {availabilityMessage}
+                              </span>
+                            </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Duration *
-                      </label>
-                      <select
-                        value={selectedDuration}
-                        onChange={(e) => setSelectedDuration(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2c5aa0] focus:ring-2 focus:ring-[#2c5aa0]/20"
-                      >
-                        <option value="1">1 hour</option>
-                        <option value="2">2 hours</option>
-                        <option value="3">3 hours</option>
-                        <option value="4">4 hours</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* ✅ Availability Status */}
-                  {selectedDate && selectedTime && (
-                    <div className="mt-6">
-                      {isChecking ? (
-                        <div className="flex items-center gap-2 text-gray-600 bg-gray-50 p-4 rounded-lg">
-                          <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
-                          <span>Checking availability...</span>
-                        </div>
-                      ) : isAvailable === true ? (
-                        <div className="flex items-center justify-between gap-2 text-green-600 bg-green-50 p-4 rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <MdCheckCircle className="w-5 h-5" />
-                            <span className="font-medium">{availabilityMessage}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={checkAvailability}
+                            >
+                              <MdRefresh className="mr-1" />
+                              Refresh
+                            </Button>
                           </div>
-                          <button
-                            onClick={checkAvailability}
-                            className="text-sm flex items-center gap-1 text-green-700 hover:text-green-900"
-                          >
-                            <MdRefresh className="w-4 h-4" />
-                            Refresh
-                          </button>
-                        </div>
-                      ) : isAvailable === false ? (
-                        <div className="flex items-center justify-between gap-2 text-red-600 bg-red-50 p-4 rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <MdWarning className="w-5 h-5" />
-                            <span className="font-medium">{availabilityMessage}</span>
+                        ) : isAvailable === false ? (
+                          <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-lg p-4">
+                            <div className="flex items-center gap-2 text-red-700">
+                              <MdWarning className="text-lg" />
+                              <span className="font-medium">
+                                {availabilityMessage}
+                              </span>
+                            </div>
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={checkAvailability}
+                            >
+                              <MdRefresh className="mr-1" />
+                              Retry
+                            </Button>
                           </div>
-                          <button
-                            onClick={checkAvailability}
-                            className="text-sm flex items-center gap-1 text-red-700 hover:text-red-900"
-                          >
-                            <MdRefresh className="w-4 h-4" />
-                            Retry
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
-                  )}
-                </div>
+                        ) : null}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </>
             )}
 
@@ -394,36 +503,61 @@ const Booking = () => {
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Booking ID</label>
-                    <p className="text-sm font-semibold text-gray-900">#{bookingFromPayment.id}</p>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">
+                      Booking ID
+                    </label>
+                    <p className="text-sm font-semibold text-gray-900">
+                      #{bookingFromPayment.id}
+                    </p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Sport</label>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">
+                      Sport
+                    </label>
                     <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
                       {bookingFromPayment.sportType || "N/A"}
                     </span>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Date</label>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">
+                      Date
+                    </label>
                     <p className="text-sm font-semibold text-gray-900">
-                      {new Date(bookingFromPayment.startTime).toLocaleDateString()}
+                      {new Date(
+                        bookingFromPayment.startTime,
+                      ).toLocaleDateString()}
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Time</label>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">
+                      Time
+                    </label>
                     <p className="text-sm font-semibold text-gray-900">
-                      {new Date(bookingFromPayment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - 
-                      {new Date(bookingFromPayment.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(
+                        bookingFromPayment.startTime,
+                      ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}{" "}
+                      -
+                      {new Date(bookingFromPayment.endTime).toLocaleTimeString(
+                        [],
+                        { hour: "2-digit", minute: "2-digit" },
+                      )}
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Amount Paid</label>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">
+                      Amount Paid
+                    </label>
                     <p className="text-sm font-semibold text-gray-900">
                       Rs. {bookingFromPayment.amount?.toFixed(2) || "0.00"}
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Status</label>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">
+                      Status
+                    </label>
                     <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
                       {bookingFromPayment.status}
                     </span>
@@ -434,7 +568,9 @@ const Booking = () => {
 
             {/* Venue Information */}
             <div className="bg-white rounded-2xl shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Venue Information</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                Venue Information
+              </h2>
               <div className="flex flex-col sm:flex-row gap-6">
                 <img
                   src={venue.images?.[0] || "/api/placeholder/128/96"}
@@ -442,16 +578,23 @@ const Booking = () => {
                   className="w-32 h-24 rounded-lg object-cover flex-shrink-0"
                 />
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{venue.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {venue.name}
+                  </h3>
                   <div className="flex items-center text-gray-600 text-sm mb-3">
                     <MdLocationOn className="w-4 h-4 mr-1" />
                     {venue.location}
                   </div>
                   <div>
-                    <div className="text-sm text-gray-600 mb-2">Available Sports:</div>
+                    <div className="text-sm text-gray-600 mb-2">
+                      Available Sports:
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {venue.sports?.map((sport, index) => (
-                        <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                        >
                           {sport}
                         </span>
                       ))}
@@ -465,38 +608,53 @@ const Booking = () => {
           {/* Booking Summary Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h3>
-              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Booking Summary
+              </h3>
+
               <div className="space-y-4">
                 <div className="border-b pb-4 space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Sport</span>
-                    <span className="text-sm font-medium">{selectedSport || "Not selected"}</span>
+                    <span className="text-sm font-medium">
+                      {selectedSport || "Not selected"}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Date</span>
-                    <span className="text-sm font-medium">{selectedDate || "Not selected"}</span>
+                    <span className="text-sm font-medium">
+                      {selectedDate || "Not selected"}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Time</span>
-                    <span className="text-sm font-medium">{selectedTime || "Not selected"}</span>
+                    <span className="text-sm font-medium">
+                      {selectedTime || "Not selected"}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Duration</span>
                     <span className="text-sm font-medium">
-                      {selectedDuration} {Number(selectedDuration) === 1 ? "hour" : "hours"}
+                      {selectedDuration}{" "}
+                      {Number(selectedDuration) === 1 ? "hour" : "hours"}
                     </span>
                   </div>
                 </div>
 
                 <div className="border-b pb-4 space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Price per hour</span>
-                    <span className="text-sm font-medium">NPR {venue.pricePerHour}</span>
+                    <span className="text-sm text-gray-600">
+                      Price per hour
+                    </span>
+                    <span className="text-sm font-medium">
+                      NPR {venue.pricePerHour}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Duration</span>
-                    <span className="text-sm font-medium">{selectedDuration}h</span>
+                    <span className="text-sm font-medium">
+                      {selectedDuration}h
+                    </span>
                   </div>
                 </div>
 
@@ -515,8 +673,14 @@ const Booking = () => {
                 ) : (
                   <button
                     onClick={handleBookingConfirm}
-                    disabled={!selectedDate || !selectedTime || !selectedSport || isAvailable !== true || isProcessing}
-                    className="w-full bg-[#2c5aa0] text-white py-3 px-4 rounded-lg hover:bg-[#1e3d6f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                    disabled={
+                      !selectedDate ||
+                      !selectedTime ||
+                      !selectedSport ||
+                      isAvailable !== true ||
+                      isProcessing
+                    }
+                    className="w-full bg-primary text-white py-3 px-4 rounded-lg hover:bg-[#1e3d6f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
                   >
                     {isProcessing ? "Processing..." : "Proceed to Payment"}
                   </button>
@@ -531,7 +695,9 @@ const Booking = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="bg-white rounded-2xl max-w-md w-full p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Confirm Booking</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Confirm Booking
+                </h3>
                 <button
                   onClick={() => setShowConfirmation(false)}
                   disabled={isProcessing}
@@ -543,12 +709,22 @@ const Booking = () => {
 
               <div className="space-y-4">
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="font-medium text-gray-900 mb-2">{venue.name}</h4>
+                  <h4 className="font-medium text-gray-900 mb-2">
+                    {venue.name}
+                  </h4>
                   <div className="text-sm text-gray-600 space-y-1">
-                    <div><strong>Sport:</strong> {selectedSport}</div>
-                    <div><strong>Date:</strong> {selectedDate}</div>
-                    <div><strong>Time:</strong> {selectedTime}</div>
-                    <div><strong>Duration:</strong> {selectedDuration} hours</div>
+                    <div>
+                      <strong>Sport:</strong> {selectedSport}
+                    </div>
+                    <div>
+                      <strong>Date:</strong> {selectedDate}
+                    </div>
+                    <div>
+                      <strong>Time:</strong> {selectedTime}
+                    </div>
+                    <div>
+                      <strong>Duration:</strong> {selectedDuration} hours
+                    </div>
                     <div className="font-semibold text-gray-900 mt-2">
                       Total: NPR {calculateTotal()}
                     </div>
@@ -556,7 +732,8 @@ const Booking = () => {
                 </div>
 
                 <p className="text-xs text-gray-500">
-                  You will be redirected to eSewa for payment. Your booking will be confirmed instantly after successful payment.
+                  You will be redirected to eSewa for payment. Your booking will
+                  be confirmed instantly after successful payment.
                 </p>
 
                 <div className="flex gap-3">

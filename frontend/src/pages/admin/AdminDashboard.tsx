@@ -101,6 +101,15 @@ const AdminDashboard = () => {
           )}
         </div>
 
+        {/* Additional Skeletons */}
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-40 w-full" />
+            ))}
+          </div>
+        )}
+
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm p-6">
@@ -157,6 +166,7 @@ const AdminDashboard = () => {
           <h2 className="text-lg font-semibold text-gray-900 mb-6">Recent Activity</h2>
           {loading ? (
             <div className="space-y-4">
+              <Skeleton className="h-6 w-32 mb-4" />
               {[1, 2, 3, 4].map((i) => (
                 <Skeleton key={i} className="h-16 w-full" />
               ))}

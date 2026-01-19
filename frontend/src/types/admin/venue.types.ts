@@ -1,6 +1,6 @@
 import type { Venue } from '@/types/venue.types/venue.types';
 
-export type VenueStatus = 'approved' | 'pending' | 'rejected';
+export type VenueStatus = 'ACTIVE' | 'INACTIVE' | 'approved' | 'pending' | 'rejected';
 
 export interface AdminVenue extends Venue {
   status?: VenueStatus;
