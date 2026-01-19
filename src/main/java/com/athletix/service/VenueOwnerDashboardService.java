@@ -107,6 +107,11 @@ public class VenueOwnerDashboardService {
      * Convert Booking entity to RecentBooking DTO
      */
     private RecentBooking toRecentBookingDTO(Booking booking) {
+        String venueImage = null;
+        List<String> images = booking.getVenue().getImages();
+        if (images != null && !images.isEmpty()) {
+            String publicId = images.get(0);
+             }
         return new RecentBooking(
                 booking.getId(),
                 booking.getVenue().getId(),
@@ -119,7 +124,8 @@ public class VenueOwnerDashboardService {
                 booking.getStatus(),
                 booking.getAmount(),
                 booking.isPaid(),
-                booking.getCreatedAt()
+                booking.getCreatedAt(),
+                venueImage
         );
     }
 }

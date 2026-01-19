@@ -15,5 +15,6 @@ public record RecentBooking(
         BookingStatus status,
         Double amount,
         boolean paid,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        String venueImage
 ) {}

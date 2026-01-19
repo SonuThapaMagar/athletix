@@ -9,6 +9,7 @@ import com.athletix.repository.BookingRepository;
 import com.athletix.repository.PaymentRepository;
 import com.athletix.repository.VenueRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -46,8 +47,8 @@ public class VenueOwnerAnalyticsService {
         User owner = authService.validateVenueOwner(authHeader);
         Long ownerId = owner.getUserId();
 
-        // Get all bookings for the owner
-        List<Booking> bookings = bookingRepository.findByVenue_Owner_UserId(ownerId).stream()
+        // Get all bookings for the owner (this now returns List instead of Page)
+        List<Booking> bookings = bookingRepository.findByVenueOwnerUserId(ownerId).stream()
                 .filter(b -> b.getStatus() == BookingStatus.CONFIRMED)
                 .collect(Collectors.toList());
 
@@ -84,7 +85,7 @@ public class VenueOwnerAnalyticsService {
     public List<RevenueDataPoint> getRevenueData(String authHeader, AnalyticsFilters filters) {
         User owner = authService.validateVenueOwner(authHeader);
 
-        List<Booking> bookings = bookingRepository.findByVenue_Owner_UserId(owner.getUserId()).stream()
+        List<Booking> bookings = bookingRepository.findByVenueOwnerUserId(owner.getUserId()).stream()
                 .filter(b -> b.getStatus() == BookingStatus.CONFIRMED)
                 .collect(Collectors.toList());
 
@@ -119,7 +120,7 @@ public class VenueOwnerAnalyticsService {
     public List<TopVenue> getTopVenues(String authHeader, AnalyticsFilters filters) {
         User owner = authService.validateVenueOwner(authHeader);
 
-        List<Booking> bookings = bookingRepository.findByVenue_Owner_UserId(owner.getUserId()).stream()
+        List<Booking> bookings = bookingRepository.findByVenueOwnerUserId(owner.getUserId()).stream()
                 .filter(b -> b.getStatus() == BookingStatus.CONFIRMED)
                 .collect(Collectors.toList());
 
@@ -142,13 +143,14 @@ public class VenueOwnerAnalyticsService {
                 .collect(Collectors.toList());
     }
 
+
     /**
      * Get sport popularity data
      */
     public List<SportPopularity> getSportPopularity(String authHeader, AnalyticsFilters filters) {
         User owner = authService.validateVenueOwner(authHeader);
 
-        List<Booking> bookings = bookingRepository.findByVenue_Owner_UserId(owner.getUserId()).stream()
+        List<Booking> bookings = bookingRepository.findByVenueOwnerUserId(owner.getUserId()).stream()
                 .filter(b -> b.getStatus() == BookingStatus.CONFIRMED && b.getSportType() != null)
                 .collect(Collectors.toList());
 
@@ -180,7 +182,7 @@ public class VenueOwnerAnalyticsService {
     public List<TimeSlot> getPeakBookingTimes(String authHeader, AnalyticsFilters filters) {
         User owner = authService.validateVenueOwner(authHeader);
 
-        List<Booking> bookings = bookingRepository.findByVenue_Owner_UserId(owner.getUserId()).stream()
+        List<Booking> bookings = bookingRepository.findByVenueOwnerUserId(owner.getUserId()).stream()
                 .filter(b -> b.getStatus() == BookingStatus.CONFIRMED)
                 .collect(Collectors.toList());
 

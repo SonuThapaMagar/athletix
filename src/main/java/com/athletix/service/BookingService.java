@@ -88,10 +88,16 @@ public class BookingService {
     }
 
     private BookingResponse toResponse(Booking b) {
+        String venueImage = null;
+
+        if (b.getVenue().getImages() != null && !b.getVenue().getImages().isEmpty()) {
+            venueImage = b.getVenue().getImages().get(0);
+        }
         return new BookingResponse(
                 b.getId(),
                 b.getVenue().getId(),
                 b.getVenue().getName(),
+                venueImage,
                 b.getPlayer().getUserId(),
                 b.getPlayer().getName(),
                 b.getStartTime(),

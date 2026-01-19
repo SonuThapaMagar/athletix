@@ -2,6 +2,7 @@ package com.athletix.repository;
 
 import com.athletix.entity.Booking;
 import com.athletix.entity.BookingStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,8 +17,15 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByPlayer_UserId(Long playerId);
 
-    List<Booking> findByVenue_Owner_UserId(Long ownerId);
+//    List<Booking> findByVenue_Owner_UserId(Long ownerId);
+    @Query("SELECT b FROM Booking b WHERE b.venue.owner.userId = :ownerId")
+    List<Booking> findByVenueOwnerUserId(@Param("ownerId") Long ownerId);
 
+    @Query("SELECT b FROM Booking b WHERE b.venue.owner.userId = :ownerId")
+    Page<Booking> findByVenueOwnerUserId(
+            @Param("ownerId") Long ownerId,
+            Pageable pageable
+    );
     List<Booking> findByVenue_IdAndStatusIn(Long venueId, List<BookingStatus> statuses);
 
     boolean existsBySlot_IdAndStatusIn(Long slotId, List<BookingStatus> statuses);

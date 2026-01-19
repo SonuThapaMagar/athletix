@@ -25,7 +25,10 @@ public class Venue {
 	@JoinColumn(name = "owner_id")
 	private User owner;
 
+	@Column(length = 150)
 	private String name;
+
+	@Column(length = 500)
 	private String location;
 
 	@ElementCollection
@@ -33,6 +36,8 @@ public class Venue {
 
 	private Double pricePerHour;
 
+	@Column(columnDefinition = "TEXT")
+	@Basic(fetch = FetchType.LAZY)
 	private String description;
 
 	@ElementCollection
@@ -41,7 +46,10 @@ public class Venue {
 	@ElementCollection
 	private List<String> amenities = new ArrayList<>();
 
+	@Column(length = 50)
 	private String contactPhone;
+
+	@Column(length = 320)
 	private String contactEmail;
 
 	@ElementCollection

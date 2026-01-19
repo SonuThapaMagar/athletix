@@ -1,6 +1,8 @@
 package com.athletix.controller;
 
 import com.athletix.dto.admin.*;
+import com.athletix.dto.pagination.PaginationResponse;
+import com.athletix.dto.response.ApiResponse;
 import com.athletix.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,13 +37,18 @@ public class AdminController {
 
     // ==================== USER MANAGEMENT ====================
     @GetMapping("/users")
-    public ResponseEntity<List<AdminUserDto>> getAllUsers(
+    public ResponseEntity<ApiResponse<PaginationResponse<AdminUserDto>>> getAllUsers(
             @RequestParam(required = false) String role,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String search,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer perPage) {
-        return ResponseEntity.ok(adminService.getAllUsers(role, status, search, page, perPage));
+
+        PaginationResponse<AdminUserDto> result = adminService.getAllUsers(role, status, search, page, perPage);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("success", "Users retrieved successfully", result)
+        );
     }
 
     @GetMapping("/users/{id}")
@@ -76,12 +83,17 @@ public class AdminController {
 
     // ==================== VENUE MANAGEMENT ====================
     @GetMapping("/venues")
-    public ResponseEntity<List<AdminVenueDto>> getAllVenues(
+    public ResponseEntity<ApiResponse<PaginationResponse<AdminVenueDto>>> getAllVenues(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String search,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer perPage) {
-        return ResponseEntity.ok(adminService.getAllVenues(status, search, page, perPage));
+
+        PaginationResponse<AdminVenueDto> result = adminService.getAllVenues(status, search, page, perPage);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("success", "Venues retrieved successfully", result)
+        );
     }
 
     @GetMapping("/venues/{id}")
@@ -104,7 +116,7 @@ public class AdminController {
 
     // ==================== BOOKING MANAGEMENT ====================
     @GetMapping("/bookings")
-    public ResponseEntity<List<AdminBookingDto>> getAllBookings(
+    public ResponseEntity<ApiResponse<PaginationResponse<AdminBookingDto>>> getAllBookings(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long venueId,
             @RequestParam(required = false) Long playerId,
@@ -113,8 +125,14 @@ public class AdminController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer perPage) {
-        return ResponseEntity.ok(adminService.getAllBookings(status, venueId, playerId,
-                startDate, endDate, search, page, perPage));
+
+        PaginationResponse<AdminBookingDto> result = adminService.getAllBookings(
+                status, venueId, playerId, startDate, endDate, search, page, perPage
+        );
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("success", "Bookings retrieved successfully", result)
+        );
     }
 
     @GetMapping("/bookings/{id}")
@@ -130,7 +148,7 @@ public class AdminController {
 
     // ==================== PAYMENT MANAGEMENT ====================
     @GetMapping("/payments")
-    public ResponseEntity<List<AdminPaymentDto>> getAllPayments(
+    public ResponseEntity<ApiResponse<List<AdminPaymentDto>>> getAllPayments(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long venueId,
             @RequestParam(required = false) String startDate,
@@ -139,8 +157,14 @@ public class AdminController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer perPage) {
-        return ResponseEntity.ok(adminService.getAllPayments(status, venueId, startDate,
-                endDate, paymentMethod, search, page, perPage));
+
+        List<AdminPaymentDto> payments = adminService.getAllPayments(
+                status, venueId, startDate, endDate, paymentMethod, search, page, perPage
+        );
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("success", "Payments retrieved successfully", payments)
+        );
     }
 
     @GetMapping("/payments/summary")
@@ -225,4 +249,6 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getActivities(type, userId, venueId,
                 startDate, endDate, page, perPage));
     }
+
+
 }

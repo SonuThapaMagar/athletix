@@ -1,13 +1,24 @@
 package com.athletix.service;
 
 import com.athletix.dto.admin.*;
+import com.athletix.dto.analytics.RevenueDataPoint;
+import com.athletix.dto.analytics.SportPopularity;
+import com.athletix.dto.analytics.TimeSlot;
+import com.athletix.dto.analytics.TopVenue;
+import com.athletix.dto.pagination.Pagination;
+import com.athletix.dto.pagination.PaginationResponse;
 import com.athletix.entity.*;
 import com.athletix.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -74,9 +85,14 @@ public class AdminService {
 
     // ==================== USER MANAGEMENT ====================
 
-    public List<AdminUserDto> getAllUsers(String role, String status, String search, Integer page, Integer perPage) {
+    public PaginationResponse<AdminUserDto> getAllUsers(String role, String status, String search, Integer page, Integer perPage) {
+        // Default pagination values
+        int pageIndex = Math.max((page != null ? page : 1) - 1, 0);
+        int size = (perPage != null && perPage > 0) ? perPage : 10;
+
         List<User> users = userRepository.findAll();
 
+        // Apply filters
         if (role != null && !role.equals("all")) {
             users = users.stream()
                     .filter(u -> u.getRole().name().equals(role))
@@ -98,9 +114,16 @@ public class AdminService {
                     .collect(Collectors.toList());
         }
 
-        return users.stream()
+        // Calculate pagination
+        long totalElements = users.size();
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        int startIndex = pageIndex * size;
+        int endIndex = Math.min(startIndex + size, users.size());
+
+        // Get paginated subset
+        List<AdminUserDto> paginatedUsers = users.subList(startIndex, endIndex).stream()
                 .map(u -> new AdminUserDto(
-                        u.getUserId(),  // Use getUserId()
+                        u.getUserId(),
                         u.getName(),
                         u.getEmail(),
                         u.getPhone(),
@@ -113,6 +136,15 @@ public class AdminService {
                         null
                 ))
                 .collect(Collectors.toList());
+
+        Pagination pagination = new Pagination(
+                page != null ? page : 1,
+                size,
+                totalElements,
+                totalPages
+        );
+
+        return new PaginationResponse<>(paginatedUsers, pagination);
     }
 
     public AdminUserDto getUserById(Long id) {
@@ -196,9 +228,14 @@ public class AdminService {
 
     // ==================== VENUE MANAGEMENT ====================
 
-    public List<AdminVenueDto> getAllVenues(String status, String search, Integer page, Integer perPage) {
+    public PaginationResponse<AdminVenueDto> getAllVenues(String status, String search, Integer page, Integer perPage) {
+        // Default pagination values
+        int pageIndex = Math.max((page != null ? page : 1) - 1, 0);
+        int size = (perPage != null && perPage > 0) ? perPage : 10;
+
         List<Venue> venues = venueRepository.findAll();
 
+        // Apply search filter
         if (search != null && !search.isEmpty()) {
             String searchLower = search.toLowerCase();
             venues = venues.stream()
@@ -207,7 +244,14 @@ public class AdminService {
                     .collect(Collectors.toList());
         }
 
-        return venues.stream()
+        // Calculate pagination
+        long totalElements = venues.size();
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        int startIndex = pageIndex * size;
+        int endIndex = Math.min(startIndex + size, venues.size());
+
+        // Get paginated subset
+        List<AdminVenueDto> paginatedVenues = venues.subList(startIndex, endIndex).stream()
                 .map(v -> new AdminVenueDto(
                         v.getId(),
                         v.getName(),
@@ -218,10 +262,19 @@ public class AdminService {
                         v.getLocation(),
                         v.getSportTypes() != null && !v.getSportTypes().isEmpty()
                                 ? String.join(", ", v.getSportTypes())
-                                : "N/A",  // Join list to string
+                                : "N/A",
                         v.getCreatedAt().toString()
                 ))
                 .collect(Collectors.toList());
+
+        Pagination pagination = new Pagination(
+                page != null ? page : 1,
+                size,
+                totalElements,
+                totalPages
+        );
+
+        return new PaginationResponse<>(paginatedVenues, pagination);
     }
 
     public AdminVenueDto getVenueById(Long id) {
@@ -282,10 +335,18 @@ public class AdminService {
 
     // ==================== BOOKING MANAGEMENT ====================
 
-    public List<AdminBookingDto> getAllBookings(String status, Long venueId, Long playerId,
-                                                String startDate, String endDate, String search,
-                                                Integer page, Integer perPage) {
-        List<Booking> bookings = bookingRepository.findAll();
+    public PaginationResponse<AdminBookingDto> getAllBookings(String status, Long venueId, Long playerId,
+                                                              String startDate, String endDate, String search,
+                                                              Integer page, Integer perPage) {
+        // Default pagination values
+        int pageIndex = Math.max((page != null ? page : 1) - 1, 0);
+        int size = (perPage != null && perPage > 0) ? perPage : 10;
+
+        Pageable pageable = PageRequest.of(pageIndex, size, Sort.by("createdAt").descending());
+        Page<Booking> bookingPage = bookingRepository.findAll(pageable);
+
+        // Filter in-memory (or create custom repository methods for better performance)
+        List<Booking> bookings = bookingPage.getContent();
 
         if (status != null && !status.equals("all")) {
             bookings = bookings.stream()
@@ -305,7 +366,7 @@ public class AdminService {
                     .collect(Collectors.toList());
         }
 
-        return bookings.stream()
+        List<AdminBookingDto> bookingDtos = bookings.stream()
                 .map(b -> new AdminBookingDto(
                         b.getId(),
                         b.getVenue().getId(),
@@ -313,7 +374,7 @@ public class AdminService {
                         b.getPlayer().getUserId(),
                         b.getPlayer().getName(),
                         b.getPlayer().getEmail(),
-                        b.getSportType() != null ? b.getSportType() : "N/A",  // sportType is singular in Booking
+                        b.getSportType() != null ? b.getSportType() : "N/A",
                         b.getStartTime().toString(),
                         b.getEndTime().toString(),
                         b.getStatus().name(),
@@ -323,6 +384,15 @@ public class AdminService {
                         b.getPaymentRefId() != null ? b.getPaymentRefId() : ""
                 ))
                 .collect(Collectors.toList());
+
+        Pagination pagination = new Pagination(
+                page != null ? page : 1,
+                size,
+                bookingPage.getTotalElements(),
+                bookingPage.getTotalPages()
+        );
+
+        return new PaginationResponse<>(bookingDtos, pagination);
     }
 
     public AdminBookingDto getBookingById(Long id) {
@@ -429,22 +499,183 @@ public class AdminService {
 
     public AdminAnalyticsData getAnalyticsData(String startDate, String endDate, Long venueId) {
         AdminAnalyticsStats stats = getAnalyticsStats(startDate, endDate);
-        return new AdminAnalyticsData(stats, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        List<AdminRevenueDataPoint> revenueData = calculateMonthlyRevenue();
+        List<AdminTopVenue> topVenues = getTopPerformingVenues(5);
+        List<AdminSportPopularity> sportPopularity = calculateSportPopularity();
+        List<AdminTimeSlot> peakBookingTimes = calculatePeakBookingTimes();
+
+        return new AdminAnalyticsData(stats, revenueData, topVenues, sportPopularity, peakBookingTimes);
     }
 
     public AdminAnalyticsStats getAnalyticsStats(String startDate, String endDate) {
         Long totalBookings = bookingRepository.count();
         Long activeUsers = userRepository.count();
         Long totalVenues = venueRepository.count();
+
         Double totalRevenue = paymentRepository.findAll().stream()
                 .filter(p -> "COMPLETED".equals(p.getStatus()))
                 .mapToDouble(Payment::getAmount)
                 .sum();
 
-        return new AdminAnalyticsStats(totalRevenue, totalBookings, activeUsers, totalVenues, 12.5, 8.3, 5.2, 3.1);
+        // Calculate changes (mock for now - you can implement actual comparison logic)
+        Double revenueChange = 12.5;
+        Double bookingsChange = 8.3;
+        Double usersChange = 5.2;
+        Double venuesChange = 3.1;
+
+        return new AdminAnalyticsStats(
+                totalRevenue,
+                totalBookings,
+                activeUsers,
+                totalVenues,
+                revenueChange,
+                bookingsChange,
+                usersChange,
+                venuesChange
+        );
+    }
+
+    private List<AdminRevenueDataPoint> calculateMonthlyRevenue() {
+        List<Payment> payments = paymentRepository.findAll().stream()
+                .filter(p -> "COMPLETED".equals(p.getStatus()))
+                .collect(Collectors.toList());
+
+        // Group payments by month
+        Map<String, Double> monthlyRevenue = new LinkedHashMap<>();
+        DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMM");
+
+        payments.forEach(payment -> {
+            String month = payment.getCreatedAt().format(monthFormatter);
+            int year = payment.getCreatedAt().getYear();
+            String key = month + "-" + year;
+
+            monthlyRevenue.merge(key, payment.getAmount(), Double::sum);
+        });
+
+        // Convert to list of AdminRevenueDataPoint
+        List<AdminRevenueDataPoint> result = new ArrayList<>();
+        monthlyRevenue.forEach((key, revenue) -> {
+            String[] parts = key.split("-");
+            String month = parts[0];
+            Integer year = Integer.parseInt(parts[1]);
+            result.add(new AdminRevenueDataPoint(month, revenue, year));
+        });
+
+        // If no data, return sample data for last 6 months
+        if (result.isEmpty()) {
+            String[] months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun"};
+            int currentYear = LocalDateTime.now().getYear();
+            for (String month : months) {
+                result.add(new AdminRevenueDataPoint(month, 0.0, currentYear));
+            }
+        }
+
+        return result;
+    }
+
+    private List<AdminTopVenue> getTopPerformingVenues(int limit) {
+        List<Venue> venues = venueRepository.findAll();
+
+        List<AdminTopVenue> topVenues = venues.stream()
+                .map(venue -> {
+                    // Get bookings for this venue
+                    List<Booking> venueBookings = bookingRepository.findAll().stream()
+                            .filter(b -> b.getVenue().getId().equals(venue.getId()))
+                            .collect(Collectors.toList());
+
+                    Long bookingsCount = (long) venueBookings.size();
+
+                    // Calculate revenue from completed payments
+                    Double revenue = paymentRepository.findAll().stream()
+                            .filter(p -> "COMPLETED".equals(p.getStatus()))
+                            .filter(p -> venueBookings.stream()
+                                    .anyMatch(b -> b.getId().equals(p.getBooking().getId())))
+                            .mapToDouble(Payment::getAmount)
+                            .sum();
+
+                    // Mock growth calculation (you can implement actual growth logic)
+                    Double growth = Math.random() * 20; // Random growth between 0-20%
+
+                    return new AdminTopVenue(
+                            venue.getId(),
+                            venue.getName(),
+                            revenue,
+                            bookingsCount,
+                            growth
+                    );
+                })
+                .sorted((v1, v2) -> Double.compare(v2.revenue(), v1.revenue()))
+                .limit(limit)
+                .collect(Collectors.toList());
+
+        return topVenues;
+    }
+
+    private List<AdminSportPopularity> calculateSportPopularity() {
+        List<Booking> bookings = bookingRepository.findAll();
+        Long totalBookings = (long) bookings.size();
+
+        if (totalBookings == 0) {
+            return new ArrayList<>();
+        }
+
+        // Group bookings by sport type
+        Map<String, Long> sportCounts = bookings.stream()
+                .filter(b -> b.getSportType() != null && !b.getSportType().isEmpty())
+                .collect(Collectors.groupingBy(
+                        Booking::getSportType,
+                        Collectors.counting()
+                ));
+
+        // Convert to AdminSportPopularity with percentages
+        return sportCounts.entrySet().stream()
+                .map(entry -> {
+                    String sport = entry.getKey();
+                    Long count = entry.getValue();
+                    Double percentage = (count * 100.0) / totalBookings;
+
+                    return new AdminSportPopularity(sport, count, percentage);
+                })
+                .sorted((s1, s2) -> Long.compare(s2.bookings(), s1.bookings()))
+                .collect(Collectors.toList());
+    }
+
+    private List<AdminTimeSlot> calculatePeakBookingTimes() {
+        List<Booking> bookings = bookingRepository.findAll();
+
+        // Define time slots
+        Map<String, Long> timeSlotCounts = new LinkedHashMap<>();
+        timeSlotCounts.put("06:00 - 09:00", 0L);
+        timeSlotCounts.put("09:00 - 12:00", 0L);
+        timeSlotCounts.put("12:00 - 15:00", 0L);
+        timeSlotCounts.put("15:00 - 18:00", 0L);
+        timeSlotCounts.put("18:00 - 21:00", 0L);
+        timeSlotCounts.put("21:00 - 24:00", 0L);
+
+        // Count bookings in each time slot
+        bookings.forEach(booking -> {
+            int hour = booking.getStartTime().getHour();
+
+            String slot;
+            if (hour >= 6 && hour < 9) slot = "06:00 - 09:00";
+            else if (hour >= 9 && hour < 12) slot = "09:00 - 12:00";
+            else if (hour >= 12 && hour < 15) slot = "12:00 - 15:00";
+            else if (hour >= 15 && hour < 18) slot = "15:00 - 18:00";
+            else if (hour >= 18 && hour < 21) slot = "18:00 - 21:00";
+            else slot = "21:00 - 24:00";
+
+            timeSlotCounts.merge(slot, 1L, Long::sum);
+        });
+
+        // Convert to list
+        return timeSlotCounts.entrySet().stream()
+                .map(entry -> new AdminTimeSlot(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
     }
 
     public byte[] exportAnalytics(String startDate, String endDate, String format) {
+        // TODO: Implement CSV/Excel export logic
+        // For now, return empty byte array
         return new byte[0];
     }
 

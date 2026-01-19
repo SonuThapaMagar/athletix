@@ -8,6 +8,7 @@ public record BookingResponse(
         Long id,
         Long venueId,
         String venueName,
+        String venueImage,
         Long playerId,
         String playerName,
         LocalDateTime startTime,
