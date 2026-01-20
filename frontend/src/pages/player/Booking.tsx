@@ -1,3 +1,4 @@
+// Booking.tsx - Fixed to handle Date objects and HH:mm format
 import { useEffect, useState } from "react";
 import {
   useLocation,
@@ -24,10 +25,20 @@ import {
 import { toast } from "sonner";
 import { submitEsewaPayment } from "@/lib/esewa";
 import api from "@/api/api";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
@@ -48,12 +59,26 @@ const Booking = () => {
   const bookingIdFromUrl = searchParams.get("bookingId");
   const prefill = (location.state as any) || {};
 
-  // Form state
-  const [selectedDate, setSelectedDate] = useState(prefill.selectedDate || "");
+  // Form state - handle both Date objects and date strings
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(() => {
+    if (prefill.selectedDate) {
+      // ✅ Fix: Properly parse the date string
+      try {
+        const parsedDate = new Date(prefill.selectedDate);
+        // Check if date is valid
+        return isNaN(parsedDate.getTime()) ? undefined : parsedDate;
+      } catch {
+        return undefined;
+      }
+    }
+    return undefined;
+  });
+
   const [selectedTime, setSelectedTime] = useState(prefill.selectedTime || "");
   const [selectedDuration, setSelectedDuration] = useState(
     prefill.selectedDuration || "1",
   );
+
   const [selectedSport, setSelectedSport] = useState("");
 
   // Availability state
@@ -103,15 +128,18 @@ const Booking = () => {
     setIsAvailable(null);
 
     try {
-      const startTime = `${selectedDate}T${selectedTime}:00`;
+      const startTime = `${format(selectedDate, "yyyy-MM-dd")}T${selectedTime}:00`;
+
       const res = await api.post("/bookings/check-availability", {
         venueId: venue.id,
         startTime,
         durationHours: Number(selectedDuration),
       });
 
-      setIsAvailable(res.data.available);
-      setAvailabilityMessage(res.data.message);
+      const { available, message } = res.data.data;
+
+      setIsAvailable(available); // ✅ FIX
+      setAvailabilityMessage(message); // ✅ FIX
     } catch (err: any) {
       setIsAvailable(false);
       setAvailabilityMessage(
@@ -152,6 +180,16 @@ const Booking = () => {
     "21:00",
   ];
 
+  // Convert HH:mm to display format
+  const formatTimeDisplay = (time: string): string => {
+    if (!time) return "";
+    const [hours, minutes] = time.split(":").map(Number);
+    const period = hours >= 12 ? "PM" : "AM";
+    let displayHours = hours % 12;
+    if (displayHours === 0) displayHours = 12;
+    return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
+  };
+
   const calculateTotal = () => {
     if (!venue) return 0;
     return venue.pricePerHour * Number(selectedDuration || 1);
@@ -176,11 +214,11 @@ const Booking = () => {
   };
 
   const handleFinalConfirm = async () => {
-    if (!venue?.id) return;
+    if (!venue?.id || !selectedDate) return;
     setIsProcessing(true);
 
     try {
-      const startTime = `${selectedDate}T${selectedTime}:00`;
+      const startTime = `${format(selectedDate, "yyyy-MM-dd")}T${selectedTime}:00`;
 
       // Step 1: Create pending booking with sport type
       const booking = await CREATE_PENDING_BOOKING_ACTION({
@@ -198,8 +236,6 @@ const Booking = () => {
         console.log("✅ Payment record created for booking:", booking.id);
       } catch (initError: any) {
         console.error("⚠️ Failed to initiate payment record:", initError);
-        // Continue anyway - backend might create it during verification
-        // But log the error for debugging
         toast.warning("Payment initiation had issues, but continuing...");
       }
 
@@ -405,14 +441,14 @@ const Booking = () => {
                           value={selectedTime}
                           onValueChange={setSelectedTime}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Choose time" />
                           </SelectTrigger>
 
                           <SelectContent>
                             {timeSlots.map((time) => (
                               <SelectItem key={time} value={time}>
-                                {time}
+                                {formatTimeDisplay(time)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -429,7 +465,7 @@ const Booking = () => {
                           value={selectedDuration}
                           onValueChange={setSelectedDuration}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
 
@@ -623,13 +659,17 @@ const Booking = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Date</span>
                     <span className="text-sm font-medium">
-                      {selectedDate || "Not selected"}
+                      {selectedDate
+                        ? format(selectedDate, "MMM dd, yyyy")
+                        : "Not selected"}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Time</span>
                     <span className="text-sm font-medium">
-                      {selectedTime || "Not selected"}
+                      {selectedTime
+                        ? formatTimeDisplay(selectedTime)
+                        : "Not selected"}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -680,7 +720,7 @@ const Booking = () => {
                       isAvailable !== true ||
                       isProcessing
                     }
-                    className="w-full bg-primary text-white py-3 px-4 rounded-lg hover:bg-[#1e3d6f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                    className="w-full bg-primary/90 text-white py-3 px-4 rounded-lg hover:bg-primary disabled:opacity-50 cursor-pointer transition-colors font-medium"
                   >
                     {isProcessing ? "Processing..." : "Proceed to Payment"}
                   </button>
@@ -691,7 +731,7 @@ const Booking = () => {
         </div>
 
         {/* Confirmation Modal */}
-        {showConfirmation && (
+        {showConfirmation && selectedDate && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="bg-white rounded-2xl max-w-md w-full p-6">
               <div className="flex items-center justify-between mb-4">
@@ -717,10 +757,10 @@ const Booking = () => {
                       <strong>Sport:</strong> {selectedSport}
                     </div>
                     <div>
-                      <strong>Date:</strong> {selectedDate}
+                      <strong>Date:</strong> {format(selectedDate, "PPP")}
                     </div>
                     <div>
-                      <strong>Time:</strong> {selectedTime}
+                      <strong>Time:</strong> {formatTimeDisplay(selectedTime)}
                     </div>
                     <div>
                       <strong>Duration:</strong> {selectedDuration} hours
@@ -747,7 +787,7 @@ const Booking = () => {
                   <button
                     onClick={handleFinalConfirm}
                     disabled={isProcessing}
-                    className="flex-1 bg-[#2c5aa0] text-white py-2 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors disabled:opacity-50"
+                    className="flex-1 bg-primary/90 text-white py-2 px-4 rounded-lg hover:bg-primary cursor-pointer  transition-colors disabled:opacity-50"
                   >
                     {isProcessing ? "Processing..." : "Confirm & Pay"}
                   </button>

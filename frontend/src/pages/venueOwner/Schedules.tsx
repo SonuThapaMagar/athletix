@@ -335,7 +335,7 @@ const Schedules = () => {
           </button>
           <button
             onClick={handleAddSchedule}
-            className="bg-[#2c5aa0] text-white px-4 py-2 rounded-lg hover:bg-[#1e3d6f] transition-colors flex items-center gap-2 cursor-pointer"
+            className="bg-primary/90 text-white px-4 py-2 rounded-lg hover:bg-primary transition-colors flex items-center gap-2 cursor-pointer"
           >
             <MdAdd className="w-4 h-4" />
             Add Schedule
@@ -368,7 +368,7 @@ const Schedules = () => {
                 onClick={() => setViewMode('week')}
                 className={`px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
                   viewMode === 'week'
-                    ? 'bg-[#2c5aa0] text-white'
+                    ? 'bg-primary text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -378,7 +378,7 @@ const Schedules = () => {
                 onClick={() => setViewMode('month')}
                 className={`px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
                   viewMode === 'month'
-                    ? 'bg-[#2c5aa0] text-white'
+                    ? 'bg-primary text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -396,7 +396,7 @@ const Schedules = () => {
       )}
 
       {/* Week Calendar View */}
-      {viewMode === 'week' && (
+      {/* {viewMode === 'week' && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900">This Week</h3>
@@ -435,7 +435,7 @@ const Schedules = () => {
             ))}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Schedule List */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">

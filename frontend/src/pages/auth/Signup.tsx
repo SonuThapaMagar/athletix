@@ -14,48 +14,80 @@ import {
 import type { IUser } from "@/types/user.types/user.types";
 import loginBg from "@/assets/landing/hero-bg.png";
 import logo from "@/assets/landing/final_logo-removebg-preview.png";
+import {
+  registerSchema,
+  type RegisterSchemaType,
+} from "@/validation/auth.validation";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Signup = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const [formData, setFormData] = useState<Partial<IUser>>({
-    name: "",
-    email: "",
-    password: "",
-    phone: "",
-    location: "",
-    role: "PLAYER",
+  // const [formData, setFormData] = useState<Partial<IUser>>({
+  //   name: "",
+  //   email: "",
+  //   password: "",
+  //   phone: "",
+  //   location: "",
+  //   role: "PLAYER",
+  // });
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterSchemaType>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      phone: "",
+      location: "",
+      role: "PLAYER",
+    },
   });
 
-  const handleInputChange = (field: keyof IUser, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  // const handleInputChange = (field: keyof IUser, value: string) => {
+  //   setFormData((prev) => ({ ...prev, [field]: value }));
+  // };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFormSubmit = async (data: RegisterSchemaType) => {
     setLoading(true);
     try {
-      const user: IUser = {
-        name: formData.name || "",
-        email: formData.email || "",
-        password: formData.password || "",
-        phone: formData.phone || "",
-        location: formData.location || "",
-        role: (formData.role as IUser["role"]) || "PLAYER",
-      };
-      await REGISTER_ACTION(user);
+      // const user: IUser = {
+      //   name: formData.name || "",
+      //   email: formData.email || "",
+      //   password: formData.password || "",
+      //   phone: formData.phone || "",
+      //   location: formData.location || "",
+      //   role: (formData.role as IUser["role"]) || "PLAYER",
+      // };
+
+      // registerSchema.parse(formData);
+      // await REGISTER_ACTION(user);
+      await REGISTER_ACTION(data as any);
 
       // Reset the form
-      setFormData({
-        name: "",
-        email: "",
-        password: "",
-        phone: "",
-        location: "",
-        role: "PLAYER",
-      });
+      // setFormData({
+      //   name: "",
+      //   email: "",
+      //   password: "",
+      //   phone: "",
+      //   location: "",
+      //   role: "PLAYER",
+      // });
 
       // Make sure no old tokens exist
       localStorage.removeItem("accessToken");
@@ -67,11 +99,14 @@ const Signup = () => {
       // Navigate to login
       navigate("/login");
     } catch (err: any) {
-      console.error("Register error:", err);
-      toast.error(
-        err?.response?.data?.message ||
-          "Registration failed. Please try again.",
-      );
+      if (err?.errors) {
+        toast.error(err.errors[0].message);
+      } else {
+        toast.error(
+          err?.response?.data?.message ||
+            "Registration failed. Please try again.",
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -106,53 +141,62 @@ const Signup = () => {
               <p className="text-sm text-gray-600 mt-1">Join Athletix today</p>
             </div>
 
-            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+            <form
+              className="flex flex-col gap-4"
+              onSubmit={handleSubmit(handleFormSubmit)}
+            >
               {/* Name */}
               <div className="relative">
                 <input
-                  type="text"
+                  {...register("name")}
                   placeholder="Full Name"
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-primary"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
                 />
                 <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                {errors.name && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
 
               {/* Email */}
               <div className="relative">
                 <input
-                  type="email"
+                  {...register("email")}
                   placeholder="Email Address"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-primary"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  className="w-full border px-4 py-3 pl-10 rounded-lg"
                 />
                 <MdEmail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               {/* Phone */}
               <div className="relative">
                 <input
-                  type="tel"
+                  {...register("phone")}
                   placeholder="Phone Number"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-primary"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  className="w-full border px-4 py-3 pl-10 rounded-lg"
                 />
                 <MdPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                {errors.phone && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.phone.message}
+                  </p>
+                )}
               </div>
 
               {/* Password */}
               <div className="relative">
                 <input
+                  {...register("password")}
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 pr-10 text-sm focus:outline-none focus:border-primary"
-                  value={formData.password}
-                  onChange={(e) =>
-                    handleInputChange("password", e.target.value)
-                  }
+                  className="w-full border px-4 py-3 pl-10 pr-10 rounded-lg"
                 />
                 <svg
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5"
@@ -179,32 +223,46 @@ const Signup = () => {
                     <MdVisibility className="w-5 h-5" />
                   )}
                 </button>
+                {errors.password && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
 
               {/* Location */}
               <div className="relative">
                 <input
-                  type="text"
+                  {...register("location")}
                   placeholder="Location"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-primary"
-                  value={formData.location}
-                  onChange={(e) =>
-                    handleInputChange("location", e.target.value)
-                  }
+                  className="w-full border px-4 py-3 pl-10 rounded-lg"
                 />
                 <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                {errors.location && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.location.message}
+                  </p>
+                )}
               </div>
 
               {/* Role Selector */}
-              <select
-                value={formData.role}
-                onChange={(e) => handleInputChange("role", e.target.value)}
-                className="w-full border p-2 rounded-lg"
-              >
-                <option value="PLAYER">Player</option>
-                <option value="VENUE_OWNER">Venue Owner</option>
-                <option value="ADMIN">Admin</option>
-              </select>
+              <Controller
+                name="role"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      <SelectItem value="PLAYER">Player</SelectItem>
+                      <SelectItem value="VENUE_OWNER">Venue Owner</SelectItem>
+                      <SelectItem value="ADMIN">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
 
               {/* Submit */}
               <button

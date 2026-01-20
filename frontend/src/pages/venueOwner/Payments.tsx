@@ -208,7 +208,7 @@ const Payments = () => {
         <button
           onClick={fetchData}
           disabled={loading}
-          className="p-2 text-gray-600 hover:text-[#2c5aa0] hover:bg-blue-50 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+          className="p-2 text-gray-600 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
           title="Refresh data"
         >
           <MdRefresh className="w-5 h-5" />
@@ -290,7 +290,7 @@ const Payments = () => {
                 onClick={() => setSelectedFilter(filter.id)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                   selectedFilter === filter.id
-                    ? 'bg-[#2c5aa0] text-white'
+                    ? 'bg-primary text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -309,7 +309,7 @@ const Payments = () => {
             <button
               onClick={exportToExcel}
               disabled={isExporting || loading}
-              className="px-4 py-2 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] text-sm font-medium flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-primary/90 text-white rounded-lg hover:bg-primary text-sm font-medium flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <MdDownload className="w-4 h-4" />
               {isExporting ? 'Exporting...' : 'Export'}

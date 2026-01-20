@@ -175,7 +175,7 @@ const Analytics = () => {
           <button
             onClick={exportToExcel}
             disabled={loading}
-            className="px-4 py-2 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            className="px-4 py-2 bg-primary/90 text-white rounded-lg hover:bg-primary transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <MdFileDownload className="w-4 h-4" />
             Export to Excel
@@ -233,7 +233,7 @@ const Analytics = () => {
               {revenueData.map((data, index) => (
                 <div key={index} className="flex-1 flex flex-col items-center">
                   <div 
-                    className="w-full bg-gradient-to-t from-[#2c5aa0] to-[#4a7bc8] rounded-t-lg hover:opacity-80 transition-opacity mb-2"
+                    className="w-full bg-primary rounded-t-lg hover:opacity-80 transition-opacity mb-2"
                     style={{ height: `${(data.revenue / maxRevenue) * 200}px` }}
                   />
                   <span className="text-xs text-gray-600">{data.month}</span>
@@ -262,7 +262,7 @@ const Analytics = () => {
               {topVenues.map((venue, index) => (
                 <div key={venue.venueId} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-[#2c5aa0] to-[#1e3d6f] rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                       <span className="text-white font-bold">{index + 1}</span>
                     </div>
                     <div>
@@ -308,7 +308,7 @@ const Analytics = () => {
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
-                      className="bg-gradient-to-r from-[#2c5aa0] to-[#4a7bc8] h-2 rounded-full"
+                      className="bg-primary h-2 rounded-full"
                       style={{ width: `${item.percentage}%` }}
                     />
                   </div>

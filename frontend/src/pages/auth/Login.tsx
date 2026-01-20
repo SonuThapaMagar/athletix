@@ -5,10 +5,11 @@ import type { RootState } from "@/redux/store";
 import PromoContent from "@/components/auth/PromoContent";
 import SportsAnimations from "@/components/common/SportsAnimations";
 import { LOGIN_ACTION } from "@/redux/actions/auth.actions";
-import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { MdEmail, MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { toast } from "sonner";
 import loginBg from "@/assets/landing/hero-bg.png";
 import logo from "@/assets/landing/final_logo-removebg-preview.png";
+import { loginSchema } from "@/validation/auth.validation";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ const Login = () => {
         email: formData.email,
         password: formData.password,
       };
-
+      loginSchema.parse(formData);
       const res = await LOGIN_ACTION(loginData);
 
       // Save email if remember me is checked
@@ -73,11 +74,15 @@ const Login = () => {
       if (role === "VENUE_OWNER") navigate("/venue-owner");
       if (role === "ADMIN") navigate("/admin");
     } catch (err: any) {
-      console.error("Login error:", err);
-      toast.error(
-        err?.response?.data?.message ||
-          "Login failed. Please check your credentials.",
-      );
+      if (err?.errors) {
+        // Zod validation error
+        toast.error(err.errors[0].message);
+      } else {
+        toast.error(
+          err?.response?.data?.message ||
+            "Login failed. Please check your credentials.",
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -125,9 +130,7 @@ const Login = () => {
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                 />
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5">
-                  <use xlinkHref="#email-icon" />
-                </svg>
+                <MdEmail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               </div>
 
               {/* Password */}

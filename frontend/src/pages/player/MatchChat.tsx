@@ -152,7 +152,7 @@ const MatchChat = () => {
           </div>
           <button
             onClick={() => navigate('/player/matchmaking')}
-            className="mt-4 text-[#2c5aa0] hover:text-[#1e3d6f] cursor-pointer"
+            className="mt-4 text-primary hover:text-[#1e3d6f] cursor-pointer"
           >
             Back to Matches
           </button>
@@ -164,7 +164,7 @@ const MatchChat = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <PlayerNavLayout />
-      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex-1 flex flex-col">
+      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-22 flex-1 flex flex-col">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
@@ -175,7 +175,7 @@ const MatchChat = () => {
               <MdArrowBack className="w-5 h-5" />
               <span>Back to Match</span>
             </button>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
               {selectedMatch.title}
               <div
                 className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}
@@ -254,7 +254,7 @@ const MatchChat = () => {
                       )}
                       <div
                         className={`rounded-2xl px-4 py-2 ${isMine
-                          ? 'bg-[#2c5aa0] text-white'
+                          ? 'bg-primary text-white'
                           : 'bg-gray-100 text-gray-900'
                           }`}
                       >
@@ -279,13 +279,13 @@ const MatchChat = () => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Type a message..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2c5aa0]/20 focus:border-[#2c5aa0]"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 disabled={sending}
               />
               <button
                 type="submit"
                 disabled={!message.trim() || sending}
-                className="px-6 py-2 bg-[#2c5aa0] text-white rounded-lg hover:bg-[#1e3d6f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-[#1e3d6f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
               >
                 <MdSend className="w-5 h-5" />
                 {sending ? 'Sending...' : 'Send'}
@@ -321,7 +321,7 @@ const MatchChat = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-gray-900">{selectedMatch.creator.name}</p>
-                    <span className="bg-[#2c5aa0] text-white text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1">
+                    <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1">
                       <MdAdminPanelSettings className="w-3 h-3" />
                       ADMIN
                     </span>

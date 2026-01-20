@@ -159,7 +159,7 @@ const HeroSection = ({ searchFilters, isLandingPage }: HeroSectionProps = {}) =>
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-primary">
-                      ${venue.pricePerHour}
+                      NRs.{venue.pricePerHour}
                     </div>
                     <div className="text-sm text-gray-500">per hour</div>
                   </div>
@@ -187,7 +187,7 @@ const HeroSection = ({ searchFilters, isLandingPage }: HeroSectionProps = {}) =>
 
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => navigate(`/player/booking/${venue.id}`)}
+                    onClick={() =>  navigate(`/player/booking/${venue.id}`)}
                     className="flex-1 bg-primary text-white py-2 px-4 rounded-lg hover:bg-[#1e3d6f] transition-colors font-medium cursor-pointer"
                   >
                     Book Now

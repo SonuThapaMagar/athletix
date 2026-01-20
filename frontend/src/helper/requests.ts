@@ -65,8 +65,8 @@ const booking = {
   getMyBookings: () => api.get("/bookings/myBookings"),
   getBookingById: (bookingId: number) => api.get(`/bookings/${bookingId}`),
   cancelBooking: (bookingId: number) => api.delete(`/bookings/cancel/${bookingId}`),
-  getMyVenueBookings: () => api.get("/bookings/my-venue"),
-  confirmBooking: (bookingId: number) => api.put(`/bookings/confirm/${bookingId}`),
+  getMyVenueBookings: (params?: { page?: number; perPage?: number }) =>
+    api.get("/bookings/my-venue", { params }), confirmBooking: (bookingId: number) => api.put(`/bookings/confirm/${bookingId}`),
 };
 
 const payment = {
@@ -252,13 +252,13 @@ const player = {
     requestToJoin: (matchId: number, message?: string) => api.post(`/player/matches/${matchId}/request`, { message }),
     respondToRequest: (requestId: number, action: 'accept' | 'reject') => api.put(`/player/matches/requests/${requestId}`, { action }),
     getMatchRequests: (matchId: number) => api.get(`/player/matches/${matchId}/requests`),
-   
-    
-    getChatMessages: (matchId: number, page: number = 0, size: number = 50) => 
+
+
+    getChatMessages: (matchId: number, page: number = 0, size: number = 50) =>
       api.get(`/player/matches/${matchId}/chat`, { params: { page, size } }),
-    sendChatMessage: (matchId: number, message: string) => 
+    sendChatMessage: (matchId: number, message: string) =>
       api.post(`/player/matches/${matchId}/chat`, { content: message }),
-   
+
     // Get player profile by userId
     getPlayerProfile: (userId: number) => api.get(`/player/profile/${userId}`),
   },

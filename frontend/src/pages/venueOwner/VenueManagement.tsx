@@ -32,6 +32,7 @@ const VenueManagement = () => {
     (state: StateType) => state.venueOwnerBookingSlice
   );
 
+
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,19 +45,21 @@ const VenueManagement = () => {
   // Calculate booking counts per venue from bookings list
   const venueBookingCounts = useMemo(() => {
     const counts: Record<number, number> = {};
-    venueBookings.forEach((booking) => {
-      // Only count confirmed bookings
-      if (booking.status === 'CONFIRMED' || booking.status === 'PENDING') {
-        counts[booking.venueId] = (counts[booking.venueId] || 0) + 1;
-      }
-    });
+    if (Array.isArray(venueBookings)) {
+      venueBookings.forEach((booking) => {
+        // Only count confirmed bookings
+        if (booking.status === 'CONFIRMED' || booking.status === 'PENDING') {
+          counts[booking.venueId] = (counts[booking.venueId] || 0) + 1;
+        }
+      });
+    }
     return counts;
   }, [venueBookings]);
 
   const fetchVenues = async (page = 1) => {
     setLoading(true);
     try {
-      await FETCH_MY_VENUES_ACTION({ page, perPage: 5 }); 
+      await FETCH_MY_VENUES_ACTION({ page, perPage: 5 });
       setCurrentPage(page);
     } catch (error: any) {
       console.error("Error fetching venues:", error);
@@ -180,7 +183,7 @@ const VenueManagement = () => {
               </button>
               <button
                 onClick={handleAddVenue}
-                className="bg-[#2c5aa0] text-white px-4 py-2 rounded-lg hover:bg-[#1e3d6f] cursor-pointer transition-colors flex items-center gap-2"
+                className="bg-primary/90 text-white px-4 py-2 rounded-lg hover:bg-primary cursor-pointer transition-colors flex items-center gap-2"
               >
                 <MdAdd className="w-4 h-4" /> Add Venue
               </button>
@@ -204,7 +207,7 @@ const VenueManagement = () => {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-[#2c5aa0] to-[#1e3d6f] rounded-lg flex items-center justify-center">
+                        <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
                           <MdSportsSoccer className="w-6 h-6 text-white" />
                         </div>
 
@@ -220,14 +223,13 @@ const VenueManagement = () => {
                             </div>
 
                             <div className="flex items-center gap-1">
-                              <MdAttachMoney className="w-4 h-4" />
-                              ${venue.pricePerHour}/hour
+                              NRs.{venue.pricePerHour}/hour
                             </div>
 
-                            <div className="flex items-center gap-1">
+                            {/* <div className="flex items-center gap-1">
                               <MdAccessTime className="w-4 h-4" />
                               {venueBookingCounts[venue.id] || venue.bookings || 0} bookings
-                            </div>
+                            </div> */}
                           </div>
                         </div>
                       </div>

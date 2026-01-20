@@ -88,11 +88,41 @@ const VenueDetails = () => {
       .padStart(2, "0")} ${endPeriod}`;
   };
 
-  const endTime = calculateEndTime(selectedTime, Number(selectedDuration || 0));
+  const formatTimeDisplay = (time: string): string => {
+    if (!time) return "";
+    const [hours, minutes] = time.split(":").map(Number);
+    const period = hours >= 12 ? "PM" : "AM";
+    let displayHours = hours % 12;
+    if (displayHours === 0) displayHours = 12;
+    return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
+  };
+
+  const endTime = selectedTime
+    ? calculateEndTime(selectedTime, Number(selectedDuration || 0))
+    : "";
   const totalPrice = venue?.pricePerHour
     ? venue.pricePerHour * Number(selectedDuration || 0)
     : 0;
 
+  // Time slots in 24-hour format (HH:mm)
+  const timeSlots = [
+    "06:00",
+    "07:00",
+    "08:00",
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+    "18:00",
+    "19:00",
+    "20:00",
+    "21:00",
+  ];
   if (loading) {
     return (
       <div className="p-6">
@@ -364,26 +394,9 @@ const VenueDetails = () => {
                       <SelectValue placeholder="Choose time" />
                     </SelectTrigger>
                     <SelectContent>
-                      {[
-                        "6:00 AM",
-                        "7:00 AM",
-                        "8:00 AM",
-                        "9:00 AM",
-                        "10:00 AM",
-                        "11:00 AM",
-                        "12:00 PM",
-                        "1:00 PM",
-                        "2:00 PM",
-                        "3:00 PM",
-                        "4:00 PM",
-                        "5:00 PM",
-                        "6:00 PM",
-                        "7:00 PM",
-                        "8:00 PM",
-                        "9:00 PM",
-                      ].map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {t}
+                      {timeSlots.map((time) => (
+                        <SelectItem key={time} value={time}>
+                          {formatTimeDisplay(time)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -438,7 +451,7 @@ const VenueDetails = () => {
                 <Button
                   onClick={handleBookNow}
                   disabled={!selectedDate || !selectedTime || !selectedDuration}
-                  className="w-full h-12 bg-[#2c5aa0] hover:bg-[#1e3d6f] text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 bg-primary/90 hover:bg-primary text-white font-medium rounded-lg disabled:opacity-50 cursor-pointer"
                 >
                   Book Now
                 </Button>
@@ -499,7 +512,7 @@ const VenueDetails = () => {
               </Button>
               <Button
                 onClick={handleBookingConfirm}
-                className="flex-1 h-11 bg-[#2c5aa0] hover:bg-[#1e3d6f]"
+                className="flex-1 h-11 bg-primary/90 hover:bg-primary cursor-pointer"
               >
                 Confirm Booking
               </Button>

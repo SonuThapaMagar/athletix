@@ -4,23 +4,39 @@ import { AppDispatch } from "@/redux/store";
 import type { VenueOwnerBooking } from "@/types/venueOwner/venueOwnerBooking.types";
 import type { AxiosResponse } from "axios";
 import type { ApiResponse } from "@/types/axiosResponse.types";
+import type { PaginationResponse } from "@/types/venueOwner/payment.types";
 
-export const FETCH_VENUE_OWNER_BOOKINGS_ACTION = (): Promise<VenueOwnerBooking[]> =>
+export const FETCH_VENUE_OWNER_BOOKINGS_ACTION = (params?: { page?: number; perPage?: number }): Promise<VenueOwnerBooking[]> =>
   new Promise((resolve, reject) => {
+    console.log('🔍 Fetching venue owner bookings...', params);
     AppDispatch(venueOwnerBookingActions.setLoading(true));
 
     requests.booking
-      .getMyVenueBookings()
-      .then((res: AxiosResponse<ApiResponse<VenueOwnerBooking[]>>) => {
-        // Handle both wrapped and unwrapped responses
-        const bookings = res.data.data || res.data || [];
+      .getMyVenueBookings(params)
+      .then((res: AxiosResponse<ApiResponse<PaginationResponse<VenueOwnerBooking>>>) => {
+        console.log('✅ Bookings API response:', res.data);
+        
+        // Extract bookings from paginated response
+        const paginatedData = res.data.data;
+        const bookings = paginatedData?.items || [];
+        
+        console.log('📦 Extracted bookings:', bookings);
+        
         AppDispatch(venueOwnerBookingActions.setBookings(bookings));
         AppDispatch(venueOwnerBookingActions.setLoading(false));
         resolve(bookings);
       })
       .catch((err: any) => {
+        console.error('❌ Failed to fetch bookings:', err);
+        console.error('Error details:', {
+          status: err.response?.status,
+          message: err.response?.data?.message,
+          data: err.response?.data
+        });
+        
         const message = err.response?.data?.message || "Failed to fetch bookings";
         AppDispatch(venueOwnerBookingActions.setError(message));
+        AppDispatch(venueOwnerBookingActions.setLoading(false));
         reject(err);
       });
   });

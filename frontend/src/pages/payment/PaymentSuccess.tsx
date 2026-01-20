@@ -272,7 +272,7 @@ const PaymentSuccess = () => {
         </div>
 
         {/* Debug Information */}
-        {debugInfo && (
+        {/* {debugInfo && (
           <div className="mt-6 border-t pt-6">
             <div className="flex items-center gap-2 mb-4 text-sm text-gray-700">
               <AlertCircle className="w-4 h-4" />
@@ -325,7 +325,7 @@ const PaymentSuccess = () => {
               </ol>
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
