@@ -4,6 +4,7 @@ import Login from '@/pages/auth/Login'
 import Signup from '@/pages/auth/Signup'
 import ForgotPassword from '@/pages/auth/ForgotPassword'
 import ResetPassword from '@/pages/auth/ResetPassword'
+import NotFound from '@/pages/NotFound'
 import { playerRoutes } from './playerRoutes'
 import { venueOwnerRoutes } from './venueOwnerRoutes'
 import { adminRoutes } from './adminRoutes'
@@ -30,6 +31,14 @@ export const appRoutes: RouteObject[] = [
     path: '/reset-password',
     element: <ResetPassword />,
   },
+  {
+    path: '/404',
+    element: <NotFound type="notfound" />,
+  },
+  {
+    path: '/forbidden',
+    element: <NotFound type="forbidden" />,
+  },
   
   // Player routes
   ...playerRoutes,
@@ -40,9 +49,9 @@ export const appRoutes: RouteObject[] = [
   // Admin routes
   ...adminRoutes,
   
-  // Catch-all route
+  // Catch-all route - 404 Not Found
   {
     path: '*',
-    element: <LandingPage />,
+    element: <NotFound type="notfound" />,
   },
 ]
