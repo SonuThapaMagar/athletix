@@ -14,9 +14,10 @@ interface HeroSectionProps {
     time: string;
     searchQuery: string;
   };
+  isLandingPage?: boolean;
 }
 
-const HeroSection = ({ searchFilters }: HeroSectionProps = {}) => {
+const HeroSection = ({ searchFilters, isLandingPage }: HeroSectionProps = {}) => {
   const navigate = useNavigate();
 
   // Use playerVenueSlice instead of venueSlice
@@ -222,6 +223,18 @@ const HeroSection = ({ searchFilters }: HeroSectionProps = {}) => {
               className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               Next
+            </button>
+          </div>
+        )}
+
+        {/* Browse More Button - Only on Landing Page */}
+        {isLandingPage && (
+          <div className="flex justify-center mt-12">
+            <button
+              onClick={() => navigate("/player")}
+              className="px-8 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-[#1e3d6f] transition-colors cursor-pointer"
+            >
+              Browse More
             </button>
           </div>
         )}

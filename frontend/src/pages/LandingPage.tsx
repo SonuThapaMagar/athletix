@@ -5,6 +5,7 @@ import SportsGrid from "@/components/landing/SportsGrid";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Footer from "@/components/common/Footer";
 import AboutUs from "@/components/landing/AboutUs";
+import HeroSection from "@/components/player/HeroSection";
 
 const LandingPage = () => {
   return (
@@ -15,6 +16,7 @@ const LandingPage = () => {
       />
       <Hero onSignup={() => (window.location.href = "/signup")} />
       <Features />
+      <HeroSection isLandingPage={true} />
       <AboutUs />
       <SportsGrid />
       <HowItWorks onSignup={() => (window.location.href = "/signup")} />
