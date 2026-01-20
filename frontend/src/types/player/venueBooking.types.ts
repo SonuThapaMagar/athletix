@@ -16,6 +16,14 @@ export interface Booking {
   createdAt: string;
 }
 
+export interface PlayerStats {
+  bookingsThisMonth: number;
+  activeMatches: number;
+  totalHoursPlayed: number;
+}
+
+export type PaymentMethod = 'ESEWA' | 'CASH' | 'OTHER';
+
 export interface BookingResponse extends Booking { }
 
 export interface CreatePendingBookingPayload {

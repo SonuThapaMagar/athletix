@@ -143,7 +143,7 @@ const ResetPassword = () => {
               </p>
               {email && (
                 <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-xs text-blue-800">
+                  <p className="text-xs text-primary">
                     OTP sent to: <span className="font-semibold">{email}</span>
                   </p>
                 </div>
@@ -156,7 +156,7 @@ const ResetPassword = () => {
                 <input
                   type="text"
                   placeholder="Enter 6-digit OTP"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-[#2c5aa0] text-center tracking-widest font-mono text-lg"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-primary/90 text-center tracking-widest font-mono"
                   value={formData.otp}
                   onChange={(e) => {
                     const value = e.target.value.replace(/\D/g, "").slice(0, 6);
@@ -200,7 +200,7 @@ const ResetPassword = () => {
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm New Password"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 pr-10 text-sm focus:outline-none focus:border-[#2c5aa0]"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 pr-10 text-sm focus:outline-none focus:border-primary"
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                   required
@@ -225,7 +225,7 @@ const ResetPassword = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#2c5aa0] text-white py-3 px-4 rounded-lg font-semibold text-sm uppercase tracking-wide hover:bg-[#1e3d6f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full bg-primary/90 text-white py-3 px-4 rounded-lg font-semibold text-sm uppercase tracking-wide hover:bg-primary disabled:opacity-50 cursor-pointer transition-colors"
               >
                 {loading ? "Resetting..." : "Reset Password"}
               </button>

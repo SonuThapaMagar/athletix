@@ -91,7 +91,7 @@ const ForgotPassword = () => {
                   <input
                     type="email"
                     placeholder="Email Address"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-[#2c5aa0]"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-primary"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -104,7 +104,7 @@ const ForgotPassword = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#2c5aa0] text-white py-3 px-4 rounded-lg font-semibold text-sm uppercase tracking-wide hover:bg-[#1e3d6f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="w-full bg-primary/90 text-white py-3 px-4 rounded-lg font-semibold text-sm uppercase tracking-wide hover:bg-primary disabled:opacity-50 cursor-pointer transition-colors"
                 >
                   {loading ? "Sending..." : "Send OTP"}
                 </button>
@@ -129,7 +129,7 @@ const ForgotPassword = () => {
                     type="button"
                     onClick={handleResendOTP}
                     disabled={loading}
-                    className="text-[#2c5aa0] hover:text-[#1e3d6f] font-medium text-sm cursor-pointer disabled:opacity-50"
+                    className="text-primary hover:text-[#1e3d6f] font-medium text-sm cursor-pointer disabled:opacity-50"
                   >
                     {loading ? "Resending..." : "Resend OTP"}
                   </button>

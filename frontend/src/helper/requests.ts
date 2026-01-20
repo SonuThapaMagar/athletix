@@ -67,6 +67,8 @@ const booking = {
   cancelBooking: (bookingId: number) => api.delete(`/bookings/cancel/${bookingId}`),
   getMyVenueBookings: (params?: { page?: number; perPage?: number }) =>
     api.get("/bookings/my-venue", { params }), confirmBooking: (bookingId: number) => api.put(`/bookings/confirm/${bookingId}`),
+
+  getPlayerStats: () => api.get("/bookings/player/stats"),
 };
 
 const payment = {

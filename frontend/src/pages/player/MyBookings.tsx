@@ -10,6 +10,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import CancelModal from "@/components/common/CancelModal";
+import type { PlayerStats } from "@/types/player/venueBooking.types";
+import requests from "@/helper/requests";
 
 const MyBookings = () => {
   const navigate = useNavigate();
@@ -20,6 +22,8 @@ const MyBookings = () => {
     "all" | "PENDING" | "CONFIRMED" | "CANCELLED"
   >("all");
   const [cancelBookingId, setCancelBookingId] = useState<number | null>(null);
+  const [stats, setStats] = useState<PlayerStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   const handleBookingClick = (booking: any) => {
     if (booking.status === "CONFIRMED") {
@@ -35,6 +39,21 @@ const MyBookings = () => {
     FETCH_MY_BOOKINGS_ACTION().catch((err) => {
       console.error("Failed to fetch bookings:", err);
     });
+
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
+        const response = await requests.booking.getPlayerStats();
+        setStats(response.data.data); // assuming ApiResponse structure { status, message, data }
+        // or response.data if your api wrapper returns the raw data
+      } catch (err: any) {
+        console.error("Failed to load stats:", err);
+        toast.error("Could not load your statistics");
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+    fetchStats();
   }, []);
 
   const filteredBookings = bookings.filter((booking) => {
@@ -138,15 +157,20 @@ const MyBookings = () => {
                   />
                 </svg>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
-                  Bookings This Month
-                </p>
-                <p className="text-2xl font-semibold text-gray-900">12</p>
-              </div>
+              {statsLoading ? (
+                <Skeleton className="h-8 w-16 mt-1" />
+              ) : (
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">
+                    Bookings This Month
+                  </p>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    {stats?.bookingsThisMonth ?? 0}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
-
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-green-100 rounded-lg">
@@ -164,40 +188,54 @@ const MyBookings = () => {
                   />
                 </svg>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
-                  Active Matches
-                </p>
-                <p className="text-2xl font-semibold text-gray-900">3</p>
-              </div>
-            </div>
-          </div>
+              {statsLoading ? (
+                <Skeleton className="h-8 w-16 mt-1" />
+              ) : (
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">
+                    Active Matches
+                  </p>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <svg
-                  className="w-6 h-6 text-orange-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
-                  Total Hours Played
-                </p>
-                <p className="text-2xl font-semibold text-gray-900">48</p>
-              </div>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    {stats?.activeMatches ?? 0}
+                  </p>
+                </div>
+              )}{" "}
             </div>
           </div>
+          {statsLoading ? (
+            <Skeleton className="h-8 w-20 mt-1" />
+          ) : (
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <svg
+                    className="w-6 h-6 text-orange-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                </div>
+
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Hours Played
+                  </p>
+
+                  <p className="text-2xl font-semibold text-gray-900">
+                    {stats?.totalHoursPlayed?.toFixed(1) ?? "0.0"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}{" "}
         </div>
 
         {/* Filter Tabs */}
