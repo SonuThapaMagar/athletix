@@ -447,7 +447,7 @@ const UserManagement = () => {
                   </button>
                   <button
                     onClick={exportToPDF}
-                    className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium cursor-pointer text-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-primary/90 text-white rounded-lg hover:bg-primary transition-colors font-medium cursor-pointer text-sm"
                     title="Export to PDF"
                   >
                     <MdFileDownload className="w-4 h-4" />

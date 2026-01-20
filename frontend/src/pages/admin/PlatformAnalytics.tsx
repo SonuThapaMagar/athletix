@@ -10,9 +10,10 @@ import {
   MdLocationOn,
   MdSportsSoccer
 } from 'react-icons/md'
+import * as XLSX from 'xlsx'
 import { toast } from 'sonner'
 import type { StateType } from '@/redux/slices'
-import { FETCH_ADMIN_ANALYTICS_DATA_ACTION, EXPORT_ADMIN_ANALYTICS_ACTION } from '@/redux/actions/admin/analytics.actions'
+import { FETCH_ADMIN_ANALYTICS_DATA_ACTION } from '@/redux/actions/admin/analytics.actions'
 import { Skeleton } from '@/components/ui/skeleton'
 
 const PlatformAnalytics = () => {
@@ -29,21 +30,81 @@ const PlatformAnalytics = () => {
   }, [])
 
   const exportToExcel = async () => {
+    if (!stats) {
+      toast.error('No data to export')
+      return
+    }
+
     setIsExporting(true)
     try {
-      const blob = await EXPORT_ADMIN_ANALYTICS_ACTION({ format: 'csv' })
-      
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.setAttribute('href', url)
-      link.setAttribute('download', `analytics_report_${new Date().toISOString().split('T')[0]}.csv`)
-      link.style.visibility = 'hidden'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
-      
-      toast.success('Analytics exported successfully')
+      const workbook = XLSX.utils.book_new()
+
+      // Sheet 1: Summary Stats
+      const summaryData = [
+        ['Platform Analytics Summary', new Date().toLocaleString()],
+        [],
+        ['Metric', 'Value', 'Change'],
+        ['Total Revenue', stats.totalRevenue, `${formatChange(stats.revenueChange)}`],
+        ['Total Bookings', stats.totalBookings, `${formatChange(stats.bookingsChange)}`],
+        ['Active Users', stats.activeUsers, `${formatChange(stats.usersChange)}`],
+        ['Total Venues', stats.totalVenues, `+${stats.venuesChange || 0}`],
+      ]
+
+      const summarySheet = XLSX.utils.aoa_to_sheet(summaryData)
+      summarySheet['!cols'] = [{ wch: 20 }, { wch: 15 }, { wch: 15 }]
+      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary')
+
+      // Sheet 2: Revenue Data
+      if (displayRevenueData.length > 0) {
+        const revenueExportData = displayRevenueData.map(d => ({
+          'Month': d.month,
+          'Revenue': d.revenue,
+          'Currency': 'NRP'
+        }))
+        const revenueSheet = XLSX.utils.json_to_sheet(revenueExportData)
+        revenueSheet['!cols'] = [{ wch: 12 }, { wch: 15 }, { wch: 12 }]
+        XLSX.utils.book_append_sheet(workbook, revenueSheet, 'Revenue')
+      }
+
+      // Sheet 3: Top Venues
+      if (displayTopVenues.length > 0) {
+        const venuesExportData = displayTopVenues.map((v, idx) => ({
+          'Rank': idx + 1,
+          'Venue Name': v.venueName,
+          'Revenue': v.revenue,
+          'Bookings': v.bookings,
+          'Growth %': v.growth?.toFixed(2) || '0.00'
+        }))
+        const venuesSheet = XLSX.utils.json_to_sheet(venuesExportData)
+        venuesSheet['!cols'] = [{ wch: 8 }, { wch: 25 }, { wch: 15 }, { wch: 12 }, { wch: 12 }]
+        XLSX.utils.book_append_sheet(workbook, venuesSheet, 'Top Venues')
+      }
+
+      // Sheet 4: Sport Popularity
+      if (sportPopularity.length > 0) {
+        const sportExportData = sportPopularity.map(s => ({
+          'Sport': s.sport,
+          'Bookings': s.bookings,
+          'Percentage': `${s.percentage}%`
+        }))
+        const sportSheet = XLSX.utils.json_to_sheet(sportExportData)
+        sportSheet['!cols'] = [{ wch: 20 }, { wch: 12 }, { wch: 12 }]
+        XLSX.utils.book_append_sheet(workbook, sportSheet, 'Sports')
+      }
+
+      // Sheet 5: Peak Booking Times
+      if (peakBookingTimes.length > 0) {
+        const peakExportData = peakBookingTimes.map(t => ({
+          'Time Slot': t.timeSlot,
+          'Bookings': t.bookings
+        }))
+        const peakSheet = XLSX.utils.json_to_sheet(peakExportData)
+        peakSheet['!cols'] = [{ wch: 15 }, { wch: 12 }]
+        XLSX.utils.book_append_sheet(workbook, peakSheet, 'Peak Times')
+      }
+
+      XLSX.writeFile(workbook, `platform_analytics_${new Date().toISOString().split('T')[0]}.xlsx`)
+      toast.success('Analytics exported to Excel successfully')
     } catch (err: any) {
       console.error('Export failed:', err)
       toast.error('Failed to export analytics')
